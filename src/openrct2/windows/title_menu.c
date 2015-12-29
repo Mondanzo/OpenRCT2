@@ -28,6 +28,7 @@
 
 enum {
 	WIDX_START_NEW_GAME,
+	WIDX_START_NEW_SANDBOX,
 	WIDX_CONTINUE_SAVED_GAME,
 	WIDX_MULTIPLAYER,
 	WIDX_SHOW_TUTORIAL,
@@ -35,6 +36,7 @@ enum {
 };
 
 static rct_widget window_title_menu_widgets[] = {
+	{ WWT_IMGBTN, 2, 0, 0, 0, 81, SPR_MENU_NEW_GAME,		STR_START_NEW_GAME_TIP			},
 	{ WWT_IMGBTN, 2, 0, 0, 0, 81, SPR_MENU_NEW_GAME,		STR_START_NEW_GAME_TIP			},
 	{ WWT_IMGBTN, 2, 0, 0, 0, 81, SPR_MENU_LOAD_GAME,		STR_CONTINUE_SAVED_GAME_TIP		},
 	{ WWT_IMGBTN, 2, 0, 0, 0, 81, SPR_G2_MENU_MULTIPLAYER,	STR_SHOW_MULTIPLAYER_TIP		},
@@ -99,6 +101,7 @@ void window_title_menu_open()
 	window->widgets = window_title_menu_widgets;
 	window->enabled_widgets = (
 		(1 << WIDX_START_NEW_GAME) |
+		(1 << WIDX_START_NEW_SANDBOX) |
 		(1 << WIDX_CONTINUE_SAVED_GAME) |
 #ifndef DISABLE_NETWORK
 		(1 << WIDX_MULTIPLAYER) |
@@ -139,6 +142,9 @@ static void window_title_menu_mouseup(rct_window *w, sint32 widgetIndex)
 	switch (widgetIndex) {
 	case WIDX_START_NEW_GAME:
 		window_scenarioselect_open(window_title_menu_scenarioselect_callback);
+		break;
+	case WIDX_START_NEW_SANDBOX:
+		sandbox_start();
 		break;
 	case WIDX_CONTINUE_SAVED_GAME:
 		game_do_command(0, 1, 0, 0, GAME_COMMAND_LOAD_OR_QUIT, 0, 0);
