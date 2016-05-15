@@ -1034,3 +1034,50 @@ int win1252_to_utf8(utf8string dst, const char *src, size_t maxBufferLength)
 
 	return result;
 }
+
+void strargs_init(strargs *args)
+{
+	memset(args->data, 0, sizeof(args->data));
+	args->offset = 0;
+}
+
+void strargs_push_int8(strargs *args, sint16 value)
+{
+	uint8 *data = (uint8*)&args->data[args->offset];
+	*data = (value & 0xFF);
+	args->offset += sizeof(uint8);
+
+	assert(args->offset <= sizeof(args->data));
+}
+
+void strargs_push_int16(strargs *args, sint32 value)
+{
+	uint16 *data = (uint16*)&args->data[args->offset];
+	*data = (value & 0xFFFF);
+	args->offset += sizeof(uint16);
+
+	assert(args->offset <= sizeof(args->data));
+}
+
+void strargs_push_int32(strargs *args, sint64 value)
+{
+	uint32 *data = (uint32*)&args->data[args->offset];
+	*data = (value & 0xFFFFFFFF);
+	args->offset += sizeof(uint32);
+
+	assert(args->offset <= sizeof(args->data));
+}
+
+void strargs_push_string(strargs *args, rct_string_id stringId)
+{
+	strargs_push_int16(args, stringId);
+}
+
+void strargs_push_ptr(strargs *args, void *ptr)
+{
+	uintptr_t *data = (uintptr_t*)&args->data[args->offset];
+	*data = (uintptr_t)ptr;
+	args->offset += sizeof(uintptr_t);
+
+	assert(args->offset <= sizeof(args->data));
+}

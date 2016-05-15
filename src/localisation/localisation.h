@@ -22,6 +22,11 @@
 #include "language.h"
 #include "string_ids.h"
 
+typedef struct strargs {
+	uint8 data[32];
+	uint16 offset;
+} strargs;
+
 bool utf8_is_format_code(int codepoint);
 bool utf8_is_colour_code(int codepoint);
 bool utf8_should_use_sprite_for_codepoint(int codepoint);
@@ -52,6 +57,13 @@ wchar_t encoding_convert_rct2_to_unicode(wchar_t rct2str);
 wchar_t encoding_convert_unicode_to_rct2(wchar_t unicode);
 wchar_t encoding_convert_gb2312_to_unicode(wchar_t gb2312);
 wchar_t encoding_convert_big5_to_unicode(wchar_t big5);
+
+void strargs_init(strargs *args);
+void strargs_push_int8(strargs *args, sint16 value);
+void strargs_push_int16(strargs *args, sint32 value);
+void strargs_push_int32(strargs *args, sint64 value);
+void strargs_push_string(strargs *args, rct_string_id stringId);
+void strargs_push_ptr(strargs *args, void *ptr);
 
 #define MAX_USER_STRINGS 1024
 #define USER_STRING_MAX_LENGTH 32

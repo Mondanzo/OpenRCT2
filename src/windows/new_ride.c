@@ -865,9 +865,10 @@ static void window_new_ride_paint_ride_information(rct_window *w, rct_drawpixeli
 		rideDescription = item.type + 512;
 	}
 
-	RCT2_GLOBAL(RCT2_ADDRESS_COMMON_FORMAT_ARGS + 0, rct_string_id) = rideName;
-	RCT2_GLOBAL(RCT2_ADDRESS_COMMON_FORMAT_ARGS + 2, rct_string_id) = rideDescription;
-	gfx_draw_string_left_wrapped(dpi, (void*)RCT2_ADDRESS_COMMON_FORMAT_ARGS, x, y, width, 1690, 0);
+	strargs args = { 0 };
+	strargs_push_string(&args, rideName);
+	strargs_push_string(&args, rideDescription);
+	gfx_draw_string_left_wrapped(dpi, args.data, x, y, width, 1690, 0);
 
 	// Number of designs available
 	if (ride_type_has_flag(item.type, RIDE_TYPE_FLAG_HAS_TRACK)) {
