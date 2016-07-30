@@ -89,6 +89,9 @@ public:
                 SendHeartbeat();
             }
             break;
+        // exhaust enum values to satisfy clang
+        case ADVERTISE_STATUS_DISABLED:
+            break;
         }
     }
 
@@ -254,4 +257,4 @@ INetworkServerAdvertiser * CreateServerAdvertiser(uint16 port)
     return new NetworkServerAdvertiser(port);
 }
 
-#endif DISABLE_NETWORK
+#endif // DISABLE_NETWORK
