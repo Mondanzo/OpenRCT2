@@ -329,6 +329,8 @@
     <ClCompile Include="src\title\TitleSequence.cpp" />
     <ClCompile Include="src\title\TitleSequenceManager.cpp" />
     <ClCompile Include="src\title\TitleSequencePlayer.cpp" />
+    <ClCompile Include="src\ui\Window.cpp" />
+    <ClCompile Include="src\ui\WindowManager.cpp" />
     <ClCompile Include="src\windows\changelog.c" />
     <ClCompile Include="src\windows\multiplayer.c" />
     <ClCompile Include="src\windows\network_status.c" />
@@ -576,6 +578,11 @@
     <ClInclude Include="src\title\TitleSequence.h" />
     <ClInclude Include="src\title\TitleSequenceManager.h" />
     <ClInclude Include="src\title\TitleSequencePlayer.h" />
+    <ClInclude Include="src\ui\MouseEventArgs.h" />
+    <ClInclude Include="src\ui\Primitives.h" />
+    <ClInclude Include="src\ui\Widget.h" />
+    <ClInclude Include="src\ui\Window.h" />
+    <ClInclude Include="src\ui\WindowManager.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\title\TitleScreen.h" />
     <ClInclude Include="src\util\sawyercoding.h" />

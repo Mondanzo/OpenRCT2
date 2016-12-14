@@ -48,6 +48,7 @@ IDrawingEngine * DrawingEngineFactory::CreateOpenGL()
 #include "../../IDrawingEngine.h"
 #include "../../Rain.h"
 #include "../../../config.h"
+#include "../../../OpenRCT2.h"
 
 extern "C"
 {
@@ -204,6 +205,8 @@ public:
     IDrawingEngine * GetEngine() override;
     TextureCache * GetTextureCache() const { return _textureCache; }
 
+    IDrawingContext * Nest(sint32 x, sint32 y, sint32 width, sint32 height);
+
     void Initialise();
     void Resize(sint32 width, sint32 height);
     void ResetPalette();
@@ -343,6 +346,8 @@ public:
             window_update_all_viewports();
             window_draw_all(&_bitsDPI, 0, 0, _width, _height);
             window_update_all();
+
+            openrct2_window_manager_draw(GetDrawingContext(&_bitsDPI));
 
             gfx_draw_pickedup_peep(&_bitsDPI);
 
@@ -520,6 +525,11 @@ OpenGLDrawingContext::~OpenGLDrawingContext()
 IDrawingEngine * OpenGLDrawingContext::GetEngine()
 {
     return _engine;
+}
+
+IDrawingContext * OpenGLDrawingContext::Nest(sint32 x, sint32 y, sint32 width, sint32 height)
+{
+    throw new Exception("Not implemented");
 }
 
 void OpenGLDrawingContext::Initialise()

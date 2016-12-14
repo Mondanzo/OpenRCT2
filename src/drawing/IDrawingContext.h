@@ -30,6 +30,8 @@ interface IDrawingContext
 
     virtual IDrawingEngine * GetEngine() abstract;
 
+    virtual IDrawingContext * Nest(sint32 x, sint32 y, sint32 width, sint32 height) abstract;
+
     virtual void Clear(uint8 paletteIndex)                                                                abstract;
     virtual void FillRect(uint32 colour, sint32 left, sint32 top, sint32 right, sint32 bottom)            abstract;
     virtual void FilterRect(FILTER_PALETTE_ID palette, sint32 left, sint32 top, sint32 right, sint32 bottom) abstract;

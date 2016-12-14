@@ -17,6 +17,7 @@
 #include "../../core/Guard.hpp"
 #include "../../core/Math.hpp"
 #include "../../core/Memory.hpp"
+#include "../../OpenRCT2.h"
 #include "../IDrawingContext.h"
 #include "../IDrawingEngine.h"
 #include "../Rain.h"
@@ -161,14 +162,18 @@ public:
 class SoftwareDrawingContext final : public IDrawingContext
 {
 private:
-    SoftwareDrawingEngine * _engine;
-    rct_drawpixelinfo *     _dpi;
+    SoftwareDrawingEngine *     _engine;
+    rct_drawpixelinfo *         _dpi;
+    SoftwareDrawingContext *    _next;
+    rct_drawpixelinfo           _nextdpi;
 
 public:
     SoftwareDrawingContext(SoftwareDrawingEngine * engine);
     ~SoftwareDrawingContext() override;
 
     IDrawingEngine * GetEngine() override;
+
+    IDrawingContext * Nest(sint32 x, sint32 y, sint32 w, sint32 h) override;
 
     void Clear(uint8 paletteIndex) override;
     void FillRect(uint32 colour, sint32 x, sint32 y, sint32 w, sint32 h) override;
@@ -393,6 +398,8 @@ public:
             window_update_all_viewports();
             DrawAllDirtyBlocks();
             window_update_all();
+
+            openrct2_window_manager_draw(GetDrawingContext(&_bitsDPI));
 
             gfx_draw_pickedup_peep(&_bitsDPI);
             gfx_invalidate_pickedup_peep();
@@ -821,12 +828,33 @@ SoftwareDrawingContext::SoftwareDrawingContext(SoftwareDrawingEngine * engine)
 
 SoftwareDrawingContext::~SoftwareDrawingContext()
 {
-
+    if (_next != nullptr)
+    {
+        delete _next;
+    }
 }
 
 IDrawingEngine * SoftwareDrawingContext::GetEngine()
 {
     return _engine;
+}
+
+IDrawingContext * SoftwareDrawingContext::Nest(sint32 x, sint32 y, sint32 width, sint32 height)
+{
+    rct_drawpixelinfo nestedDPI;
+    if (!clip_drawpixelinfo(&nestedDPI, _dpi, x, y, width, height))
+    {
+        return nullptr;
+    }
+
+    if (_next != nullptr)
+    {
+        delete _next;
+    }
+    _next = new SoftwareDrawingContext(_engine);
+    _next->_dpi = &_next->_nextdpi;
+    *_next->_dpi = nestedDPI;
+    return _next;
 }
 
 void SoftwareDrawingContext::Clear(uint8 paletteIndex)

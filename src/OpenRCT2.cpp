@@ -26,6 +26,7 @@
 #include "scenario/ScenarioRepository.h"
 #include "title/TitleScreen.h"
 #include "title/TitleSequenceManager.h"
+#include "ui/WindowManager.h"
 
 extern "C"
 {
@@ -43,6 +44,8 @@ extern "C"
     #include "rct2/interop.h"
     #include "version.h"
 }
+
+using namespace OpenRCT2::Ui;
 
 // The game update inverval in milliseconds, (1000 / 40fps) = 25ms
 constexpr uint32 UPDATE_TIME_MS = 25;
@@ -73,6 +76,7 @@ extern "C"
 namespace OpenRCT2
 {
     static IPlatformEnvironment * _env = nullptr;
+    static IWindowManager * _windowManager = nullptr;
     static std::string _versionInfo;
     static bool _isWindowMinimised;
     static uint32 _isWindowMinimisedLastCheckTick;
@@ -218,6 +222,8 @@ extern "C"
         chat_init();
 
         rct2_copy_original_user_files_over();
+
+        OpenRCT2::_windowManager = CreateWindowManager();
         return true;
     }
 
@@ -323,6 +329,15 @@ extern "C"
     void openrct2_finish()
     {
         OpenRCT2::_finished = true;
+    }
+
+    void openrct2_window_manager_draw(void * dc)
+    {
+        auto windowManager = OpenRCT2::_windowManager;
+        if (windowManager != nullptr)
+        {
+            windowManager->Draw((IDrawingContext *)dc);
+        }
     }
 }
 
