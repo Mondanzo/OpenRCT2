@@ -331,6 +331,15 @@ extern "C"
         OpenRCT2::_finished = true;
     }
 
+    void openrct2_window_manager_update()
+    {
+        auto windowManager = OpenRCT2::_windowManager;
+        if (windowManager != nullptr)
+        {
+            windowManager->Update();
+        }
+    }
+
     void openrct2_window_manager_draw(void * dc)
     {
         auto windowManager = OpenRCT2::_windowManager;

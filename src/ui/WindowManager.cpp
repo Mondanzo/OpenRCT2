@@ -154,7 +154,10 @@ namespace OpenRCT2 { namespace Ui
                 _cursorWindow->Flags &= ~WINDOW_FLAGS::CURSOR;
             }
             _cursorWindow = w;
-            w->Flags |= WINDOW_FLAGS::CURSOR;
+            if (w != nullptr)
+            {
+                w->Flags |= WINDOW_FLAGS::CURSOR;
+            }
         }
 
         void SetWindowFocus(Window * w)
@@ -165,14 +168,17 @@ namespace OpenRCT2 { namespace Ui
                 _focusWindow->Flags &= ~WINDOW_FLAGS::FOCUS;
             }
             _focusWindow = w;
-            w->Flags |= WINDOW_FLAGS::FOCUS;
-
-            // Move window to top of window list
-            auto pos = std::find(_windows.begin(), _windows.end(), w);
-            if (pos != _windows.end())
+            if (w != nullptr)
             {
-                _windows.erase(pos);
-                _windows.insert(_windows.begin(), w);
+                w->Flags |= WINDOW_FLAGS::FOCUS;
+
+                // Move window to top of window list
+                auto pos = std::find(_windows.begin(), _windows.end(), w);
+                if (pos != _windows.end())
+                {
+                    _windows.erase(pos);
+                    _windows.insert(_windows.begin(), w);
+                }
             }
         }
     };

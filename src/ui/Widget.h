@@ -36,6 +36,9 @@ namespace OpenRCT2 { namespace Ui
     {
         constexpr uint8 AUTOSIZE    = 1 << 0;
         constexpr uint8 ENABLED     = 1 << 1;
+        constexpr uint8 FOCUSABLE   = 1 << 2;
+        constexpr uint8 FOCUS       = 1 << 3;
+        constexpr uint8 CURSOR      = 1 << 4;
     }
 
     struct Thickness
@@ -61,12 +64,16 @@ namespace OpenRCT2 { namespace Ui
         Widget();
         virtual ~Widget() = default;
 
+        virtual sint32 GetChildrenCount() { return 0; }
+        virtual Widget * GetChild(sint32 index) { return nullptr; }
+
         virtual rct_string_id GetTooltip(sint32 x, sint32 y);
 
         virtual void Update() { };
         virtual void Draw(IDrawingContext * dc) { };
 
         // Interaction
+        virtual bool HitTest(sint32 x, sint32 y) { return true; }
         virtual void MouseDown(const MouseEventArgs * e) { };
         virtual void MouseMove(const MouseEventArgs * e) { };
         virtual void MouseUp(const MouseEventArgs * e) { };

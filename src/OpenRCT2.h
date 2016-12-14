@@ -76,6 +76,7 @@ extern "C"
 
     int cmdline_run(const char * * argv, int argc);
 
+    void openrct2_window_manager_update();
     void openrct2_window_manager_draw(void * dc);
 
 #ifdef __cplusplus

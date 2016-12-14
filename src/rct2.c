@@ -469,6 +469,8 @@ void rct2_update()
 
 	//stop_completed_sounds(); // removes other sounds that are no longer playing in directsound
 
+	openrct2_window_manager_update();
+
 	twitch_update();
 	chat_update();
 	console_update();

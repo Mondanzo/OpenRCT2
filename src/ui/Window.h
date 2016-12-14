@@ -40,6 +40,8 @@ namespace OpenRCT2 { namespace Ui
     {
     private:
         Widget * _child = nullptr;
+        Widget * _cursorWidget = nullptr;
+        Widget * _focusWidget = nullptr;
 
     public:
         union
@@ -54,6 +56,8 @@ namespace OpenRCT2 { namespace Ui
         Window();
         virtual ~Window() = default;
 
+        Widget * GetWidgetAt(sint32 x, sint32 y);
+
         virtual void Update();
         virtual void Draw(IDrawingContext * g);
 
@@ -62,5 +66,13 @@ namespace OpenRCT2 { namespace Ui
         virtual void MouseMove(const MouseEventArgs * e);
         virtual void MouseUp(const MouseEventArgs * e);
         virtual void MouseWheel(const MouseEventArgs * e);
+
+    private:
+        Widget * GetWidgetAt(Widget * node, sint32 x, sint32 y);
+        void Update(Widget * node);
+        void Draw(IDrawingContext * g, Widget * node);
+
+        void SetWidgetCursor(Widget * widget);
+        void SetWidgetFocus(Widget * widget);
     };
 } }
