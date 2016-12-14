@@ -23,7 +23,8 @@ interface IDrawingContext;
 
 namespace OpenRCT2 { namespace Ui
 {
-    struct MouseEventArgs;
+    struct  MouseEventArgs;
+    class   Widget;
 
     namespace WINDOW_FLAGS
     {
@@ -37,6 +38,9 @@ namespace OpenRCT2 { namespace Ui
 
     class Window
     {
+    private:
+        Widget * _child = nullptr;
+
     public:
         union
         {
@@ -47,6 +51,7 @@ namespace OpenRCT2 { namespace Ui
         uint32 Flags;
 
     public:
+        Window();
         virtual ~Window() = default;
 
         virtual void Update();

@@ -329,6 +329,8 @@
     <ClCompile Include="src\title\TitleSequence.cpp" />
     <ClCompile Include="src\title\TitleSequenceManager.cpp" />
     <ClCompile Include="src\title\TitleSequencePlayer.cpp" />
+    <ClCompile Include="src\ui\Widget.cpp" />
+    <ClCompile Include="src\ui\widgets\Button.cpp" />
     <ClCompile Include="src\ui\Window.cpp" />
     <ClCompile Include="src\ui\WindowManager.cpp" />
     <ClCompile Include="src\windows\changelog.c" />
@@ -581,6 +583,7 @@
     <ClInclude Include="src\ui\MouseEventArgs.h" />
     <ClInclude Include="src\ui\Primitives.h" />
     <ClInclude Include="src\ui\Widget.h" />
+    <ClInclude Include="src\ui\widgets\Button.h" />
     <ClInclude Include="src\ui\Window.h" />
     <ClInclude Include="src\ui\WindowManager.h" />
     <ClInclude Include="src\version.h" />

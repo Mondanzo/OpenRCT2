@@ -15,9 +15,19 @@
 #pragma endregion
 
 #include "../drawing/IDrawingContext.h"
+#include "widgets/Button.h"
 #include "Window.h"
 
 using namespace OpenRCT2::Ui;
+
+Window::Window()
+{
+    _child = new Button();
+    _child->X = 12;
+    _child->Y = 12;
+    _child->Width = 15;
+    _child->Height = 15;
+}
 
 void Window::Update()
 {
@@ -31,6 +41,9 @@ void Window::Draw(IDrawingContext * dc)
         colour = 152;
     }
     dc->FillRect(colour, 0, 0, Width, Height);
+
+    dc->Nest(_child->X, _child->Y, _child->Width, _child->Height);
+    _child->Draw(dc);
 }
 
 bool Window::HitTest(sint32 x, sint32 y)
