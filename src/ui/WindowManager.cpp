@@ -23,6 +23,8 @@
 
 namespace OpenRCT2 { namespace Ui
 {
+    Window * OpenParkWindow();
+
     class WindowManager : public IWindowManager
     {
     private:
@@ -35,17 +37,17 @@ namespace OpenRCT2 { namespace Ui
     public:
         WindowManager()
         {
-            Window * w = new Window();
-            w->Bounds = { 32, 32, 512, 386 };
-            w->Flags = 0;
-            _windows.push_back(w);
+            // Window * w = new Window();
+            // w->Bounds = { 32, 32, 512, 386 };
+            // _windows.push_back(w);
+            // 
+            // Window * w2 = new Window();
+            // w2->Bounds = { 256, 88, 200, 100 };
+            // _windows.push_back(w2);
 
-            Window * w2 = new Window();
-            w2->Bounds = { 256, 88, 200, 100 };
-            w2->Flags = 0;
-            _windows.push_back(w2);
-
-            SetWindowFocus(w2);
+            Window * w3 = OpenParkWindow();
+            _windows.push_back(w3);
+            SetWindowFocus(w3);
         }
 
         virtual ~WindowManager()

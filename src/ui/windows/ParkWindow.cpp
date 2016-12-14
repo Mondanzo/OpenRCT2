@@ -14,38 +14,33 @@
  *****************************************************************************/
 #pragma endregion
 
-#include "../Widget.h"
+#include "../../localisation/string_ids.h"
+#include "../Window.h"
+
+extern "C"
+{
+    #include "../../interface/colour.h"
+}
 
 namespace OpenRCT2 { namespace Ui
 {
-    enum class BUTTON_STYLE : uint8
+    class ParkWindow : public Window
     {
-        FLAT,
-        OUTSET,
+    public:
+        ParkWindow()
+        {
+            X = 333;
+            Y = 200;
+            Width = 230;
+            Height = 174 + 9;
+
+            BackgroundColour = COLOUR_GREY;
+            SetTitle(STR_PARK_CLOSED);
+        }
     };
 
-    namespace BUTTON_FLAGS
+    Window * OpenParkWindow()
     {
-        constexpr uint8 HIGHLIGHTED = 1 << 0;
-        constexpr uint8 PRESSED     = 1 << 1;
+        return new ParkWindow();
     }
-
-    class Button : public Widget
-    {
-    private:
-        uint8           _buttonFlags = 0;
-
-    public:
-        BUTTON_STYLE    Style = BUTTON_STYLE::FLAT;
-        rct_string_id   Text = (rct_string_id)-1;
-        uint32          Image = 0;
-
-    public:
-        void Draw(IDrawingContext * dc) override;
-
-        void MouseDown(const MouseEventArgs * e) override;
-        void MouseUp(const MouseEventArgs * e) override;
-        void MouseEnter(const MouseEventArgs * e) override;
-        void MouseLeave(const MouseEventArgs * e) override;
-    };
 } }

@@ -15,36 +15,30 @@
 #pragma endregion
 
 #include "../drawing/IDrawingContext.h"
+#include "../localisation/string_ids.h"
+#include "../sprites.h"
+#include "DrawingContextExtensions.h"
 #include "MouseEventArgs.h"
 #include "widgets/Button.h"
 #include "widgets/Panel.h"
+#include "widgets/TitleBar.h"
 #include "Window.h"
 
 using namespace OpenRCT2::Ui;
 
 Window::Window()
 {
-    auto panel = new Panel();
-    panel->X = 0;
-    panel->Y = 0;
-    panel->Width = Bounds.Width;
-    panel->Height = Bounds.Height;
+    Bounds = { 0, 0, 0, 0 };
+    BackgroundColour = COLOUR_GREY;
+    Flags = WINDOW_FLAGS::HAS_TITLE_BAR |
+            WINDOW_FLAGS::HAS_CLOSE_BUTTON;
+}
 
-    auto btn = new Button();
-    btn->X = 12;
-    btn->Y = 12;
-    btn->Width = 15;
-    btn->Height = 15;
-    panel->AddChild(btn);
-
-    btn = new Button();
-    btn->X = 33;
-    btn->Y = 17;
-    btn->Width = 23;
-    btn->Height = 23;
-    panel->AddChild(btn);
-
-    _child = panel;
+Window::~Window()
+{
+    delete _closeButton;
+    delete _titleBar;
+    delete _child;
 }
 
 Widget * Window::GetWidgetAt(sint32 x, sint32 y)
@@ -91,12 +85,45 @@ Widget * Window::GetWidgetAt(Widget * node, sint32 x, sint32 y)
     return nullptr;
 }
 
+rct_string_id Window::GetTitle()
+{
+    return _title;
+}
+
+void Window::SetTitle(rct_string_id title)
+{
+    _title = title;
+    if (_titleBar != nullptr)
+    {
+        _titleBar->Text = title;
+    }
+}
+
 void Window::Update()
 {
+    if (!_shimInitialised)
+    {
+        _shimInitialised = true;
+        InitialiseShim();
+    }
+
+    // TODO Move this block to layout event
+    if (_titleBar != nullptr)
+    {
+        _titleBar->Width = Bounds.Width - 2;
+    }
+    if (_closeButton != nullptr)
+    {
+        _closeButton->X = Width - 13;
+    }
     if (_child != nullptr)
     {
         _child->Width = Bounds.Width;
         _child->Height = Bounds.Height;
+    }
+
+    if (_child != nullptr)
+    {
         Update(_child);
     }
 }
@@ -118,12 +145,19 @@ void Window::Update(Widget * node)
 
 void Window::Draw(IDrawingContext * dc)
 {
-    uint32 colour = 72;
-    if (Flags & WINDOW_FLAGS::FOCUS)
+    uint8 press = 0;
+    // uint8 press = (w->flags & WF_10 ? INSET_RECT_FLAG_FILL_MID_LIGHT : 0);
+    press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
+    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, BackgroundColour, press);
+
+    // Check if the window can be resized
+    if (MinimumSize.Width != MaximumSize.Width && MinimumSize.Height == MaximumSize.Height)
     {
-        colour = 152;
+        // Draw the resize sprite at the bottom right corner
+        sint32 l = Width - 18;
+        sint32 t = Height - 18;
+        dc->DrawSprite(SPR_RESIZE | 0x20000000 | ((BackgroundColour & 0x7F) << 19), l, t, 0);
     }
-    dc->FillRect(colour, 0, 0, Width, Height);
 
     if (_child != nullptr)
     {
@@ -139,7 +173,7 @@ void Window::Draw(IDrawingContext * dc, Widget * node)
         node->Draw(dc2);
 
         sint32 numChildren = node->GetChildrenCount();
-        for (sint32 i = numChildren - 1; i >= 0; i--)
+        for (sint32 i = 0; i < numChildren; i++)
         {
             Widget * child = node->GetChild(i);
             if (child != nullptr)
@@ -212,5 +246,40 @@ void Window::SetWidgetFocus(Widget * widget)
     if (widget != nullptr)
     {
         widget->Flags |= WIDGET_FLAGS::FOCUS;
+    }
+}
+
+void Window::InitialiseShim()
+{
+    // Create root container
+    auto panel = new Panel();
+    panel->X = 0;
+    panel->Y = 0;
+    panel->Width = Bounds.Width;
+    panel->Height = Bounds.Height;
+    _child = panel;
+
+    // Title bar
+    if (Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
+    {
+        _titleBar = new TitleBar();
+        _titleBar->X = 1;
+        _titleBar->Y = 1;
+        _titleBar->Height = 14;
+        _titleBar->Text = _title;
+        panel->AddChild(_titleBar);
+    }
+
+    // Close button
+    if (Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
+    {
+        _closeButton = new Button();
+        _closeButton->X = Width - 13;
+        _closeButton->Y = 2;
+        _closeButton->Width = 11;
+        _closeButton->Height = 12;
+        _closeButton->Text = STR_CLOSE_X;
+        _closeButton->Style = BUTTON_STYLE::OUTSET;
+        panel->AddChild(_closeButton);
     }
 }

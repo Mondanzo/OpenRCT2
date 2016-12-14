@@ -18,34 +18,16 @@
 
 namespace OpenRCT2 { namespace Ui
 {
-    enum class BUTTON_STYLE : uint8
+    /**
+     * The title bar widget displaying the title of the window, seen in at
+     * the top of most widgets. Moves the position of the window when dragged.
+     */
+    class TitleBar : public Widget
     {
-        FLAT,
-        OUTSET,
-    };
-
-    namespace BUTTON_FLAGS
-    {
-        constexpr uint8 HIGHLIGHTED = 1 << 0;
-        constexpr uint8 PRESSED     = 1 << 1;
-    }
-
-    class Button : public Widget
-    {
-    private:
-        uint8           _buttonFlags = 0;
-
     public:
-        BUTTON_STYLE    Style = BUTTON_STYLE::FLAT;
-        rct_string_id   Text = (rct_string_id)-1;
-        uint32          Image = 0;
+        rct_string_id Text;
 
     public:
         void Draw(IDrawingContext * dc) override;
-
-        void MouseDown(const MouseEventArgs * e) override;
-        void MouseUp(const MouseEventArgs * e) override;
-        void MouseEnter(const MouseEventArgs * e) override;
-        void MouseLeave(const MouseEventArgs * e) override;
     };
 } }

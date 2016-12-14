@@ -23,25 +23,35 @@ interface IDrawingContext;
 
 namespace OpenRCT2 { namespace Ui
 {
+    class   Button;
     struct  MouseEventArgs;
+    class   TitleBar;
     class   Widget;
 
     namespace WINDOW_FLAGS
     {
-        constexpr uint32 FOCUS           = 1 << 0;
-        constexpr uint32 CURSOR          = 1 << 1;
-        constexpr uint32 MODAL           = 1 << 2;
-        constexpr uint32 STICK_TO_BACK   = 1 << 3;
-        constexpr uint32 STICK_TO_FRONT  = 1 << 4;
-        constexpr uint32 TRANSPARENT     = 1 << 5;
+        constexpr uint32 FOCUS              = 1 << 0;
+        constexpr uint32 CURSOR             = 1 << 1;
+        constexpr uint32 MODAL              = 1 << 2;
+        constexpr uint32 STICK_TO_BACK      = 1 << 3;
+        constexpr uint32 STICK_TO_FRONT     = 1 << 4;
+        constexpr uint32 TRANSPARENT        = 1 << 5;
+        constexpr uint32 HAS_TITLE_BAR      = 1 << 6;
+        constexpr uint32 HAS_CLOSE_BUTTON   = 1 << 7;
     }
 
     class Window
     {
     private:
+        bool        _shimInitialised = false;
+        TitleBar *  _titleBar = nullptr;
+        Button *    _closeButton = nullptr;
+
         Widget * _child = nullptr;
         Widget * _cursorWidget = nullptr;
         Widget * _focusWidget = nullptr;
+
+        rct_string_id _title;
 
     public:
         union
@@ -50,13 +60,19 @@ namespace OpenRCT2 { namespace Ui
             struct { xy32 Location; size32 Size; };
             rect32 Bounds;
         };
+        size32 MinimumSize = { 0 };
+        size32 MaximumSize = { 0 };
         uint32 Flags;
+        uint32 BackgroundColour;
 
     public:
         Window();
-        virtual ~Window() = default;
+        virtual ~Window();
 
         Widget * GetWidgetAt(sint32 x, sint32 y);
+
+        rct_string_id GetTitle();
+        void SetTitle(rct_string_id title);
 
         virtual void Update();
         virtual void Draw(IDrawingContext * g);
@@ -74,5 +90,8 @@ namespace OpenRCT2 { namespace Ui
 
         void SetWidgetCursor(Widget * widget);
         void SetWidgetFocus(Widget * widget);
+
+        void InitialiseShim();
+        void UpdateShim();
     };
 } }
