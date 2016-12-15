@@ -26,6 +26,7 @@
 #include "scenario/ScenarioRepository.h"
 #include "title/TitleScreen.h"
 #include "title/TitleSequenceManager.h"
+#include "ui/MouseEventArgs.h"
 #include "ui/WindowManager.h"
 
 extern "C"
@@ -346,6 +347,33 @@ extern "C"
         if (windowManager != nullptr)
         {
             windowManager->Draw((IDrawingContext *)dc);
+        }
+    }
+
+    void openrct2_window_manager_mouse(int x, int y, int state)
+    {
+        auto windowManager = OpenRCT2::_windowManager;
+        if (windowManager != nullptr)
+        {
+            OpenRCT2::Ui::MouseEventArgs e;
+            e.X = x;
+            e.Y = y;
+            e.Button = (state == 3 || state == 4) ? 1 : 0;
+            switch (state) {
+            case 0:
+                windowManager->MouseMove(&e);
+                break;
+            case 1:
+            case 3:
+                windowManager->MouseDown(&e);
+                break;
+            case 2:
+            case 4:
+                windowManager->MouseUp(&e);
+                break;
+            default:
+                break;
+            }
         }
     }
 }

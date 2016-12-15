@@ -277,6 +277,8 @@ static void input_scroll_right(int x, int y, int state)
  */
 static void game_handle_input_mouse(int x, int y, int state)
 {
+	openrct2_window_manager_mouse(x, y, state);
+
 	rct_window *w;
 	rct_widget *widget;
 	int widgetIndex;

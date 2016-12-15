@@ -54,6 +54,7 @@ namespace OpenRCT2 { namespace Ui
         Widget * _child = nullptr;
         Widget * _cursorWidget = nullptr;
         Widget * _focusWidget = nullptr;
+        Widget * _holdWidget = nullptr;
 
         rct_string_id _title = (rct_string_id)-1;
         ITabPanelAdapter * _tabPanelAdapter = nullptr;

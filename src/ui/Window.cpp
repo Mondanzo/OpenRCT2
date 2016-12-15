@@ -191,6 +191,13 @@ void Window::Update()
         Measure();
         Arrange();
     }
+
+    if (!(Flags & WINDOW_FLAGS::CURSOR))
+    {
+        // If the cursor is not over the window, it can't be over any
+        // widget within the window.
+        SetWidgetCursor(nullptr);
+    }
 }
 
 void Window::Update(Widget * node)
@@ -269,10 +276,10 @@ bool Window::HitTest(sint32 x, sint32 y)
 void Window::MouseDown(const MouseEventArgs * e)
 {
     Widget * widget = GetWidgetAt(e->X, e->Y);
+    SetWidgetFocus(widget);
+    _holdWidget = widget;
     if (widget != nullptr)
     {
-        SetWidgetFocus(widget);
-
         MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
         widget->MouseDown(&e2);
     }
@@ -280,14 +287,52 @@ void Window::MouseDown(const MouseEventArgs * e)
 
 void Window::MouseMove(const MouseEventArgs * e)
 {
+    Widget * widget = GetWidgetAt(e->X, e->Y);
+    Widget * cursorWidget = widget;
+
+    // If we first pressed down on another widget, continue giving events to it
+    if (_holdWidget != nullptr)
+    {
+        if (cursorWidget != _holdWidget)
+        {
+            cursorWidget = nullptr;
+        }
+        widget = _holdWidget;
+    }
+
+    SetWidgetCursor(cursorWidget);
+
+    if (widget != nullptr)
+    {
+        MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+        widget->MouseMove(&e2);
+    }
 }
 
 void Window::MouseUp(const MouseEventArgs * e)
 {
+    // If we first pressed down on another widget, continue giving events to it
+    Widget * widget = _holdWidget;
+    if (widget == nullptr)
+    {
+        widget = GetWidgetAt(e->X, e->Y);
+    }
+    if (widget != nullptr)
+    {
+        MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+        widget->MouseUp(&e2);
+    }
+    _holdWidget = nullptr;
 }
 
 void Window::MouseWheel(const MouseEventArgs * e)
 {
+    Widget * widget = GetWidgetAt(e->X, e->Y);
+    if (widget != nullptr)
+    {
+        MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+        widget->MouseWheel(&e2);
+    }
 }
 
 void Window::SetWidgetCursor(Widget * widget)

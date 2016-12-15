@@ -20,11 +20,17 @@
 
 namespace OpenRCT2 { namespace Ui
 {
+    namespace MOUSE_BUTTON
+    {
+        constexpr sint8 LEFT    = 0;
+        constexpr sint8 RIGHT   = 1;
+    };
+
     struct MouseEventArgs
     {
-        sint32 X;
-        sint32 Y;
-        sint16 Button;
+        sint32  X;
+        sint32  Y;
+        sint8   Button;
 
         MouseEventArgs CopyAndOffset(sint32 x, sint32 y) const
         {

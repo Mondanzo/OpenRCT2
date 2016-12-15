@@ -33,6 +33,7 @@ namespace OpenRCT2 { namespace Ui
 
         Window * _cursorWindow = nullptr;
         Window * _focusWindow = nullptr;
+        Window * _holdWindow = nullptr;
 
     public:
         WindowManager()
@@ -88,10 +89,10 @@ namespace OpenRCT2 { namespace Ui
         void MouseDown(const MouseEventArgs * e) override
         {
             Window * w = GetWindowAt(e->X, e->Y);
+            SetWindowFocus(w);
+            _holdWindow = w;
             if (w != nullptr)
             {
-                SetWindowFocus(w);
-
                 MouseEventArgs e2 = e->CopyAndOffset(-w->X, -w->Y);
                 w->MouseDown(&e2);
             }
@@ -100,10 +101,22 @@ namespace OpenRCT2 { namespace Ui
         void MouseMove(const MouseEventArgs * e) override
         {
             Window * w = GetWindowAt(e->X, e->Y);
+            Window * cursorW = w;
+
+            // If we first pressed down on another window, continue giving events to it
+            if (_holdWindow != nullptr)
+            {
+                if (cursorW != _holdWindow)
+                {
+                    cursorW = nullptr;
+                }
+                w = _holdWindow;
+            }
+
+            SetWindowCursor(cursorW);
+
             if (w != nullptr)
             {
-                SetWindowCursor(w);
-
                 MouseEventArgs e2 = e->CopyAndOffset(-w->X, -w->Y);
                 w->MouseMove(&e2);
             }
@@ -111,7 +124,12 @@ namespace OpenRCT2 { namespace Ui
 
         void MouseUp(const MouseEventArgs * e) override
         {
-            Window * w = GetWindowAt(e->X, e->Y);
+            // If we first pressed down on another window, continue giving events to it
+            Window * w = _holdWindow;
+            if (w == nullptr)
+            {
+                w = GetWindowAt(e->X, e->Y);
+            }
             if (w != nullptr)
             {
                 MouseEventArgs e2 = e->CopyAndOffset(-w->X, -w->Y);

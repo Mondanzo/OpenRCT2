@@ -104,8 +104,6 @@ namespace OpenRCT2 { namespace Ui
         virtual void MouseMove(const MouseEventArgs * e) { };
         virtual void MouseUp(const MouseEventArgs * e) { };
         virtual void MouseWheel(const MouseEventArgs * e) { };
-        virtual void MouseEnter(const MouseEventArgs * e) { };
-        virtual void MouseLeave(const MouseEventArgs * e) { };
 
         // Helpers
         bool IsEnabled() { return (Flags & WIDGET_FLAGS::ENABLED) != 0; }

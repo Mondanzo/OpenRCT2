@@ -47,7 +47,5 @@ namespace OpenRCT2 { namespace Ui
 
         void MouseDown(const MouseEventArgs * e) override;
         void MouseUp(const MouseEventArgs * e) override;
-        void MouseEnter(const MouseEventArgs * e) override;
-        void MouseLeave(const MouseEventArgs * e) override;
     };
 } }

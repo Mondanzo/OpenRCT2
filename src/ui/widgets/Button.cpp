@@ -18,6 +18,7 @@
 #include "../../drawing/IDrawingContext.h"
 #include "../../localisation/string_ids.h"
 #include "../DrawingContextExtensions.h"
+#include "../MouseEventArgs.h"
 #include "Button.h"
 
 using namespace OpenRCT2::Ui;
@@ -38,30 +39,24 @@ void Button::Draw(IDrawingContext * dc)
 {
     if (Style == BUTTON_STYLE::FLAT)
     {
-        bool isHighlighted = (_buttonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0;
-        if (!IsDisabled() && isHighlighted)
-        {
-            // widget_button_draw(dpi, w, widgetIndex);
-            return;
-        }
-
         // Get the colour
         // uint8 colour = w->colours[widget->colour];
-        uint8 colour = 0;
+        uint8 colour = COLOUR_DARK_YELLOW;
 
-        // Check if the button is pressed down
+        bool isHighlighted = (Flags & WIDGET_FLAGS::CURSOR) != 0;
         bool isPressed = (_buttonFlags & BUTTON_FLAGS::PRESSED) != 0;
-        if (isPressed)
+        if (!IsDisabled() && (isHighlighted || isPressed))
         {
-            if (Image == (uint32)-2)
+            uint8 rectFlags = 0;
+            if (isHighlighted && isPressed)
             {
-                // Draw border with no fill
-                // gfx_fill_rect_inset(dpi, l, t, r, b, colour, INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_NONE);
-                return;
+                rectFlags = INSET_RECT_FLAG_BORDER_INSET;
+                if (Image == (uint32)-2)
+                {
+                    rectFlags = INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_NONE;
+                }
             }
-
-            // Draw the border with fill
-            // gfx_fill_rect_inset(dpi, l, t, r, b, colour, INSET_RECT_FLAG_BORDER_INSET);
+            DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, rectFlags);
         }
 
         // Draw image
@@ -126,20 +121,16 @@ void Button::Draw(IDrawingContext * dc)
 
 void Button::MouseDown(const MouseEventArgs * e)
 {
-    _buttonFlags |= BUTTON_FLAGS::PRESSED;
+    if (e->Button == MOUSE_BUTTON::LEFT)
+    {
+        _buttonFlags |= BUTTON_FLAGS::PRESSED;
+    }
 }
 
 void Button::MouseUp(const MouseEventArgs * e)
 {
-    _buttonFlags &= ~BUTTON_FLAGS::PRESSED;
-}
-
-void Button::MouseEnter(const MouseEventArgs * e)
-{
-    _buttonFlags |= BUTTON_FLAGS::HIGHLIGHTED;
-}
-
-void Button::MouseLeave(const MouseEventArgs * e)
-{
-    _buttonFlags &= ~BUTTON_FLAGS::HIGHLIGHTED;
+    if (e->Button == MOUSE_BUTTON::LEFT)
+    {
+        _buttonFlags &= ~BUTTON_FLAGS::PRESSED;
+    }
 }
