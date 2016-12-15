@@ -37,14 +37,12 @@ void Button::Measure()
 
 void Button::Draw(IDrawingContext * dc)
 {
+    uint8 colour = COLOUR_DARK_YELLOW;
+    bool isHighlighted = (Flags & WIDGET_FLAGS::CURSOR) != 0;
+    bool isPressed = (_buttonFlags & BUTTON_FLAGS::PRESSED) != 0;
     if (Style == BUTTON_STYLE::FLAT)
     {
-        // Get the colour
-        // uint8 colour = w->colours[widget->colour];
-        uint8 colour = COLOUR_DARK_YELLOW;
-
-        bool isHighlighted = (Flags & WIDGET_FLAGS::CURSOR) != 0;
-        bool isPressed = (_buttonFlags & BUTTON_FLAGS::PRESSED) != 0;
+        // Border
         if (!IsDisabled() && (isHighlighted || isPressed))
         {
             uint8 rectFlags = 0;
@@ -86,23 +84,17 @@ void Button::Draw(IDrawingContext * dc)
     }
     else
     {
-        // Check if the button is pressed down
-        uint8 press = 0;
+        // Border
+        uint8 rectFlags = 0;
         // if (w->flags & WF_10)
-            press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
-
-        bool isPressed = (_buttonFlags & BUTTON_FLAGS::PRESSED) != 0;
-        if (isPressed)
+            rectFlags |= INSET_RECT_FLAG_FILL_MID_LIGHT;
+        if (isHighlighted && isPressed)
         {
-            press |= INSET_RECT_FLAG_BORDER_INSET;
+            rectFlags |= INSET_RECT_FLAG_BORDER_INSET;
         }
+        DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, rectFlags);
 
-        // Get the colour
-        uint8 colour = COLOUR_GREY;
-
-        // Draw the button
-        DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, press);
-
+        // Text
         if (Text != STR_NONE)
         {
             sint32 l = (Width / 2) - 1;
