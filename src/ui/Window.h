@@ -104,6 +104,6 @@ namespace OpenRCT2 { namespace Ui
         void SetWidgetFocus(Widget * widget);
 
         void InitialiseShim();
-        void UpdateShim();
+        void ArrangeShim();
     };
 } }

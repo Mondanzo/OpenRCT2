@@ -143,6 +143,7 @@ void Window::Measure(Widget * node)
 
 void Window::Arrange()
 {
+    ArrangeShim();
     if (_child != nullptr)
     {
         // Child fills window
@@ -177,26 +178,6 @@ void Window::Update()
     {
         _shimInitialised = true;
         InitialiseShim();
-    }
-
-    // TODO Move this block to layout event
-    if (_titleBar != nullptr)
-    {
-        _titleBar->Width = Width - 2;
-    }
-    if (_closeButton != nullptr)
-    {
-        _closeButton->X = Width - 13;
-    }
-    if (_tabPanel != nullptr)
-    {
-        _tabPanel->Width = Width - _tabPanel->X;
-        _tabPanel->Height = Height - _tabPanel->Y;
-    }
-    if (_child != nullptr)
-    {
-        _child->Width = Bounds.Width;
-        _child->Height = Bounds.Height;
     }
 
     if (_child != nullptr)
@@ -337,23 +318,52 @@ void Window::SetWidgetFocus(Widget * widget)
     }
 }
 
+void Window::ArrangeShim()
+{
+    // Panel
+    _child->X = 0;
+    _child->Y = 0;
+    _child->Width = Bounds.Width;
+    _child->Height = Bounds.Height;
+
+    // Title bar
+    if (_titleBar != nullptr)
+    {
+        _titleBar->X = 1;
+        _titleBar->Y = 1;
+        _titleBar->Width = Width - 2;
+        _titleBar->Height = 14;
+    }
+
+    // Close button
+    if (_closeButton != nullptr)
+    {
+        _closeButton->X = Width - 13;
+        _closeButton->Y = 2;
+        _closeButton->Width = 11;
+        _closeButton->Height = 12;
+    }
+
+    // Tab panel
+    if (_tabPanel != nullptr)
+    {
+        _tabPanel->X;
+        _tabPanel->Y = 17;
+        _tabPanel->Width = Width;
+        _tabPanel->Height = Height - _tabPanel->Y;
+    }
+}
+
 void Window::InitialiseShim()
 {
     // Create root container
     auto panel = new Panel();
-    panel->X = 0;
-    panel->Y = 0;
-    panel->Width = Bounds.Width;
-    panel->Height = Bounds.Height;
     _child = panel;
 
     // Title bar
     if (Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
     {
         _titleBar = new TitleBar();
-        _titleBar->X = 1;
-        _titleBar->Y = 1;
-        _titleBar->Height = 14;
         _titleBar->Text = _title;
         panel->AddChild(_titleBar);
     }
@@ -362,20 +372,13 @@ void Window::InitialiseShim()
     if (Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
     {
         _closeButton = new Button();
-        _closeButton->X = Width - 13;
-        _closeButton->Y = 2;
-        _closeButton->Width = 11;
-        _closeButton->Height = 12;
         _closeButton->Text = STR_CLOSE_X;
         _closeButton->Style = BUTTON_STYLE::OUTSET;
         panel->AddChild(_closeButton);
     }
 
+    // Tab panel
     _tabPanel = new TabPanel();
-    _tabPanel->X;
-    _tabPanel->Y = 17;
-    _tabPanel->Width = Width;
-    _tabPanel->Height = Height - _tabPanel->Y;
     _tabPanel->SetAdapter(_tabPanelAdapter);
     panel->AddChild(_tabPanel);
 }

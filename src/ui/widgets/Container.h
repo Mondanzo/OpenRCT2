@@ -29,6 +29,7 @@ namespace OpenRCT2 { namespace Ui
         Widget * _child;
 
     public:
+        Widget * GetChild();
         void SetChild(Widget * widget);
         sint32 GetChildrenCount() override;
         Widget * GetChild(sint32 index) override;

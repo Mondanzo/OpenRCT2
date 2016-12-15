@@ -17,7 +17,7 @@
 #pragma once
 
 #include <vector>
-#include "Panel.h"
+#include "Container.h"
 
 namespace OpenRCT2 { namespace Ui
 {
@@ -42,22 +42,43 @@ namespace OpenRCT2 { namespace Ui
     /**
      * Standard tab control which is present in most windows.
      */
-    class TabPanel : public Panel
+    class TabPanel : public Widget
     {
     private:
-        ITabPanelAdapter * _adapter = nullptr;
-        sint32 _selectedIndex = -1;
-        bool _dirty = false;
-        Widget * _content;
+        class Tab : public Widget
+        {
+        public:
+            TabInfo Info;
+            bool    Active = false;
+            sint32  Offset = 0;
+            sint32  FrameTimeout = 0;
+
+        public:
+            void Update() override;
+            void Draw(IDrawingContext * dc) override;
+        };
+
+    private:
+        ITabPanelAdapter *  _adapter = nullptr;
+        std::vector<Tab>    _tabs;
+        Container           _container;
+
+        sint32      _selectedIndex = -1;
+        bool        _dirty = false;
 
     public:
         TabPanel();
         ~TabPanel();
 
+        sint32 GetTabCount();
         void SetAdapter(ITabPanelAdapter * adapter);
         void SetSelectedIndex(sint32 index);
         void Invalidate();
 
+        sint32 GetChildrenCount() override;
+        Widget * GetChild(sint32 index) override;
+
+        void Measure() override;
         void Arrange() override;
 
         void Update() override;

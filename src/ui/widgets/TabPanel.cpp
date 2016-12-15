@@ -26,76 +26,17 @@ using namespace OpenRCT2::Ui;
 constexpr sint32 TAB_WIDTH = 31;
 constexpr sint32 TAB_HEIGHT = 27;
 
-class Tab : public Widget
-{
-public:
-    TabInfo Info;
-    bool    Active = false;
-    sint32  Offset = 0;
-    sint32  FrameTimeout = 0;
-
-public:
-    void Update() override
-    {
-        if (Active)
-        {
-            if (FrameTimeout > 0)
-            {
-                FrameTimeout--;
-            }
-            else
-            {
-                const TabImage * ti = Info.Image;
-                FrameTimeout = ti->FrameDuration - 1;
-                Offset++;
-                if (Offset >= ti->FrameCount && ti->FrameCount != 0)
-                {
-                    Offset = 0;
-                }
-            }
-        }
-    }
-
-    void Draw(IDrawingContext * dc) override
-    {
-        uint32 colour = COLOUR_DARK_YELLOW;
-        uint32 sprite = SPR_TAB;
-        if (Active)
-        {
-            sprite = SPR_TAB_ACTIVE;
-        }
-        sprite |= 0x20000000;
-        sprite |= colour << 19;
-        dc->DrawSprite(sprite, 0, 0, 0);
-
-        const TabImage * ti = Info.Image;
-        if (ti != nullptr)
-        {
-            if (ti->FrameCount > 0)
-            {
-                sprite = ti->StartFrame;
-                if (Active)
-                {
-                    sprite += Offset;
-                }
-                dc->DrawSprite(sprite, 0, 0, 0);
-            }
-
-            auto handler = ti->DrawHandler;
-            if (handler != nullptr)
-            {
-                handler(dc, Offset);
-            }
-        }
-    }
-};
-
 TabPanel::TabPanel()
 {
 }
 
 TabPanel::~TabPanel()
 {
+}
+
+sint32 TabPanel::GetTabCount()
+{
+    return (sint32)_tabs.size();
 }
 
 void TabPanel::SetAdapter(ITabPanelAdapter * adapter)
@@ -118,16 +59,54 @@ void TabPanel::Invalidate()
     _dirty = true;
 }
 
-void TabPanel::Arrange()
+sint32 TabPanel::GetChildrenCount()
 {
-    Widget * content = _content;
+    return GetTabCount() + 1;
+}
+
+Widget * TabPanel::GetChild(sint32 index)
+{
+    sint32 numTabs = GetTabCount();
+    if (index >= 0 && index < numTabs)
+    {
+        return &_tabs[index];
+    }
+    else if (index == numTabs)
+    {
+        return &_container;
+    }
+    return nullptr;
+}
+
+void TabPanel::Measure()
+{
+    size32 size;
+    size.Width = 1 + (GetTabCount() * TAB_WIDTH);
+    size.Height = TAB_HEIGHT;
+
+    Widget * content = _container.GetChild();
     if (content != nullptr)
     {
-        Thickness margin = content->Margin;
-        content->X = 1 + margin.Left;
-        content->Y = TAB_HEIGHT + margin.Top;
-        content->Width = Width - content->X - 1 - margin.Right;
-        content->Height = Height - content->Y - 1 - margin.Bottom;
+        size.Width += content->Width;
+        size.Height += content->Height;
+    }
+
+    Size = size;
+}
+
+void TabPanel::Arrange()
+{
+    _container.X = 1;
+    _container.Y = TAB_HEIGHT;
+    _container.Width = Width - _container.X - 1;
+    _container.Height = Height - _container.Y - 1;
+
+    sint32 x = 3;
+    for (Tab &tab : _tabs)
+    {
+        tab.X = x;
+        tab.Y = 0;
+        x += TAB_WIDTH;
     }
 }
 
@@ -147,30 +126,26 @@ void TabPanel::Draw(IDrawingContext * dc)
 
 void TabPanel::SetupWidgets()
 {
-    RemoveAllChildren();
-
     sint32 numTabs = 0;
     if (_adapter != nullptr)
     {
         numTabs = _adapter->GetTabCount();
     }
+    _tabs.resize(numTabs);
+
     if (numTabs == 0)
     {
         _selectedIndex = -1;
         return;
     }
-
     if (_selectedIndex == -1 || _selectedIndex >= numTabs)
     {
         _selectedIndex = 0;
     }
 
-    sint32 x = 3;
-    for (int i = 0; i < numTabs; i++)
+    for (sint32 i = 0; i < numTabs; i++)
     {
-        auto tab = new Tab();
-        tab->X = x;
-        tab->Y = 0;
+        auto tab = &_tabs[i];
         tab->Width = TAB_WIDTH;
         tab->Height = TAB_HEIGHT;
         tab->Info = *(_adapter->GetTabInfo(i));
@@ -178,21 +153,67 @@ void TabPanel::SetupWidgets()
         {
             tab->Active = true;
         }
-        AddChild(tab);
-
-        x += TAB_WIDTH;
     }
 
     Widget * content = _adapter->GetContent(_selectedIndex);
     if (content != nullptr)
     {
-        _content = content;
-        content->X = 1;
-        content->Y = TAB_HEIGHT;
-        content->Width = Width - content->X - 1;
-        content->Height = Height - content->Y - 1;
-        AddChild(content);
+        _container.SetChild(content);
     }
 
     InvalidateLayout();
+}
+
+void TabPanel::Tab::Update()
+{
+    if (Active)
+    {
+        if (FrameTimeout > 0)
+        {
+            FrameTimeout--;
+        }
+        else
+        {
+            const TabImage * ti = Info.Image;
+            FrameTimeout = ti->FrameDuration - 1;
+            Offset++;
+            if (Offset >= ti->FrameCount && ti->FrameCount != 0)
+            {
+                Offset = 0;
+            }
+        }
+    }
+}
+
+void TabPanel::Tab::Draw(IDrawingContext * dc)
+{
+    uint32 colour = COLOUR_DARK_YELLOW;
+    uint32 sprite = SPR_TAB;
+    if (Active)
+    {
+        sprite = SPR_TAB_ACTIVE;
+    }
+    sprite |= 0x20000000;
+    sprite |= colour << 19;
+    dc->DrawSprite(sprite, 0, 0, 0);
+
+    const TabImage * ti = Info.Image;
+    if (ti != nullptr)
+    {
+        if (ti->FrameCount > 0)
+        {
+            sprite = ti->StartFrame;
+            if (Active)
+            {
+                sprite += Offset;
+            }
+            dc->DrawSprite(sprite, 0, 0, 0);
+        }
+
+        auto handler = ti->DrawHandler;
+        if (handler != nullptr)
+        {
+            handler(dc, Offset);
+        }
+    }
 }

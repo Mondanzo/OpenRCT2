@@ -18,6 +18,11 @@
 
 using namespace OpenRCT2::Ui;
 
+Widget * Container::GetChild()
+{
+    return _child;
+}
+
 void Container::SetChild(Widget * widget)
 {
     _child = widget;
