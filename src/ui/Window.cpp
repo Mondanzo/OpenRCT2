@@ -21,6 +21,7 @@
 #include "MouseEventArgs.h"
 #include "widgets/Button.h"
 #include "widgets/Panel.h"
+#include "widgets/TabPanel.h"
 #include "widgets/TitleBar.h"
 #include "Window.h"
 
@@ -36,6 +37,7 @@ Window::Window()
 
 Window::~Window()
 {
+    delete _tabPanel;
     delete _closeButton;
     delete _titleBar;
     delete _child;
@@ -99,6 +101,23 @@ void Window::SetTitle(rct_string_id title)
     }
 }
 
+void Window::SetTabPanelAdapter(ITabPanelAdapter * adapter)
+{
+    _tabPanelAdapter = adapter;
+    if (_tabPanel != nullptr)
+    {
+        _tabPanel->SetAdapter(adapter);
+    }
+}
+
+void Window::SetTabIndex(sint32 index)
+{
+    if (_tabPanel != nullptr)
+    {
+        _tabPanel->SetSelectedIndex(index);
+    }
+}
+
 void Window::Update()
 {
     if (!_shimInitialised)
@@ -110,11 +129,16 @@ void Window::Update()
     // TODO Move this block to layout event
     if (_titleBar != nullptr)
     {
-        _titleBar->Width = Bounds.Width - 2;
+        _titleBar->Width = Width - 2;
     }
     if (_closeButton != nullptr)
     {
         _closeButton->X = Width - 13;
+    }
+    if (_tabPanel != nullptr)
+    {
+        _tabPanel->Width = Width - _tabPanel->X;
+        _tabPanel->Height = Height - _tabPanel->Y;
     }
     if (_child != nullptr)
     {
@@ -282,4 +306,12 @@ void Window::InitialiseShim()
         _closeButton->Style = BUTTON_STYLE::OUTSET;
         panel->AddChild(_closeButton);
     }
+
+    _tabPanel = new TabPanel();
+    _tabPanel->X;
+    _tabPanel->Y = 17;
+    _tabPanel->Width = Width;
+    _tabPanel->Height = Height - _tabPanel->Y;
+    _tabPanel->SetAdapter(_tabPanelAdapter);
+    panel->AddChild(_tabPanel);
 }

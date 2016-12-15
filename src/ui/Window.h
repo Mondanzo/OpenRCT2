@@ -23,10 +23,12 @@ interface IDrawingContext;
 
 namespace OpenRCT2 { namespace Ui
 {
-    class   Button;
-    struct  MouseEventArgs;
-    class   TitleBar;
-    class   Widget;
+    class       Button;
+    interface   ITabPanelAdapter;
+    struct      MouseEventArgs;
+    class       TabPanel;
+    class       TitleBar;
+    class       Widget;
 
     namespace WINDOW_FLAGS
     {
@@ -46,12 +48,14 @@ namespace OpenRCT2 { namespace Ui
         bool        _shimInitialised = false;
         TitleBar *  _titleBar = nullptr;
         Button *    _closeButton = nullptr;
+        TabPanel *  _tabPanel = nullptr;
 
         Widget * _child = nullptr;
         Widget * _cursorWidget = nullptr;
         Widget * _focusWidget = nullptr;
 
-        rct_string_id _title;
+        rct_string_id _title = (rct_string_id)-1;
+        ITabPanelAdapter * _tabPanelAdapter = nullptr;
 
     public:
         union
@@ -73,6 +77,8 @@ namespace OpenRCT2 { namespace Ui
 
         rct_string_id GetTitle();
         void SetTitle(rct_string_id title);
+        void SetTabPanelAdapter(ITabPanelAdapter * adapter);
+        void SetTabIndex(sint32 index);
 
         virtual void Update();
         virtual void Draw(IDrawingContext * g);

@@ -25,6 +25,11 @@ void Panel::AddChild(Widget * child)
     Children.push_back(child);
 }
 
+void Panel::RemoveAllChildren()
+{
+    Children.clear();
+}
+
 sint32 Panel::GetChildrenCount()
 {
     return (sint32)Children.size();

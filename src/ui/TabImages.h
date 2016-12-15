@@ -16,24 +16,34 @@
 
 #pragma once
 
-#include <vector>
-#include "../Widget.h"
+#include "../common.h"
+
+interface IDrawingContext;
 
 namespace OpenRCT2 { namespace Ui
 {
-    /**
-     * Base class for all widget containers.
-     */
-    class Panel : public Widget
+    typedef void (* TabImageDrawAction)(IDrawingContext *, sint32 offset);
+
+    struct TabImage
     {
-    protected:
-        std::vector<Widget *> Children;
+        uint32  StartFrame;
+        sint32  FrameCount;
+        sint32  FrameDuration;
+        TabImageDrawAction DrawHandler;
 
-    public:
-        void AddChild(Widget * widget);
-        void RemoveAllChildren();
-
-        sint32 GetChildrenCount() override;
-        Widget * GetChild(sint32 index) override;
+        static TabImage Create(uint32 base);
+        static TabImage Create(uint32 base, uint32 count, uint32 duration);
+        static TabImage Create(uint32 base, uint32 count, uint32 duration, TabImageDrawAction handler);
     };
+
+    namespace TabImages
+    {
+        extern const TabImage Admission;
+        extern const TabImage Awards;
+        extern const TabImage GuestChart;
+        extern const TabImage Objective;
+        extern const TabImage Park;
+        extern const TabImage RatingChart;
+        extern const TabImage Statistics;
+    }
 } }
