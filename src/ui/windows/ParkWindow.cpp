@@ -19,6 +19,7 @@
 #include "../../sprites.h"
 #include "../TabImages.h"
 #include "../widgets/Button.h"
+#include "../widgets/Container.h"
 #include "../widgets/StackPanel.h"
 #include "../widgets/TabPanel.h"
 #include "../widgets/TextBlock.h"
@@ -53,7 +54,7 @@ namespace OpenRCT2 { namespace Ui
 
     constexpr sint32 NUM_PAGES = 7;
 
-    class EntrancePage : public Panel
+    class EntrancePage : public Container
     {
     private:
         StackPanel      _grid0;
@@ -71,7 +72,7 @@ namespace OpenRCT2 { namespace Ui
             Margin = Thickness(2, 0, 0, 2);
 
             _grid0.SetOrientation(ORIENTATION::VERTICAL);
-            AddChild(&_grid0);
+            SetChild(&_grid0);
 
             _grid1.SetOrientation(ORIENTATION::HORIZONTAL);
             _grid1.Flags |= WIDGET_FLAGS::STRETCH_H;
@@ -106,17 +107,6 @@ namespace OpenRCT2 { namespace Ui
 
         ~EntrancePage() override
         {
-        }
-
-        void Arrange() override
-        {
-            _grid0.Width = Width;
-            _grid0.Height = Height;
-        }
-
-        void Update() override
-        {
-            Widget::Update();
         }
     };
 

@@ -76,7 +76,6 @@ namespace OpenRCT2 { namespace Ui
             struct { xy32 Location; size32 Size; };
             rect32 Bounds;
         };
-        size32      DesiredSize;
         Thickness   Margin;
         uint8       Flags;
         VISIBILITY  Visibility;
