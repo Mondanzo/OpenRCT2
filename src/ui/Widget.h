@@ -34,16 +34,37 @@ namespace OpenRCT2 { namespace Ui
 
     namespace WIDGET_FLAGS
     {
-        constexpr uint8 AUTOSIZE    = 1 << 0;
-        constexpr uint8 ENABLED     = 1 << 1;
-        constexpr uint8 FOCUSABLE   = 1 << 2;
-        constexpr uint8 FOCUS       = 1 << 3;
-        constexpr uint8 CURSOR      = 1 << 4;
+        constexpr uint8 AUTO_SIZE       = 1 << 0;
+        constexpr uint8 ENABLED         = 1 << 1;
+        constexpr uint8 FOCUSABLE       = 1 << 2;
+        constexpr uint8 FOCUS           = 1 << 3;
+        constexpr uint8 CURSOR          = 1 << 4;
+        constexpr uint8 LAYOUT_DIRTY    = 1 << 5;
+        constexpr uint8 STRETCH_H       = 1 << 6;
+        constexpr uint8 STRETCH_V       = 1 << 7;
     }
 
     struct Thickness
     {
         sint32 Top, Left, Right, Bottom;
+
+        Thickness() { }
+        Thickness(sint32 trbl)
+        {
+            Top = Left = Right = Bottom = trbl;
+        }
+        Thickness(sint32 tb, sint32 rl)
+        {
+            Top = Bottom = tb;
+            Left = Right = rl;
+        }
+        Thickness(sint32 t, sint32 r, sint32 b, sint32 l)
+        {
+            Top = t;
+            Right = r;
+            Bottom = b;
+            Left = l;
+        }
     };
 
     class Widget
@@ -55,6 +76,7 @@ namespace OpenRCT2 { namespace Ui
             struct { xy32 Location; size32 Size; };
             rect32 Bounds;
         };
+        size32      DesiredSize;
         Thickness   Margin;
         uint8       Flags;
         VISIBILITY  Visibility;
@@ -68,6 +90,11 @@ namespace OpenRCT2 { namespace Ui
         virtual Widget * GetChild(sint32 index) { return nullptr; }
 
         virtual rct_string_id GetTooltip(sint32 x, sint32 y);
+
+        // Layout
+        void InvalidateLayout();
+        virtual void Measure() { }
+        virtual void Arrange() { }
 
         virtual void Update() { };
         virtual void Draw(IDrawingContext * dc) { };
@@ -85,5 +112,10 @@ namespace OpenRCT2 { namespace Ui
         bool IsEnabled() { return (Flags & WIDGET_FLAGS::ENABLED) != 0; }
         bool IsDisabled() { return !IsEnabled(); }
         bool IsVisible() { return Visibility == VISIBILITY::VISIBLE; }
+        size32 GetSizeWithMargin()
+        {
+            return { Width + Margin.Left + Margin.Right,
+                     Height + Margin.Top + Margin.Bottom };
+        }
     };
 } }

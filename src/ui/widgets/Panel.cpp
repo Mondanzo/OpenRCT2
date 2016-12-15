@@ -15,7 +15,6 @@
 #pragma endregion
 
 #include "../../drawing/IDrawingContext.h"
-#include "../MouseEventArgs.h"
 #include "Panel.h"
 
 using namespace OpenRCT2::Ui;

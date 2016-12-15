@@ -48,6 +48,7 @@ namespace OpenRCT2 { namespace Ui
         ITabPanelAdapter * _adapter = nullptr;
         sint32 _selectedIndex = -1;
         bool _dirty = false;
+        Widget * _content;
 
     public:
         TabPanel();
@@ -56,6 +57,8 @@ namespace OpenRCT2 { namespace Ui
         void SetAdapter(ITabPanelAdapter * adapter);
         void SetSelectedIndex(sint32 index);
         void Invalidate();
+
+        void Arrange() override;
 
         void Update() override;
         void Draw(IDrawingContext * dc) override;

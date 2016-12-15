@@ -14,40 +14,32 @@
  *****************************************************************************/
 #pragma endregion
 
-#include "../Widget.h"
+#pragma once
+
+#include "Panel.h"
 
 namespace OpenRCT2 { namespace Ui
 {
-    enum class BUTTON_STYLE : uint8
+    enum class ORIENTATION
     {
-        FLAT,
-        OUTSET,
+        HORIZONTAL,
+        VERTICAL,
     };
 
-    namespace BUTTON_FLAGS
-    {
-        constexpr uint8 HIGHLIGHTED = 1 << 0;
-        constexpr uint8 PRESSED     = 1 << 1;
-    }
-
-    class Button : public Widget
+    /**
+     * Lays out widgets horizontally or vertically.
+     */
+    class StackPanel : public Panel
     {
     private:
-        uint8           _buttonFlags = 0;
+        ORIENTATION _orientation;
+        size32 _measuredSize;
 
     public:
-        BUTTON_STYLE    Style = BUTTON_STYLE::FLAT;
-        rct_string_id   Text = (rct_string_id)-1;
-        uint32          Image = 0;
+        ORIENTATION GetOrientation() const;
+        void SetOrientation(ORIENTATION value);
 
-    public:
         void Measure() override;
-
-        void Draw(IDrawingContext * dc) override;
-
-        void MouseDown(const MouseEventArgs * e) override;
-        void MouseUp(const MouseEventArgs * e) override;
-        void MouseEnter(const MouseEventArgs * e) override;
-        void MouseLeave(const MouseEventArgs * e) override;
+        void Arrange() override;
     };
 } }

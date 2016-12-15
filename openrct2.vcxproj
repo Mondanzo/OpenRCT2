@@ -334,8 +334,11 @@
     <ClCompile Include="src\ui\Widget.cpp" />
     <ClCompile Include="src\ui\widgets\Button.cpp" />
     <ClCompile Include="src\ui\widgets\Panel.cpp" />
+    <ClCompile Include="src\ui\widgets\StackPanel.cpp" />
     <ClCompile Include="src\ui\widgets\TabPanel.cpp" />
+    <ClCompile Include="src\ui\widgets\TextBlock.cpp" />
     <ClCompile Include="src\ui\widgets\TitleBar.cpp" />
+    <ClCompile Include="src\ui\widgets\Viewport.cpp" />
     <ClCompile Include="src\ui\Window.cpp" />
     <ClCompile Include="src\ui\WindowManager.cpp" />
     <ClCompile Include="src\ui\windows\ParkWindow.cpp" />
@@ -593,8 +596,11 @@
     <ClInclude Include="src\ui\Widget.h" />
     <ClInclude Include="src\ui\widgets\Button.h" />
     <ClInclude Include="src\ui\widgets\Panel.h" />
+    <ClInclude Include="src\ui\widgets\StackPanel.h" />
     <ClInclude Include="src\ui\widgets\TabPanel.h" />
+    <ClInclude Include="src\ui\widgets\TextBlock.h" />
     <ClInclude Include="src\ui\widgets\TitleBar.h" />
+    <ClInclude Include="src\ui\widgets\Viewport.h" />
     <ClInclude Include="src\ui\Window.h" />
     <ClInclude Include="src\ui\WindowManager.h" />
     <ClInclude Include="src\version.h" />

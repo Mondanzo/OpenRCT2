@@ -14,22 +14,14 @@
  *****************************************************************************/
 #pragma endregion
 
-#include "Widget.h"
+#include "../../drawing/IDrawingContext.h"
+#include "../DrawingContextExtensions.h"
+#include "Viewport.h"
 
 using namespace OpenRCT2::Ui;
 
-Widget::Widget()
+void ViewportWidget::Draw(IDrawingContext * dc)
 {
-    Flags |= WIDGET_FLAGS::ENABLED |
-             WIDGET_FLAGS::AUTO_SIZE;
-}
-
-rct_string_id Widget::GetTooltip(sint32 x, sint32 y)
-{
-    return DefaultTooltip;
-}
-
-void Widget::InvalidateLayout()
-{
-    Flags |= WIDGET_FLAGS::LAYOUT_DIRTY;
+    uint32 colour = COLOUR_DARK_YELLOW;
+    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_60);
 }

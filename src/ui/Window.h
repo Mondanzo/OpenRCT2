@@ -40,6 +40,7 @@ namespace OpenRCT2 { namespace Ui
         constexpr uint32 TRANSPARENT        = 1 << 5;
         constexpr uint32 HAS_TITLE_BAR      = 1 << 6;
         constexpr uint32 HAS_CLOSE_BUTTON   = 1 << 7;
+        constexpr uint32 LAYOUT_DIRTY       = 1 << 8;
     }
 
     class Window
@@ -80,6 +81,9 @@ namespace OpenRCT2 { namespace Ui
         void SetTabPanelAdapter(ITabPanelAdapter * adapter);
         void SetTabIndex(sint32 index);
 
+        void Measure();
+        void Arrange();
+
         virtual void Update();
         virtual void Draw(IDrawingContext * g);
 
@@ -91,6 +95,8 @@ namespace OpenRCT2 { namespace Ui
 
     private:
         Widget * GetWidgetAt(Widget * node, sint32 x, sint32 y);
+        void Measure(Widget * node);
+        void Arrange(Widget * node);
         void Update(Widget * node);
         void Draw(IDrawingContext * g, Widget * node);
 

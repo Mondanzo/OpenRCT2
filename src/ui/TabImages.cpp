@@ -14,8 +14,6 @@
  *****************************************************************************/
 #pragma endregion
 
-#pragma once
-
 #include "../drawing/IDrawingContext.h"
 #include "../sprites.h"
 #include "TabImages.h"

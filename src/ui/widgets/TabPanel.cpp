@@ -118,6 +118,19 @@ void TabPanel::Invalidate()
     _dirty = true;
 }
 
+void TabPanel::Arrange()
+{
+    Widget * content = _content;
+    if (content != nullptr)
+    {
+        Thickness margin = content->Margin;
+        content->X = 1 + margin.Left;
+        content->Y = TAB_HEIGHT + margin.Top;
+        content->Width = Width - content->X - 1 - margin.Right;
+        content->Height = Height - content->Y - 1 - margin.Bottom;
+    }
+}
+
 void TabPanel::Update()
 {
     if (_dirty)
@@ -173,10 +186,13 @@ void TabPanel::SetupWidgets()
     Widget * content = _adapter->GetContent(_selectedIndex);
     if (content != nullptr)
     {
+        _content = content;
         content->X = 1;
-        content->Y = 26 + TAB_HEIGHT;
-        content->Width = Width - content->X;
-        content->Height = Height - content->Y;
+        content->Y = TAB_HEIGHT;
+        content->Width = Width - content->X - 1;
+        content->Height = Height - content->Y - 1;
         AddChild(content);
     }
+
+    InvalidateLayout();
 }

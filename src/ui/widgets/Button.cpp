@@ -22,6 +22,18 @@
 
 using namespace OpenRCT2::Ui;
 
+void Button::Measure()
+{
+    if (Flags & WIDGET_FLAGS::AUTO_SIZE)
+    {
+        if (Style == BUTTON_STYLE::FLAT)
+        {
+            Width = 24;
+            Height = 24;
+        }
+    }
+}
+
 void Button::Draw(IDrawingContext * dc)
 {
     if (Style == BUTTON_STYLE::FLAT)
@@ -65,7 +77,6 @@ void Button::Draw(IDrawingContext * dc)
         }
         else
         {
-            Image = 5178;
             uint32 sprite = Image;
             if (sprite & 0x40000000)
             {

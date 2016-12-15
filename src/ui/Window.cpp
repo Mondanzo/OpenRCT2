@@ -118,6 +118,59 @@ void Window::SetTabIndex(sint32 index)
     }
 }
 
+void Window::Measure()
+{
+    if (_child != nullptr)
+    {
+        Measure(_child);
+    }
+}
+
+void Window::Measure(Widget * node)
+{
+    node->Measure();
+
+    sint32 numChildren = node->GetChildrenCount();
+    for (sint32 i = numChildren - 1; i >= 0; i--)
+    {
+        Widget * child = node->GetChild(i);
+        if (child != nullptr)
+        {
+            Measure(child);
+        }
+    }
+}
+
+void Window::Arrange()
+{
+    if (_child != nullptr)
+    {
+        // Child fills window
+        _child->X = 0;
+        _child->Y = 0;
+        _child->Width = Width;
+        _child->Height = Height;
+
+        // Recursively arrange the widget tree
+        Arrange(_child);
+    }
+}
+
+void Window::Arrange(Widget * node)
+{
+    node->Arrange();
+
+    sint32 numChildren = node->GetChildrenCount();
+    for (sint32 i = numChildren - 1; i >= 0; i--)
+    {
+        Widget * child = node->GetChild(i);
+        if (child != nullptr)
+        {
+            Arrange(child);
+        }
+    }
+}
+
 void Window::Update()
 {
     if (!_shimInitialised)
@@ -150,6 +203,13 @@ void Window::Update()
     {
         Update(_child);
     }
+
+    if (Flags & WINDOW_FLAGS::LAYOUT_DIRTY)
+    {
+        Flags &= ~WINDOW_FLAGS::LAYOUT_DIRTY;
+        Measure();
+        Arrange();
+    }
 }
 
 void Window::Update(Widget * node)
@@ -163,6 +223,10 @@ void Window::Update(Widget * node)
         if (child != nullptr)
         {
             Update(child);
+            if (child->Flags & WIDGET_FLAGS::LAYOUT_DIRTY)
+            {
+                Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
+            }
         }
     }
 }

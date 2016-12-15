@@ -18,7 +18,11 @@
 #include "../../localisation/string_ids.h"
 #include "../../sprites.h"
 #include "../TabImages.h"
+#include "../widgets/Button.h"
+#include "../widgets/StackPanel.h"
 #include "../widgets/TabPanel.h"
+#include "../widgets/TextBlock.h"
+#include "../widgets/Viewport.h"
 #include "../Window.h"
 
 extern "C"
@@ -49,6 +53,73 @@ namespace OpenRCT2 { namespace Ui
 
     constexpr sint32 NUM_PAGES = 7;
 
+    class EntrancePage : public Panel
+    {
+    private:
+        StackPanel      _grid0;
+        StackPanel      _grid1;
+        ViewportWidget  _viewport;
+        StackPanel      _toolbar;
+        Button          _toolbarButtons[4];
+        TextBlock       _status;
+
+        rct_string_id   _statusArg;
+
+    public:
+        EntrancePage()
+        {
+            Margin = Thickness(2, 0, 0, 2);
+
+            _grid0.SetOrientation(ORIENTATION::VERTICAL);
+            AddChild(&_grid0);
+
+            _grid1.SetOrientation(ORIENTATION::HORIZONTAL);
+            _grid1.Flags |= WIDGET_FLAGS::STRETCH_H;
+            _grid1.Flags |= WIDGET_FLAGS::STRETCH_V;
+            _grid0.AddChild(&_grid1);
+
+            _viewport.Flags |= WIDGET_FLAGS::STRETCH_H;
+            _viewport.Flags |= WIDGET_FLAGS::STRETCH_V;
+            _grid1.AddChild(&_viewport);
+
+            _toolbar.Margin = Thickness(3, 0, 0, 0);
+            _toolbar.SetOrientation(ORIENTATION::VERTICAL);
+            _grid1.AddChild(&_toolbar);
+
+            for (int i = 0; i < 4; i++)
+            {
+                auto btn = &_toolbarButtons[i];
+                btn->Style = BUTTON_STYLE::FLAT;
+                _toolbar.AddChild(btn);
+            }
+            _toolbarButtons[0].Image = SPR_OPEN;
+            _toolbarButtons[1].Image = SPR_BUY_LAND_RIGHTS;
+            _toolbarButtons[2].Image = SPR_LOCATE;
+            _toolbarButtons[3].Image = SPR_RENAME;
+
+            _status.Flags |= WIDGET_FLAGS::STRETCH_H;
+            _status.Text = STR_BLACK_STRING;
+            _status.TextArgs = &_statusArg;
+            _statusArg = STR_PARK_OPEN;
+            _grid0.AddChild(&_status);
+        }
+
+        ~EntrancePage() override
+        {
+        }
+
+        void Arrange() override
+        {
+            _grid0.Width = Width;
+            _grid0.Height = Height;
+        }
+
+        void Update() override
+        {
+            Widget::Update();
+        }
+    };
+
     class ParkWindow : public Window,
                        public ITabPanelAdapter
     {
@@ -77,6 +148,10 @@ namespace OpenRCT2 { namespace Ui
 
         Widget * GetContent(sint32 index) override
         {
+            if (index == 0)
+            {
+                return new EntrancePage();
+            }
             return nullptr;
         }
     };

@@ -18,36 +18,9 @@
 
 namespace OpenRCT2 { namespace Ui
 {
-    enum class BUTTON_STYLE : uint8
+    class ViewportWidget : public Widget
     {
-        FLAT,
-        OUTSET,
-    };
-
-    namespace BUTTON_FLAGS
-    {
-        constexpr uint8 HIGHLIGHTED = 1 << 0;
-        constexpr uint8 PRESSED     = 1 << 1;
-    }
-
-    class Button : public Widget
-    {
-    private:
-        uint8           _buttonFlags = 0;
-
     public:
-        BUTTON_STYLE    Style = BUTTON_STYLE::FLAT;
-        rct_string_id   Text = (rct_string_id)-1;
-        uint32          Image = 0;
-
-    public:
-        void Measure() override;
-
         void Draw(IDrawingContext * dc) override;
-
-        void MouseDown(const MouseEventArgs * e) override;
-        void MouseUp(const MouseEventArgs * e) override;
-        void MouseEnter(const MouseEventArgs * e) override;
-        void MouseLeave(const MouseEventArgs * e) override;
     };
 } }
