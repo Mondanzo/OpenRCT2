@@ -31,7 +31,7 @@ extern "C"
     #include "../../interface/colour.h"
 }
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     static TabInfo EntranceTabInfo  = { &TabImages::Park, STR_NONE, 0 };
     static TabInfo RatingTabInfo    = { &TabImages::RatingChart, STR_NONE, 0 };
@@ -150,4 +150,4 @@ namespace OpenRCT2 { namespace Ui
     {
         return new ParkWindow();
     }
-} }
+}

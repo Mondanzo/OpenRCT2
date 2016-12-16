@@ -21,7 +21,7 @@
 
 interface IDrawingContext;
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     class       Button;
     interface   ITabPanelAdapter;
@@ -107,4 +107,4 @@ namespace OpenRCT2 { namespace Ui
         void InitialiseShim();
         void ArrangeShim();
     };
-} }
+}

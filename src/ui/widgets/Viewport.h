@@ -16,11 +16,11 @@
 
 #include "../Widget.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     class ViewportWidget : public Widget
     {
     public:
         void Draw(IDrawingContext * dc) override;
     };
-} }
+}

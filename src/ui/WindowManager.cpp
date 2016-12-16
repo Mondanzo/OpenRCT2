@@ -21,7 +21,7 @@
 #include "Window.h"
 #include "WindowManager.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     Window * OpenParkWindow();
 
@@ -207,4 +207,4 @@ namespace OpenRCT2 { namespace Ui
     {
         return new WindowManager();
     }
-} }
+}

@@ -20,7 +20,7 @@
 
 interface IDrawingContext;
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     typedef void (* TabImageDrawAction)(IDrawingContext *, sint32 offset);
 
@@ -46,4 +46,4 @@ namespace OpenRCT2 { namespace Ui
         extern const TabImage RatingChart;
         extern const TabImage Statistics;
     }
-} }
+}

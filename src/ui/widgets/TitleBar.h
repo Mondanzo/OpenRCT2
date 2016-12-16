@@ -16,7 +16,7 @@
 
 #include "../Widget.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     /**
      * The title bar widget displaying the title of the window, seen in at
@@ -30,4 +30,4 @@ namespace OpenRCT2 { namespace Ui
     public:
         void Draw(IDrawingContext * dc) override;
     };
-} }
+}

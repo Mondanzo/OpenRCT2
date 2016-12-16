@@ -19,7 +19,7 @@
 #include <vector>
 #include "../Widget.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     /**
      * Base class for all widget containers.
@@ -36,4 +36,4 @@ namespace OpenRCT2 { namespace Ui
         sint32 GetChildrenCount() override;
         Widget * GetChild(sint32 index) override;
     };
-} }
+}

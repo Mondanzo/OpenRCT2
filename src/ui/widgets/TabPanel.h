@@ -19,7 +19,7 @@
 #include <vector>
 #include "Container.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     struct TabImage;
 
@@ -87,4 +87,4 @@ namespace OpenRCT2 { namespace Ui
     private:
         void SetupWidgets();
     };
-} }
+}

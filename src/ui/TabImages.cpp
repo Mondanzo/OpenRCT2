@@ -55,7 +55,7 @@ TabImage TabImage::Create(uint32 base, uint32 count, uint32 duration, TabImageDr
     return result;
 }
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     namespace TabImages
     {
@@ -85,4 +85,4 @@ namespace OpenRCT2 { namespace Ui
             dc->DrawSprite(sprite, 15, 17, 0);
         });
     }
-} }
+}

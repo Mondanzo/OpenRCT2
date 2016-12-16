@@ -16,7 +16,7 @@
 
 #include "../Widget.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     enum class BUTTON_STYLE : uint8
     {
@@ -48,4 +48,4 @@ namespace OpenRCT2 { namespace Ui
         void MouseDown(const MouseEventArgs * e) override;
         void MouseUp(const MouseEventArgs * e) override;
     };
-} }
+}

@@ -18,7 +18,7 @@
 
 #include "../common.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     namespace MOUSE_BUTTON
     {
@@ -40,4 +40,4 @@ namespace OpenRCT2 { namespace Ui
             return result;
         }
     };
-} }
+}

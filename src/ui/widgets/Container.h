@@ -18,7 +18,7 @@
 
 #include "../Widget.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     /**
      * Basic container that is filled with it's child.
@@ -36,4 +36,4 @@ namespace OpenRCT2 { namespace Ui
 
         void Arrange() override;
     };
-} }
+}

@@ -18,7 +18,7 @@
 
 #include "Panel.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     enum class ORIENTATION
     {
@@ -42,4 +42,4 @@ namespace OpenRCT2 { namespace Ui
         void Measure() override;
         void Arrange() override;
     };
-} }
+}

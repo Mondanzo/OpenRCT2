@@ -21,7 +21,7 @@
 
 interface IDrawingContext;
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     struct MouseEventArgs;
 
@@ -115,4 +115,4 @@ namespace OpenRCT2 { namespace Ui
                      Height + Margin.Top + Margin.Bottom };
         }
     };
-} }
+}

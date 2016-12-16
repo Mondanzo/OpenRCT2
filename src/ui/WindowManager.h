@@ -22,7 +22,7 @@
 interface   IDrawingContext;
 struct      MouseEventArgs;
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     interface IWindowManager
     {
@@ -43,4 +43,4 @@ namespace OpenRCT2 { namespace Ui
     };
 
     IWindowManager * CreateWindowManager();
-} }
+}

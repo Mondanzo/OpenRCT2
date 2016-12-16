@@ -16,7 +16,7 @@
 
 #include "../Widget.h"
 
-namespace OpenRCT2 { namespace Ui
+namespace OpenRCT2::Ui
 {
     enum class HORIZONTAL_ALIGNMENT : uint8
     {
@@ -47,4 +47,4 @@ namespace OpenRCT2 { namespace Ui
 
         void Draw(IDrawingContext * dc) override;
     };
-} }
+}
