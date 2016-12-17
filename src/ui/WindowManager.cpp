@@ -49,6 +49,7 @@ namespace OpenRCT2::Ui
             Window * w3 = OpenParkWindow();
             AddWindow(w3);
             SetWindowFocus(w3);
+            Update();
         }
 
         virtual ~WindowManager()

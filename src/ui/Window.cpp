@@ -214,6 +214,7 @@ void Window::Update()
 
 void Window::Update(Widget * node, xy32 absolutePosition)
 {
+    node->Window = this;
     node->Update();
 
     sint32 numChildren = node->GetChildrenCount();
@@ -226,7 +227,17 @@ void Window::Update(Widget * node, xy32 absolutePosition)
             childAbsPosition.X += child->X;
             childAbsPosition.Y += child->Y;
 
+            if (child->Flags & WIDGET_FLAGS::INHERIT_STYLE)
+            {
+                if (child->Style != node->Style)
+                {
+                    child->Style = node->Style;
+                    child->InvalidateVisual();
+                }
+            }
+
             Update(child, childAbsPosition);
+
             if (child->Flags & WIDGET_FLAGS::LAYOUT_DIRTY)
             {
                 child->Flags &= ~WIDGET_FLAGS::LAYOUT_DIRTY;
@@ -420,6 +431,8 @@ void Window::ArrangeShim()
         _tabPanel->Y = 17;
         _tabPanel->Width = Width;
         _tabPanel->Height = Height - _tabPanel->Y;
+        _tabPanel->Style = 1;
+        _tabPanel->Flags &= ~WIDGET_FLAGS::INHERIT_STYLE;
     }
 }
 
@@ -442,7 +455,7 @@ void Window::InitialiseShim()
     {
         _closeButton = new Button();
         _closeButton->Text = STR_CLOSE_X;
-        _closeButton->Style = BUTTON_STYLE::OUTSET;
+        _closeButton->Type = BUTTON_TYPE::OUTSET;
         panel->AddChild(_closeButton);
     }
 

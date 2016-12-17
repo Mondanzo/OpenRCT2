@@ -16,12 +16,13 @@
 
 #include "../../drawing/IDrawingContext.h"
 #include "../DrawingContextExtensions.h"
+#include "../Window.h"
 #include "Viewport.h"
 
 using namespace OpenRCT2::Ui;
 
 void ViewportWidget::Draw(IDrawingContext * dc)
 {
-    uint32 colour = COLOUR_DARK_YELLOW;
+    colour_t colour = Window->Style.GetColour(Style);
     DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_60);
 }

@@ -17,6 +17,7 @@
 #include "../../drawing/IDrawingContext.h"
 #include "../../localisation/string_ids.h"
 #include "../DrawingContextExtensions.h"
+#include "../Window.h"
 #include "TitleBar.h"
 
 extern "C"
@@ -29,7 +30,7 @@ using namespace OpenRCT2::Ui;
 
 void TitleBar::Draw(IDrawingContext * dc)
 {
-    uint8 colour = COLOUR_GREY;
+    colour_t colour = Window->Style.GetColour(Style);
 
     uint8 press = INSET_RECT_F_60;
     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;

@@ -19,6 +19,7 @@
 #include "../DrawingContextExtensions.h"
 #include "../MouseEventArgs.h"
 #include "../TabImages.h"
+#include "../Window.h"
 #include "TabPanel.h"
 
 using namespace OpenRCT2::Ui;
@@ -121,7 +122,8 @@ void TabPanel::Update()
 
 void TabPanel::Draw(IDrawingContext * dc)
 {
-    DCExtensions::FillRectInset(dc, 0, 26, Width - 1, Height - 1, COLOUR_DARK_YELLOW, 0);
+    colour_t colour = Window->Style.GetColour(Style);
+    DCExtensions::FillRectInset(dc, 0, 26, Width - 1, Height - 1, colour, 0);
 }
 
 void TabPanel::SetupWidgets()

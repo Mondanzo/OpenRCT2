@@ -14,39 +14,29 @@
  *****************************************************************************/
 #pragma endregion
 
-#include "../Widget.h"
+#pragma once
+
+#include "../common.h"
+#include "Primitives.h"
+
+interface IDrawingContext;
 
 namespace OpenRCT2::Ui
 {
-    enum class BUTTON_TYPE : uint8
+    namespace STYLE_FLAGS
     {
-        FLAT,
-        OUTSET,
-    };
-
-    namespace BUTTON_FLAGS
-    {
-        constexpr uint8 HIGHLIGHTED = 1 << 0;
-        constexpr uint8 PRESSED     = 1 << 1;
+        constexpr uint8 TRAFFIC_LIGHTS  = 1 << 0;
+        constexpr uint8 RCT1_FONTS      = 1 << 1;
     }
 
-    class Button : public Widget
+    struct WindowStyle
     {
-    private:
-        uint8           _buttonFlags = 0;
+        static constexpr int MAX_COLOURS = 6;
 
-    public:
-        BUTTON_TYPE     Type = BUTTON_TYPE::FLAT;
-        rct_string_id   Text = (rct_string_id)-1;
-        uint32          Image = 0;
+        uint8       Flags = 0;
+        colour_t    Colours[MAX_COLOURS] = { 0 };
 
-    public:
-        void Measure() override;
-
-        void Update() override;
-        void Draw(IDrawingContext * dc) override;
-
-        void MouseDown(const MouseEventArgs * e) override;
-        void MouseUp(const MouseEventArgs * e) override;
+        bool     HasFlag(uint8 flag);
+        colour_t GetColour(uint8 style);
     };
 }

@@ -24,6 +24,7 @@ interface IDrawingContext;
 namespace OpenRCT2::Ui
 {
     struct MouseEventArgs;
+    class  Window;
 
     enum class VISIBILITY : uint8
     {
@@ -43,6 +44,7 @@ namespace OpenRCT2::Ui
         constexpr uint16 CURSOR          = 1 << 6;
         constexpr uint16 LAYOUT_DIRTY    = 1 << 7;
         constexpr uint16 VISUAL_DIRTY    = 1 << 8;
+        constexpr uint16 INHERIT_STYLE   = 1 << 9;
     }
 
     struct Thickness
@@ -71,6 +73,7 @@ namespace OpenRCT2::Ui
     class Widget
     {
     public:
+        Window * Window;
         union
         {
             struct { sint32 X, Y, Width, Height; };
@@ -80,6 +83,7 @@ namespace OpenRCT2::Ui
         Thickness   Margin;
         uint16      Flags;
         VISIBILITY  Visibility;
+        uint8       Style;
 
         rct_string_id DefaultTooltip;
 

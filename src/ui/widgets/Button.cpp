@@ -19,6 +19,7 @@
 #include "../../localisation/string_ids.h"
 #include "../DrawingContextExtensions.h"
 #include "../MouseEventArgs.h"
+#include "../Window.h"
 #include "Button.h"
 
 using namespace OpenRCT2::Ui;
@@ -27,7 +28,7 @@ void Button::Measure()
 {
     if (Flags & WIDGET_FLAGS::AUTO_SIZE)
     {
-        if (Style == BUTTON_STYLE::FLAT)
+        if (Type == BUTTON_TYPE::FLAT)
         {
             Width = 24;
             Height = 24;
@@ -55,10 +56,11 @@ void Button::Update()
 
 void Button::Draw(IDrawingContext * dc)
 {
-    uint8 colour = COLOUR_DARK_YELLOW;
+    colour_t colour = Window->Style.GetColour(Style);
+
     bool isHighlighted = ((_buttonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0);
     bool isPressed = (_buttonFlags & BUTTON_FLAGS::PRESSED) != 0;
-    if (Style == BUTTON_STYLE::FLAT)
+    if (Type == BUTTON_TYPE::FLAT)
     {
         // Border
         if (!IsDisabled() && (isHighlighted || isPressed))

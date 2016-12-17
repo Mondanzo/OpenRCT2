@@ -14,39 +14,18 @@
  *****************************************************************************/
 #pragma endregion
 
-#include "../Widget.h"
+#include "../core/Guard.hpp"
+#include "WindowStyle.h"
 
-namespace OpenRCT2::Ui
+using namespace OpenRCT2::Ui;
+
+bool WindowStyle::HasFlag(uint8 flag)
 {
-    enum class BUTTON_TYPE : uint8
-    {
-        FLAT,
-        OUTSET,
-    };
+    return ((Flags & flag) != 0);
+}
 
-    namespace BUTTON_FLAGS
-    {
-        constexpr uint8 HIGHLIGHTED = 1 << 0;
-        constexpr uint8 PRESSED     = 1 << 1;
-    }
-
-    class Button : public Widget
-    {
-    private:
-        uint8           _buttonFlags = 0;
-
-    public:
-        BUTTON_TYPE     Type = BUTTON_TYPE::FLAT;
-        rct_string_id   Text = (rct_string_id)-1;
-        uint32          Image = 0;
-
-    public:
-        void Measure() override;
-
-        void Update() override;
-        void Draw(IDrawingContext * dc) override;
-
-        void MouseDown(const MouseEventArgs * e) override;
-        void MouseUp(const MouseEventArgs * e) override;
-    };
+colour_t WindowStyle::GetColour(uint8 style)
+{
+    Guard::ArgumentInRange<uint8>(style, 0, MAX_COLOURS);
+    return Colours[style];
 }

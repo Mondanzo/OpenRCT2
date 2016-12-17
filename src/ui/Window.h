@@ -18,6 +18,7 @@
 
 #include "../common.h"
 #include "Primitives.h"
+#include "WindowStyle.h"
 
 interface IDrawingContext;
 
@@ -73,6 +74,7 @@ namespace OpenRCT2::Ui
         size32 MaximumSize = { 0 };
         uint32 Flags;
         uint32 BackgroundColour;
+        WindowStyle Style;
 
     public:
         Window();

@@ -20,8 +20,10 @@ using namespace OpenRCT2::Ui;
 
 Widget::Widget()
 {
-    Flags |= WIDGET_FLAGS::ENABLED |
-             WIDGET_FLAGS::AUTO_SIZE;
+    Flags = WIDGET_FLAGS::AUTO_SIZE |
+            WIDGET_FLAGS::ENABLED |
+            WIDGET_FLAGS::INHERIT_STYLE;
+    Style = 0;
 }
 
 sint32 Widget::GetChildrenCount()

@@ -90,7 +90,7 @@ namespace OpenRCT2::Ui
             for (int i = 0; i < 4; i++)
             {
                 auto btn = &_toolbarButtons[i];
-                btn->Style = BUTTON_STYLE::FLAT;
+                btn->Type = BUTTON_TYPE::FLAT;
                 _toolbar.AddChild(btn);
             }
             _toolbarButtons[0].Image = SPR_OPEN;
@@ -124,6 +124,10 @@ namespace OpenRCT2::Ui
             BackgroundColour = COLOUR_GREY;
             SetTitle(STR_PARK_CLOSED);
             SetTabPanelAdapter(this);
+
+            Style.Colours[0] = COLOUR_GREY;
+            Style.Colours[1] = COLOUR_DARK_YELLOW;
+            Style.Colours[2] = COLOUR_DARK_YELLOW;
         }
 
         sint32 GetTabCount() override

@@ -342,6 +342,7 @@
     <ClCompile Include="src\ui\widgets\Viewport.cpp" />
     <ClCompile Include="src\ui\Window.cpp" />
     <ClCompile Include="src\ui\WindowManager.cpp" />
+    <ClCompile Include="src\ui\WindowStyle.cpp" />
     <ClCompile Include="src\ui\windows\ParkWindow.cpp" />
     <ClCompile Include="src\windows\changelog.c" />
     <ClCompile Include="src\windows\multiplayer.c" />
@@ -605,6 +606,7 @@
     <ClInclude Include="src\ui\widgets\Viewport.h" />
     <ClInclude Include="src\ui\Window.h" />
     <ClInclude Include="src\ui\WindowManager.h" />
+    <ClInclude Include="src\ui\WindowStyle.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\title\TitleScreen.h" />
     <ClInclude Include="src\util\sawyercoding.h" />
