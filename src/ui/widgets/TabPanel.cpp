@@ -14,6 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "../../core/Math.hpp"
 #include "../../drawing/IDrawingContext.h"
 #include "../../sprites.h"
 #include "../DrawingContextExtensions.h"
@@ -87,11 +88,11 @@ Widget * TabPanel::GetChild(sint32 index)
 void TabPanel::Measure()
 {
     size32 size;
-    size.Width = 2 + (GetTabCount() * TAB_WIDTH);
+    size.Width = 3 + (GetTabCount() * TAB_WIDTH) + 3;
     size.Height = TAB_HEIGHT + 1;
 
     size32 containerSize = _container.GetSizeWithMargin();
-    size.Width += containerSize.Width;
+    size.Width = Math::Max(size.Width, containerSize.Width);
     size.Height += containerSize.Height;
 
     Size = size;

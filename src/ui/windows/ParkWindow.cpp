@@ -121,7 +121,7 @@ namespace OpenRCT2::Ui
             Width = 230;
             Height = 174 + 9;
 
-            BackgroundColour = COLOUR_GREY;
+            Flags |= WINDOW_FLAGS::HAS_TAB_PANEL;
             SetTitle(STR_PARK_CLOSED);
             SetTabPanelAdapter(this);
 

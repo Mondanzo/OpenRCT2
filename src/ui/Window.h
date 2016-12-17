@@ -43,7 +43,9 @@ namespace OpenRCT2::Ui
         constexpr uint32 TRANSPARENT        = 1 << 6;
         constexpr uint32 HAS_TITLE_BAR      = 1 << 7;
         constexpr uint32 HAS_CLOSE_BUTTON   = 1 << 8;
-        constexpr uint32 LAYOUT_DIRTY       = 1 << 9;
+        constexpr uint32 HAS_TAB_PANEL      = 1 << 9;
+        constexpr uint32 LAYOUT_DIRTY       = 1 << 10;
+        constexpr uint32 RESIZING           = 1 << 11;
     }
 
     class Window
@@ -60,6 +62,8 @@ namespace OpenRCT2::Ui
         rct_string_id _title = (rct_string_id)-1;
         ITabPanelAdapter * _tabPanelAdapter = nullptr;
 
+        xy32 _resizeCursorDelta;
+
     public:
         union
         {
@@ -70,7 +74,6 @@ namespace OpenRCT2::Ui
         size32 MinimumSize = { 0 };
         size32 MaximumSize = { 0 };
         uint32 Flags;
-        uint32 BackgroundColour;
         WindowStyle Style;
 
     public:
@@ -103,14 +106,20 @@ namespace OpenRCT2::Ui
         virtual void MouseUp(const MouseEventArgs * e);
         virtual void MouseWheel(const MouseEventArgs * e);
 
+        bool IsResizable();
+
     private:
         Widget * GetWidgetAt(Widget * node, sint32 x, sint32 y);
         void Measure(Widget * node);
         void Arrange(Widget * node);
         void Update(Widget * node, xy32 absolutePosition);
-        void Draw(IDrawingContext * g, Widget * node);
+        void Draw(IDrawingContext * dc, Widget * node);
+        void DrawSizeGrip(IDrawingContext * dc);
 
         void SetWidgetCursor(Widget * widget);
         void SetWidgetFocus(Widget * widget);
+
+        rect32 GetResizeGripBounds();
+        bool IsInResizeGripBounds(sint32 x, sint32 y);
     };
 }

@@ -16,6 +16,7 @@
 
 #include "../core/Math.hpp"
 #include "../drawing/IDrawingContext.h"
+#include "../interface/Cursors.h"
 #include "../localisation/string_ids.h"
 #include "../sprites.h"
 #include "DrawingContextExtensions.h"
@@ -33,7 +34,6 @@ using namespace OpenRCT2::Ui;
 Window::Window()
 {
     Bounds = { 0, 0, 0, 0 };
-    BackgroundColour = COLOUR_GREY;
     Flags = WINDOW_FLAGS::AUTO_SIZE |
             WINDOW_FLAGS::HAS_TITLE_BAR |
             WINDOW_FLAGS::HAS_CLOSE_BUTTON |
@@ -202,7 +202,6 @@ void Window::Arrange()
         // Recursively arrange the widget tree
         Arrange(_child);
     }
-    Invalidate();
 }
 
 void Window::Arrange(Widget * node)
@@ -235,8 +234,10 @@ void Window::Update()
     if (Flags & WINDOW_FLAGS::LAYOUT_DIRTY)
     {
         Flags &= ~WINDOW_FLAGS::LAYOUT_DIRTY;
+        Invalidate();
         Measure();
         Arrange();
+        Invalidate();
     }
 
     if (!(Flags & WINDOW_FLAGS::CURSOR))
@@ -291,23 +292,23 @@ void Window::Update(Widget * node, xy32 absolutePosition)
 
 void Window::Draw(IDrawingContext * dc)
 {
+    // Draw background
+    uint32 bgColour = Style.Colours[0];
     uint8 press = 0;
     // uint8 press = (w->flags & WF_10 ? INSET_RECT_FLAG_FILL_MID_LIGHT : 0);
     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
-    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, BackgroundColour, press);
+    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, bgColour, press);
 
-    // Check if the window can be resized
-    if (MinimumSize.Width != MaximumSize.Width && MinimumSize.Height == MaximumSize.Height)
-    {
-        // Draw the resize sprite at the bottom right corner
-        sint32 l = Width - 18;
-        sint32 t = Height - 18;
-        dc->DrawSprite(SPR_RESIZE | 0x20000000 | ((BackgroundColour & 0x7F) << 19), l, t, 0);
-    }
-
+    // Draw content
     if (_child != nullptr)
     {
         Draw(dc, _child);
+    }
+
+    // Draw size grip if the window can be resized
+    if (IsResizable())
+    {
+        DrawSizeGrip(dc);
     }
 }
 
@@ -330,6 +331,22 @@ void Window::Draw(IDrawingContext * dc, Widget * node)
     }
 }
 
+
+void Window::DrawSizeGrip(IDrawingContext * dc)
+{
+    uint32 colour = Style.Colours[0];
+    if (Flags & WINDOW_FLAGS::HAS_TAB_PANEL)
+    {
+        colour = Style.Colours[1];
+    }
+
+    rect32 gripBounds = GetResizeGripBounds();
+    uint32 sprite = SPR_RESIZE;
+    sprite |= 0x20000000;
+    sprite |= NOT_TRANSLUCENT(colour) << 19;
+    dc->DrawSprite(sprite, gripBounds.X, gripBounds.Y, 0);
+}
+
 bool Window::HitTest(sint32 x, sint32 y)
 {
     bool result = true;
@@ -345,7 +362,18 @@ bool Window::HitTest(sint32 x, sint32 y)
 
 void Window::MouseDown(const MouseEventArgs * e)
 {
-    Widget * widget = GetWidgetAt(e->X, e->Y);
+    Widget * widget = nullptr;
+    if (e->Button == MOUSE_BUTTON::LEFT &&
+        IsInResizeGripBounds(e->X, e->Y))
+    {
+        _resizeCursorDelta = { Width - e->X, Height - e->Y };
+        Flags |= WINDOW_FLAGS::RESIZING;
+    }
+    else
+    {
+        widget = GetWidgetAt(e->X, e->Y);
+    }
+
     SetWidgetFocus(widget);
     _holdWidget = widget;
     if (widget != nullptr)
@@ -357,42 +385,80 @@ void Window::MouseDown(const MouseEventArgs * e)
 
 void Window::MouseMove(const MouseEventArgs * e)
 {
-    Widget * widget = GetWidgetAt(e->X, e->Y);
-    Widget * cursorWidget = widget;
-
-    // If we first pressed down on another widget, continue giving events to it
-    if (_holdWidget != nullptr)
+    if (Flags & WINDOW_FLAGS::RESIZING)
     {
-        if (cursorWidget != _holdWidget)
+        xy32 cursorPos = { X + e->X, Y + e->Y };
+        size32 newSize = {cursorPos.X + _resizeCursorDelta.X - X,
+                          cursorPos.Y + _resizeCursorDelta.Y - Y };
+        newSize.Width = Math::Clamp(MinimumSize.Width, newSize.Width, MaximumSize.Width);
+        newSize.Height = Math::Clamp(MinimumSize.Height, newSize.Height, MaximumSize.Height);
+        if (Width != newSize.Width || Height != newSize.Height)
         {
-            cursorWidget = nullptr;
+            Invalidate();
+            Size = newSize;
+            Invalidate();
+            Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
         }
-        widget = _holdWidget;
     }
-
-    SetWidgetCursor(cursorWidget);
-
-    if (widget != nullptr)
+    else
     {
-        MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
-        widget->MouseMove(&e2);
+        Widget * widget = GetWidgetAt(e->X, e->Y);
+        Widget * cursorWidget = widget;
+
+        // If we first pressed down on another widget, continue giving events to it
+        if (_holdWidget != nullptr)
+        {
+            if (cursorWidget != _holdWidget)
+            {
+                cursorWidget = nullptr;
+            }
+            widget = _holdWidget;
+        }
+
+        SetWidgetCursor(cursorWidget);
+
+        if (widget != nullptr)
+        {
+            MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+            widget->MouseMove(&e2);
+        }
+
+        if (IsInResizeGripBounds(e->X, e->Y))
+        {
+            Cursors::SetCurrentCursor(CURSOR_DIAGONAL_ARROWS);
+        }
+        else
+        {
+            // TODO get cursor from widget
+            Cursors::SetCurrentCursor(CURSOR_ARROW);
+        }
     }
 }
 
 void Window::MouseUp(const MouseEventArgs * e)
 {
-    // If we first pressed down on another widget, continue giving events to it
-    Widget * widget = _holdWidget;
-    if (widget == nullptr)
+    if (Flags & WINDOW_FLAGS::RESIZING)
     {
-        widget = GetWidgetAt(e->X, e->Y);
+        if (e->Button == MOUSE_BUTTON::LEFT)
+        {
+            Flags &= ~WINDOW_FLAGS::RESIZING;
+        }
     }
-    if (widget != nullptr)
+    else
     {
-        MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
-        widget->MouseUp(&e2);
+        // If we first pressed down on another widget, continue giving events to it
+        Widget * widget = _holdWidget;
+        if (widget == nullptr)
+        {
+            widget = GetWidgetAt(e->X, e->Y);
+        }
+        if (widget != nullptr)
+        {
+            MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+            widget->MouseUp(&e2);
+        }
+        _holdWidget = nullptr;
     }
-    _holdWidget = nullptr;
 }
 
 void Window::MouseWheel(const MouseEventArgs * e)
@@ -431,4 +497,38 @@ void Window::SetWidgetFocus(Widget * widget)
     {
         widget->Flags |= WIDGET_FLAGS::FOCUS;
     }
+}
+
+bool Window::IsResizable()
+{
+    if (Flags & WINDOW_FLAGS::AUTO_SIZE)
+    {
+        return false;
+    }
+    if (MinimumSize.Width == MaximumSize.Width &&
+        MinimumSize.Height == MaximumSize.Height)
+    {
+        return false;
+    }
+    return true;
+}
+
+rect32 Window::GetResizeGripBounds()
+{
+    rect32 bounds = { Width - 18, Height - 18, 18, 18 };
+    return bounds;
+}
+
+bool Window::IsInResizeGripBounds(sint32 x, sint32 y)
+{
+    bool result = false;
+    if (IsResizable())
+    {
+        rect32 gripBounds = GetResizeGripBounds();
+        if (gripBounds.Contains(x, y))
+        {
+            result = true;
+        }
+    }
+    return result;
 }

@@ -72,8 +72,9 @@ void WindowShell::Measure()
     if (_tabPanel != nullptr)
     {
         size.Width = Math::Max(size.Width, _tabPanel->Width);
-        size.Height = Math::Max(size.Height, _tabPanel->Height);
+        size.Height += _tabPanel->Height;
     }
+    Size = size;
 }
 
 void WindowShell::Arrange()
