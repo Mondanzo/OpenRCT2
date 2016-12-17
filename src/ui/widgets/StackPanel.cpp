@@ -101,11 +101,13 @@ void StackPanel::Arrange()
                 widget->Y = y + widget->Margin.Top;
                 if (widget->Flags & WIDGET_FLAGS::STRETCH_H)
                 {
-                    widget->Width = spareWidth;
+                    sint32 marginWidth = widget->Margin.Left + widget->Margin.Right;
+                    widget->Width = spareWidth - marginWidth;
                 }
                 if (widget->Flags & WIDGET_FLAGS::STRETCH_V)
                 {
-                    widget->Height = Height;
+                    sint32 marginHeight = widget->Margin.Top + widget->Margin.Bottom;
+                    widget->Height = Height - marginHeight;
                 }
                 x += widget->Margin.Left + widget->Width + widget->Margin.Right;
             }
@@ -122,14 +124,27 @@ void StackPanel::Arrange()
                 widget->Y = y + widget->Margin.Top;
                 if (widget->Flags & WIDGET_FLAGS::STRETCH_H)
                 {
-                    widget->Width = Width;
+                    sint32 marginWidth = widget->Margin.Left + widget->Margin.Right;
+                    widget->Width = Width - marginWidth;
                 }
                 if (widget->Flags & WIDGET_FLAGS::STRETCH_V)
                 {
-                    widget->Height = spareHeight;
+                    sint32 marginHeight = widget->Margin.Top + widget->Margin.Bottom;
+                    widget->Height = spareHeight - marginHeight;
                 }
                 y += widget->Margin.Top + widget->Height + widget->Margin.Bottom;
             }
         }
     }
+}
+
+void StackPanel::Draw(IDrawingContext * dc)
+{
+#ifdef __DEBUG_STACKPANEL__
+    uint8 colour = 21;
+    dc->FillRect(colour, 0, 0, Width - 1, 0);
+    dc->FillRect(colour, 0, Height - 1, Width - 1, Height - 1);
+    dc->FillRect(colour, 0, 0, 0, Height - 1);
+    dc->FillRect(colour, Width - 1, 0, Width - 1, Height - 1);
+#endif
 }

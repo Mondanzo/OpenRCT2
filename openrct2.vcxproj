@@ -335,6 +335,7 @@
     <ClCompile Include="src\ui\widgets\Button.cpp" />
     <ClCompile Include="src\ui\widgets\Container.cpp" />
     <ClCompile Include="src\ui\widgets\Panel.cpp" />
+    <ClCompile Include="src\ui\widgets\Spinner.cpp" />
     <ClCompile Include="src\ui\widgets\StackPanel.cpp" />
     <ClCompile Include="src\ui\widgets\TabPanel.cpp" />
     <ClCompile Include="src\ui\widgets\TextBlock.cpp" />
@@ -600,6 +601,7 @@
     <ClInclude Include="src\ui\widgets\Button.h" />
     <ClInclude Include="src\ui\widgets\Container.h" />
     <ClInclude Include="src\ui\widgets\Panel.h" />
+    <ClInclude Include="src\ui\widgets\Spinner.h" />
     <ClInclude Include="src\ui\widgets\StackPanel.h" />
     <ClInclude Include="src\ui\widgets\TabPanel.h" />
     <ClInclude Include="src\ui\widgets\TextBlock.h" />

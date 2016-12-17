@@ -25,6 +25,8 @@ using namespace OpenRCT2::Ui;
 TextBlock::TextBlock()
 {
     Flags |= WIDGET_FLAGS::AUTO_SIZE;
+    HorizontalAlignment = HORIZONTAL_ALIGNMENT::LEFT;
+    VerticalAlignment = VERTICAL_ALIGNMENT::MIDDLE;
 }
 
 void TextBlock::Measure()
@@ -40,13 +42,19 @@ void TextBlock::Draw(IDrawingContext * dc)
     // Draw text
     if (Text != STR_NONE)
     {
-        sint32 l = 2;
+        sint32 l = 0;
         sint32 t = 0;
-        sint32 width = Width - 4;
-        l += width / 2;
-
         uintptr_t dpip = ((uintptr_t *)dc)[2];
         rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-        gfx_draw_string_centred_clipped(dpi, Text, TextArgs, COLOUR_BLACK, l, t, width);
+        if (HorizontalAlignment == HORIZONTAL_ALIGNMENT::LEFT)
+        {
+            gfx_draw_string_left(dpi, Text, TextArgs, COLOUR_BLACK, l, t);
+        }
+        else
+        {
+            sint32 width = Width - 4;
+            l = 2 + (width / 2);
+            gfx_draw_string_centred_clipped(dpi, Text, TextArgs, COLOUR_BLACK, l, t, width);
+        }
     }
 }

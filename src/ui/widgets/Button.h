@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <functional>
 #include "../Widget.h"
 
 namespace OpenRCT2::Ui
@@ -29,23 +30,26 @@ namespace OpenRCT2::Ui
 
     namespace BUTTON_FLAGS
     {
-        constexpr uint8 HIGHLIGHTED = 1 << 0;
-        constexpr uint8 PRESSED     = 1 << 1;
-        constexpr uint8 DOWN        = 1 << 2;
+        constexpr uint8 STYLE_LIGHT     = 1 << 0;
+        constexpr uint8 HIGHLIGHTED     = 1 << 1;
+        constexpr uint8 PRESSED         = 1 << 2;
+        constexpr uint8 DOWN            = 1 << 3;
+        constexpr uint8 CLICK_REPEAT    = 1 << 4;
     }
 
     class Button : public Widget
     {
-    protected:
-        uint8           ButtonFlags = 0;
+    private:
+        uint32          _clickRepeatTimeout;
 
     public:
+        uint8           ButtonFlags = 0;
         BUTTON_TYPE     Type = BUTTON_TYPE::FLAT;
         rct_string_id   Text = (rct_string_id)-1;
         uint32          Image = 0;
         uint32          ImageDown = 0;
 
-        EventHandler<void> ClickEvent = nullptr;
+        std::function<void()> ClickEvent = nullptr;
 
     public:
         void Measure() override;
@@ -65,5 +69,7 @@ namespace OpenRCT2::Ui
         void DrawFlat(IDrawingContext * dc);
         void DrawOutset(IDrawingContext * dc);
         void DrawImage(IDrawingContext * dc);
+
+        void InvokeClick();
     };
 }

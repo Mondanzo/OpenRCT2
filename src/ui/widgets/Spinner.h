@@ -18,33 +18,45 @@
 
 namespace OpenRCT2::Ui
 {
-    enum class HORIZONTAL_ALIGNMENT : uint8
+    class Button;
+
+    namespace SPINNER_FLAGS
     {
-        LEFT,
-        MIDDLE,
-        RIGHT,
+        constexpr uint8 HIGH_PRECISION      = 1 << 0;
+        constexpr uint8 SHOW_ZERO_AS_FREE   = 1 << 1;
     };
 
-    enum class VERTICAL_ALIGNMENT : uint8
+    /**
+     * The title bar widget displaying the title of the window, seen in at
+     * the top of most widgets. Moves the position of the window when dragged.
+     */
+    class Spinner : public Widget
     {
-        TOP,
-        MIDDLE,
-        BOTTOM,
-    };
-
-    class TextBlock : public Widget
-    {
-    public:
-        HORIZONTAL_ALIGNMENT    HorizontalAlignment;
-        VERTICAL_ALIGNMENT      VerticalAlignment;
-        rct_string_id           Text = (rct_string_id)-1;
-        void *                  TextArgs = nullptr;
+    private:
+        Button * _upButton;
+        Button * _downButton;
 
     public:
-        TextBlock();
+        uint8   Type = 0;
+        uint8   SpinnerFlags = 0;
+        money32 Value = 0;
+
+        std::function<void()> IncrementEvent;
+        std::function<void()> DecrementEvent;
+
+    public:
+        Spinner();
+        ~Spinner();
+
+        sint32 GetChildrenCount() override;
+        Widget * GetChild(sint32 index) override;
 
         void Measure() override;
+        void Arrange() override;
 
         void Draw(IDrawingContext * dc) override;
+
+        void UpHandler();
+        void DownHandler();
     };
 }

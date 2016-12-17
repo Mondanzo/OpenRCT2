@@ -24,6 +24,9 @@
 
 using namespace OpenRCT2::Ui;
 
+constexpr sint32 CLICK_REPEAT_INITIAL_TIMEOUT = 30;
+constexpr sint32 CLICK_REPEAT_DELAY = 4;
+
 void Button::Measure()
 {
     if (Flags & WIDGET_FLAGS::AUTO_SIZE)
@@ -39,8 +42,7 @@ void Button::Measure()
 void Button::Update()
 {
     bool isCursor = ((Flags & WIDGET_FLAGS::CURSOR) != 0);
-    bool isHighlighted = ((ButtonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0);
-    if (isCursor != isHighlighted)
+    if (isCursor != IsHighlighted())
     {
         if (isCursor)
         {
@@ -51,6 +53,22 @@ void Button::Update()
             ButtonFlags &= ~BUTTON_FLAGS::HIGHLIGHTED;
         }
         InvalidateVisual();
+    }
+
+    if ((ButtonFlags & BUTTON_FLAGS::CLICK_REPEAT) &&
+        IsHighlighted() &&
+        IsPressed())
+    {
+        _clickRepeatTimeout--;
+        if (_clickRepeatTimeout <= 0)
+        {
+            _clickRepeatTimeout = CLICK_REPEAT_DELAY;
+            auto handler = ClickEvent;
+            if (handler != nullptr)
+            {
+                handler();
+            }
+        }
     }
 }
 
@@ -120,8 +138,10 @@ void Button::DrawOutset(IDrawingContext * dc)
 
     // Border
     uint8 rectFlags = 0;
-    // if (w->flags & WF_10)
+    if (ButtonFlags & BUTTON_FLAGS::STYLE_LIGHT)
+    {
         rectFlags |= INSET_RECT_FLAG_FILL_MID_LIGHT;
+    }
     if (IsHighlighted() && IsPressed())
     {
         rectFlags |= INSET_RECT_FLAG_BORDER_INSET;
@@ -163,6 +183,12 @@ void Button::MouseDown(const MouseEventArgs * e)
     {
         ButtonFlags |= BUTTON_FLAGS::PRESSED;
         InvalidateVisual();
+
+        if (ButtonFlags & BUTTON_FLAGS::CLICK_REPEAT)
+        {
+            _clickRepeatTimeout = CLICK_REPEAT_INITIAL_TIMEOUT;
+            InvokeClick();
+        }
     }
 }
 
@@ -173,14 +199,20 @@ void Button::MouseUp(const MouseEventArgs * e)
         ButtonFlags &= ~BUTTON_FLAGS::PRESSED;
         InvalidateVisual();
 
-        if (ButtonFlags & BUTTON_FLAGS::HIGHLIGHTED)
+        if ((ButtonFlags & BUTTON_FLAGS::HIGHLIGHTED) &&
+            !(ButtonFlags & BUTTON_FLAGS::CLICK_REPEAT))
         {
-            auto handler = ClickEvent;
-            if (handler != nullptr)
-            {
-                handler(this, nullptr);
-            }
+            InvokeClick();
         }
+    }
+}
+
+void Button::InvokeClick()
+{
+    auto handler = ClickEvent;
+    if (handler != nullptr)
+    {
+        handler();
     }
 }
 

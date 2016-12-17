@@ -174,7 +174,7 @@ TabPanel::Tab::Tab()
     FrameTimeout = 0;
     Offset = 0;
 
-    ClickEvent = ClickHandler;
+    ClickEvent = std::bind(&TabPanel::Tab::ClickHandler, this);
 }
 
 void TabPanel::Tab::Update()
@@ -233,8 +233,7 @@ void TabPanel::Tab::Draw(IDrawingContext * dc)
     }
 }
 
-void TabPanel::Tab::ClickHandler(Widget * sender, const void * e)
+void TabPanel::Tab::ClickHandler()
 {
-    auto tab = static_cast<TabPanel::Tab *>(sender);
-    tab->Parent->SetSelectedIndex(tab->Index);
+    Parent->SetSelectedIndex(Index);
 }

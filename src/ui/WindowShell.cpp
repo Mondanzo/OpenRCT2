@@ -95,6 +95,7 @@ void WindowShell::Arrange()
         _closeButton->Y = 2;
         _closeButton->Width = 11;
         _closeButton->Height = 12;
+        _closeButton->ButtonFlags |= BUTTON_FLAGS::STYLE_LIGHT;
     }
 
     // Tab panel

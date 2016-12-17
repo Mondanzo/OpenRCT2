@@ -14,12 +14,14 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "../../core/Math.hpp"
 #include "../../drawing/IDrawingContext.h"
 #include "../../localisation/string_ids.h"
 #include "../../sprites.h"
 #include "../TabImages.h"
 #include "../widgets/Button.h"
 #include "../widgets/Container.h"
+#include "../widgets/Spinner.h"
 #include "../widgets/StackPanel.h"
 #include "../widgets/TabPanel.h"
 #include "../widgets/TextBlock.h"
@@ -29,6 +31,7 @@
 extern "C"
 {
     #include "../../interface/colour.h"
+    #include "../../world/park.h"
 }
 
 namespace OpenRCT2::Ui
@@ -99,20 +102,83 @@ namespace OpenRCT2::Ui
             _toolbarButtons[3].Image = SPR_RENAME;
 
             _status.Flags |= WIDGET_FLAGS::STRETCH_H;
+            _status.HorizontalAlignment = HORIZONTAL_ALIGNMENT::MIDDLE;
             _status.Text = STR_BLACK_STRING;
             _status.TextArgs = &_statusArg;
             _statusArg = STR_PARK_OPEN;
             _grid0.AddChild(&_status);
         }
+    };
 
-        ~EntrancePage() override
+    class AdmissionsPage : public Container
+    {
+    private:
+        StackPanel  _grid0;
+        StackPanel  _grid1;
+        TextBlock   _feeTextBlock;
+        Spinner     _feeSpinner;
+        TextBlock   _admissionsIncomeTextBlock;
+        money32     _admissionsIncomeValue;
+
+    public:
+        AdmissionsPage()
         {
+            _feeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_H;
+            _feeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_V;
+            _feeTextBlock.Margin.Left = 14;
+            _feeTextBlock.Text = STR_ADMISSION_PRICE;
+
+            _feeSpinner.SpinnerFlags |= SPINNER_FLAGS::HIGH_PRECISION |
+                                        SPINNER_FLAGS::SHOW_ZERO_AS_FREE;
+            _feeSpinner.Width = 76;
+            _feeSpinner.Value = 1000;
+            _feeSpinner.IncrementEvent = [this]() -> void {
+                auto newFee = Math::Min(MONEY(100,00), gParkEntranceFee + MONEY(1,00));
+                park_set_entrance_fee(newFee);
+            };
+            _feeSpinner.DecrementEvent = [this]() -> void {
+                auto newFee = Math::Max(MONEY(0,00), gParkEntranceFee - MONEY(1,00));
+                park_set_entrance_fee(newFee);
+            };
+
+            _grid1.Flags |= WIDGET_FLAGS::STRETCH_H;
+            _grid1.SetOrientation(ORIENTATION::HORIZONTAL);
+            _grid1.Margin = Thickness(6);
+            _grid1.AddChild(&_feeTextBlock);
+            _grid1.AddChild(&_feeSpinner);
+
+            _admissionsIncomeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_H;
+            _admissionsIncomeTextBlock.Margin = Thickness(6);
+            _admissionsIncomeTextBlock.Text = STR_INCOME_FROM_ADMISSIONS;
+            _admissionsIncomeTextBlock.TextArgs = &_admissionsIncomeValue;
+
+            _grid0.SetOrientation(ORIENTATION::VERTICAL);
+            _grid0.AddChild(&_grid1);
+            _grid0.AddChild(&_admissionsIncomeTextBlock);
+
+            SetChild(&_grid0);
+        }
+
+        void Update() override
+        {
+            if (_feeSpinner.Value != gParkEntranceFee)
+            {
+                _feeSpinner.Value = gParkEntranceFee;
+            }
+            if (_admissionsIncomeValue != gTotalIncomeFromAdmissions)
+            {
+                _admissionsIncomeValue = gTotalIncomeFromAdmissions;
+                _admissionsIncomeTextBlock.InvalidateVisual();
+            }
         }
     };
 
     class ParkWindow : public Window,
                        public ITabPanelAdapter
     {
+    private:
+        Widget * _currentPage = nullptr;
+
     public:
         ParkWindow()
         {
@@ -132,15 +198,21 @@ namespace OpenRCT2::Ui
 
         void Update() override
         {
-            if (GetTabIndex() == 0)
-            {
+            switch (GetTabIndex()) {
+            case 0:
                 Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
                 MinimumSize = { 230, 174 + 9 };
                 MaximumSize = { 230 * 3, (274 + 9) * 3 };
-            }
-            else
-            {
+                break;
+            case 3:
+                Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
+                Size = { 230, 124 };
+                MinimumSize = Size;
+                MaximumSize = Size;
+                break;
+            default:
                 Flags |= WINDOW_FLAGS::AUTO_SIZE;
+                break;
             }
 
             Window::Update();
@@ -158,11 +230,19 @@ namespace OpenRCT2::Ui
 
         Widget * GetContent(sint32 index) override
         {
-            if (index == 0)
-            {
-                return new EntrancePage();
+            delete _currentPage;
+            _currentPage = nullptr;
+
+            switch (index) {
+            case 0:
+                _currentPage = new EntrancePage();
+                break;
+            case 3:
+                _currentPage = new AdmissionsPage();
+                break;
             }
-            return nullptr;
+
+            return _currentPage;
         }
     };
 

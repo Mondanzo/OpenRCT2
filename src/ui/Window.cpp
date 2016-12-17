@@ -29,6 +29,11 @@
 #include "WindowManager.h"
 #include "WindowShell.h"
 
+extern "C"
+{
+    extern colour_t gCurrentWindowColours[4];
+}
+
 using namespace OpenRCT2::Ui;
 
 Window::Window()
@@ -292,6 +297,12 @@ void Window::Update(Widget * node, xy32 absolutePosition)
 
 void Window::Draw(IDrawingContext * dc)
 {
+    // HACK Legacy code for dealing with strings that use {WINDOW_COLOUR_X}
+    for (sint32 i = 0; i < 4; i++)
+    {
+        gCurrentWindowColours[i] = NOT_TRANSLUCENT(Style.Colours[i]);
+    }
+
     // Draw background
     uint32 bgColour = Style.Colours[0];
     uint8 press = 0;

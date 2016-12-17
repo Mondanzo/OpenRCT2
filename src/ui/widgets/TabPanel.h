@@ -62,7 +62,7 @@ namespace OpenRCT2::Ui
             void Draw(IDrawingContext * dc) override;
 
         private:
-            static void ClickHandler(Widget * sender, const void * e);
+            void ClickHandler();
         };
 
     private:

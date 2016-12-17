@@ -114,7 +114,4 @@ namespace OpenRCT2::Ui
                      Height + Margin.Top + Margin.Bottom };
         }
     };
-
-    template<typename T>
-    using EventHandler = void (*)(Widget * sender, const T * e);
 }

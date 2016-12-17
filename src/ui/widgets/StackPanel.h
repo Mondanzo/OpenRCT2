@@ -41,5 +41,7 @@ namespace OpenRCT2::Ui
 
         void Measure() override;
         void Arrange() override;
+
+        void Draw(IDrawingContext * dc) override;
     };
 }
