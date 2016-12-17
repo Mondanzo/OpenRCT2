@@ -43,7 +43,12 @@ sint32 TabPanel::GetTabCount()
 void TabPanel::SetAdapter(ITabPanelAdapter * adapter)
 {
     _adapter = adapter;
-    _dirty = true;
+    SetupWidgets();
+}
+
+sint32 TabPanel::GetSelectedIndex()
+{
+    return _selectedIndex;
 }
 
 void TabPanel::SetSelectedIndex(sint32 index)
@@ -82,15 +87,12 @@ Widget * TabPanel::GetChild(sint32 index)
 void TabPanel::Measure()
 {
     size32 size;
-    size.Width = 1 + (GetTabCount() * TAB_WIDTH);
-    size.Height = TAB_HEIGHT;
+    size.Width = 2 + (GetTabCount() * TAB_WIDTH);
+    size.Height = TAB_HEIGHT + 1;
 
-    Widget * content = _container.GetChild();
-    if (content != nullptr)
-    {
-        size.Width += content->Width;
-        size.Height += content->Height;
-    }
+    size32 containerSize = _container.GetSizeWithMargin();
+    size.Width += containerSize.Width;
+    size.Height += containerSize.Height;
 
     Size = size;
 }
@@ -122,7 +124,7 @@ void TabPanel::Update()
 
 void TabPanel::Draw(IDrawingContext * dc)
 {
-    colour_t colour = Window->Style.GetColour(Style);
+    colour_t colour = ParentWindow->Style.GetColour(Style);
     DCExtensions::FillRectInset(dc, 0, 26, Width - 1, Height - 1, colour, 0);
 }
 

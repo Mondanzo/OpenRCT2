@@ -43,6 +43,20 @@ Widget * Container::GetChild(sint32 index)
     return result;
 }
 
+void Container::Measure()
+{
+    if (Widget::Flags & WIDGET_FLAGS::AUTO_SIZE)
+    {
+        size32 size = { 0, 0 };
+        Widget * child = _child;
+        if (child != nullptr)
+        {
+            size = child->GetSizeWithMargin();
+        }
+        Size = size;
+    }
+}
+
 void Container::Arrange()
 {
     Widget * child = _child;

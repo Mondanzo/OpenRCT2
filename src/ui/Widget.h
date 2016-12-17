@@ -66,7 +66,7 @@ namespace OpenRCT2::Ui
     class Widget
     {
     public:
-        Window * Window;
+        Window * ParentWindow;
         union
         {
             struct { sint32 X, Y, Width, Height; };

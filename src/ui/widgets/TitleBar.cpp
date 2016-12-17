@@ -29,9 +29,17 @@ extern "C"
 
 using namespace OpenRCT2::Ui;
 
+void TitleBar::Measure()
+{
+    if (Flags & WIDGET_FLAGS::AUTO_SIZE)
+    {
+        Height = 14;
+    }
+}
+
 void TitleBar::Draw(IDrawingContext * dc)
 {
-    colour_t colour = Window->Style.GetColour(Style);
+    colour_t colour = ParentWindow->Style.GetColour(Style);
 
     uint8 press = INSET_RECT_F_60;
     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
@@ -82,10 +90,11 @@ void TitleBar::MouseMove(const MouseEventArgs * e)
         xy32 offset = { e->X - lastPos.X, e->Y - lastPos.Y };
         if (offset.X != 0 || offset.Y != 0)
         {
-            Window->Invalidate();
-            Window->X += offset.X;
-            Window->Y += offset.Y;
-            Window->Invalidate();
+            Window * window = ParentWindow;
+            window->Invalidate();
+            window->X += offset.X;
+            window->Y += offset.Y;
+            window->Invalidate();
         }
         _lastCursorPosition = { e->X - offset.X, e->Y - offset.Y };
     }

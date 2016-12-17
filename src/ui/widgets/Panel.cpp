@@ -14,6 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "../../core/Math.hpp"
 #include "../../drawing/IDrawingContext.h"
 #include "Panel.h"
 
@@ -42,4 +43,18 @@ Widget * Panel::GetChild(sint32 index)
         result = Children[index];
     }
     return result;
+}
+
+void Panel::Measure()
+{
+    if (Widget::Flags & WIDGET_FLAGS::AUTO_SIZE)
+    {
+        size32 size = { 0, 0 };
+        for (Widget * widget : Children)
+        {
+            size.Width = Math::Max(size.Width, widget->X + widget->Width + widget->Margin.Right);
+            size.Height = Math::Max(size.Height, widget->Y + widget->Height + widget->Margin.Bottom);
+        }
+        Size = size;
+    }
 }

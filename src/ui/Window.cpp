@@ -14,6 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "../core/Math.hpp"
 #include "../drawing/IDrawingContext.h"
 #include "../localisation/string_ids.h"
 #include "../sprites.h"
@@ -25,6 +26,7 @@
 #include "widgets/TitleBar.h"
 #include "Window.h"
 #include "WindowManager.h"
+#include "WindowShell.h"
 
 using namespace OpenRCT2::Ui;
 
@@ -32,21 +34,28 @@ Window::Window()
 {
     Bounds = { 0, 0, 0, 0 };
     BackgroundColour = COLOUR_GREY;
-    Flags = WINDOW_FLAGS::HAS_TITLE_BAR |
-            WINDOW_FLAGS::HAS_CLOSE_BUTTON;
+    Flags = WINDOW_FLAGS::AUTO_SIZE |
+            WINDOW_FLAGS::HAS_TITLE_BAR |
+            WINDOW_FLAGS::HAS_CLOSE_BUTTON |
+            WINDOW_FLAGS::LAYOUT_DIRTY;
+
+    _windowShell = new WindowShell(this);
 }
 
 Window::~Window()
 {
-    delete _tabPanel;
-    delete _closeButton;
-    delete _titleBar;
-    delete _child;
+    delete _windowShell;
 }
 
 void Window::SetWindowManager(IWindowManager * windowManager)
 {
     _windowManager = windowManager;
+}
+
+void Window::Initialise()
+{
+    _windowShell->Initialise();
+    _child = _windowShell;
 }
 
 Widget * Window::GetWidgetAt(sint32 x, sint32 y)
@@ -101,26 +110,48 @@ rct_string_id Window::GetTitle()
 void Window::SetTitle(rct_string_id title)
 {
     _title = title;
-    if (_titleBar != nullptr)
+
+    auto titleBar = _windowShell->GetTitleBar();
+    if (titleBar != nullptr)
     {
-        _titleBar->Text = title;
+        titleBar->Text = title;
     }
+}
+
+ITabPanelAdapter * Window::GetTabPanelAdapter()
+{
+    return _tabPanelAdapter;
 }
 
 void Window::SetTabPanelAdapter(ITabPanelAdapter * adapter)
 {
     _tabPanelAdapter = adapter;
-    if (_tabPanel != nullptr)
+
+    auto tabPanel = _windowShell->GetTabPanel();
+    if (tabPanel != nullptr)
     {
-        _tabPanel->SetAdapter(adapter);
+        tabPanel->SetAdapter(adapter);
     }
+}
+
+sint32 Window::GetTabIndex()
+{
+    sint32 index = -1;
+
+    auto tabPanel = _windowShell->GetTabPanel();
+    if (tabPanel != nullptr)
+    {
+        index = tabPanel->GetSelectedIndex();
+    }
+    return index;
 }
 
 void Window::SetTabIndex(sint32 index)
 {
-    if (_tabPanel != nullptr)
+    auto tabPanel = _windowShell->GetTabPanel();
+    if (tabPanel != nullptr)
     {
-        _tabPanel->SetSelectedIndex(index);
+        tabPanel->SetSelectedIndex(index);
     }
 }
 
@@ -129,13 +160,22 @@ void Window::Measure()
     if (_child != nullptr)
     {
         Measure(_child);
+
+        if ((Flags & WIDGET_FLAGS::AUTO_SIZE) || (Width == 0 && Height == 0))
+        {
+            Width = _child->Width;
+            Height = _child->Height;
+        }
+        else
+        {
+            Width = Math::Clamp(MinimumSize.Width, Width, MaximumSize.Width);
+            Height = Math::Clamp(MinimumSize.Height, Height, MaximumSize.Height);
+        }
     }
 }
 
 void Window::Measure(Widget * node)
 {
-    node->Measure();
-
     sint32 numChildren = node->GetChildrenCount();
     for (sint32 i = numChildren - 1; i >= 0; i--)
     {
@@ -145,11 +185,12 @@ void Window::Measure(Widget * node)
             Measure(child);
         }
     }
+
+    node->Measure();
 }
 
 void Window::Arrange()
 {
-    ArrangeShim();
     if (_child != nullptr)
     {
         // Child fills window
@@ -186,12 +227,6 @@ void Window::Invalidate()
 
 void Window::Update()
 {
-    if (!_shimInitialised)
-    {
-        _shimInitialised = true;
-        InitialiseShim();
-    }
-
     if (_child != nullptr)
     {
         Update(_child, Location);
@@ -214,7 +249,7 @@ void Window::Update()
 
 void Window::Update(Widget * node, xy32 absolutePosition)
 {
-    node->Window = this;
+    node->ParentWindow = this;
     node->Update();
 
     sint32 numChildren = node->GetChildrenCount();
@@ -396,71 +431,4 @@ void Window::SetWidgetFocus(Widget * widget)
     {
         widget->Flags |= WIDGET_FLAGS::FOCUS;
     }
-}
-
-void Window::ArrangeShim()
-{
-    // Panel
-    _child->X = 0;
-    _child->Y = 0;
-    _child->Width = Bounds.Width;
-    _child->Height = Bounds.Height;
-
-    // Title bar
-    if (_titleBar != nullptr)
-    {
-        _titleBar->X = 1;
-        _titleBar->Y = 1;
-        _titleBar->Width = Width - 2;
-        _titleBar->Height = 14;
-    }
-
-    // Close button
-    if (_closeButton != nullptr)
-    {
-        _closeButton->X = Width - 13;
-        _closeButton->Y = 2;
-        _closeButton->Width = 11;
-        _closeButton->Height = 12;
-    }
-
-    // Tab panel
-    if (_tabPanel != nullptr)
-    {
-        _tabPanel->X = 0;
-        _tabPanel->Y = 17;
-        _tabPanel->Width = Width;
-        _tabPanel->Height = Height - _tabPanel->Y;
-        _tabPanel->Style = 1;
-        _tabPanel->Flags &= ~WIDGET_FLAGS::INHERIT_STYLE;
-    }
-}
-
-void Window::InitialiseShim()
-{
-    // Create root container
-    auto panel = new Panel();
-    _child = panel;
-
-    // Title bar
-    if (Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
-    {
-        _titleBar = new TitleBar();
-        _titleBar->Text = _title;
-        panel->AddChild(_titleBar);
-    }
-
-    // Close button
-    if (Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
-    {
-        _closeButton = new Button();
-        _closeButton->Text = STR_CLOSE_X;
-        _closeButton->Type = BUTTON_TYPE::OUTSET;
-        panel->AddChild(_closeButton);
-    }
-
-    // Tab panel
-    _tabPanel = new TabPanel();
-    _tabPanel->SetAdapter(_tabPanelAdapter);
-    panel->AddChild(_tabPanel);
 }

@@ -33,8 +33,8 @@ void StackPanel::SetOrientation(ORIENTATION value)
 void StackPanel::Measure()
 {
     sint32 numChildren = GetChildrenCount();
-    sint32 width = 0;
-    sint32 height = 0;
+    size32 minSize = { 0, 0 };
+    size32 nonStretchSize = { 0, 0 };
     if (_orientation == ORIENTATION::HORIZONTAL)
     {
         for (sint32 i = 0; i < numChildren; i++)
@@ -42,16 +42,16 @@ void StackPanel::Measure()
             Widget * widget = GetChild(i);
             if (widget->Visibility != VISIBILITY::COLLAPSED)
             {
-                widget->Measure();
-
                 size32 widgetSize = widget->GetSizeWithMargin();
+                minSize.Width += widgetSize.Width;
+                minSize.Height = Math::Max(minSize.Height, widgetSize.Height);
                 if (!(widget->Flags & WIDGET_FLAGS::STRETCH_H))
                 {
-                    width += widgetSize.Width;
+                    nonStretchSize.Width += widgetSize.Width;
                 }
                 if (!(widget->Flags & WIDGET_FLAGS::STRETCH_V))
                 {
-                    height = Math::Max(height, widgetSize.Height);
+                    nonStretchSize.Height = Math::Max(nonStretchSize.Height, widgetSize.Height);
                 }
             }
         }
@@ -63,24 +63,23 @@ void StackPanel::Measure()
             Widget * widget = GetChild(i);
             if (widget->Visibility != VISIBILITY::COLLAPSED)
             {
-                widget->Measure();
-
                 size32 widgetSize = widget->GetSizeWithMargin();
+                minSize.Width = Math::Max(minSize.Width, widgetSize.Width);
+                minSize.Height += widgetSize.Height;
                 if (!(widget->Flags & WIDGET_FLAGS::STRETCH_H))
                 {
-                    width = Math::Max(width, widgetSize.Width);
+                    nonStretchSize.Width = Math::Max(nonStretchSize.Width, widgetSize.Width);
                 }
                 if (!(widget->Flags & WIDGET_FLAGS::STRETCH_V))
                 {
-                    height += widgetSize.Height;
+                    nonStretchSize.Height += widgetSize.Height;
                 }
             }
         }
     }
-    Width = width;
-    Height = height;
 
-    _measuredSize = { width, height };
+    Size = minSize;
+    _measuredSize = nonStretchSize;
 }
 
 void StackPanel::Arrange()

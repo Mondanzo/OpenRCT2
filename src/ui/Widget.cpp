@@ -21,7 +21,7 @@ using namespace OpenRCT2::Ui;
 
 Widget::Widget()
 {
-    Window = nullptr;
+    ParentWindow = nullptr;
     Bounds = { 0 };
     Flags = WIDGET_FLAGS::AUTO_SIZE |
             WIDGET_FLAGS::ENABLED |

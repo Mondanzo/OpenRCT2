@@ -32,6 +32,8 @@ namespace OpenRCT2::Ui
         rct_string_id Text;
 
     public:
+        void Measure() override;
+
         void Draw(IDrawingContext * dc) override;
 
         void MouseDown(const MouseEventArgs * e) override;

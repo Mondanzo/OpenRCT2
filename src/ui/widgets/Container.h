@@ -34,6 +34,7 @@ namespace OpenRCT2::Ui
         sint32 GetChildrenCount() override;
         Widget * GetChild(sint32 index) override;
 
+        void Measure() override;
         void Arrange() override;
     };
 }

@@ -24,36 +24,33 @@ interface IDrawingContext;
 
 namespace OpenRCT2::Ui
 {
-    class       Button;
     interface   ITabPanelAdapter;
     interface   IWindowManager;
     struct      MouseEventArgs;
     class       TabPanel;
     class       TitleBar;
     class       Widget;
+    class       WindowShell;
 
     namespace WINDOW_FLAGS
     {
-        constexpr uint32 FOCUS              = 1 << 0;
-        constexpr uint32 CURSOR             = 1 << 1;
-        constexpr uint32 MODAL              = 1 << 2;
-        constexpr uint32 STICK_TO_BACK      = 1 << 3;
-        constexpr uint32 STICK_TO_FRONT     = 1 << 4;
-        constexpr uint32 TRANSPARENT        = 1 << 5;
-        constexpr uint32 HAS_TITLE_BAR      = 1 << 6;
-        constexpr uint32 HAS_CLOSE_BUTTON   = 1 << 7;
-        constexpr uint32 LAYOUT_DIRTY       = 1 << 8;
+        constexpr uint32 AUTO_SIZE          = 1 << 0;
+        constexpr uint32 FOCUS              = 1 << 1;
+        constexpr uint32 CURSOR             = 1 << 2;
+        constexpr uint32 MODAL              = 1 << 3;
+        constexpr uint32 STICK_TO_BACK      = 1 << 4;
+        constexpr uint32 STICK_TO_FRONT     = 1 << 5;
+        constexpr uint32 TRANSPARENT        = 1 << 6;
+        constexpr uint32 HAS_TITLE_BAR      = 1 << 7;
+        constexpr uint32 HAS_CLOSE_BUTTON   = 1 << 8;
+        constexpr uint32 LAYOUT_DIRTY       = 1 << 9;
     }
 
     class Window
     {
     private:
         IWindowManager * _windowManager = nullptr;
-
-        bool        _shimInitialised = false;
-        TitleBar *  _titleBar = nullptr;
-        Button *    _closeButton = nullptr;
-        TabPanel *  _tabPanel = nullptr;
+        WindowShell * _windowShell = nullptr;
 
         Widget * _child = nullptr;
         Widget * _cursorWidget = nullptr;
@@ -81,12 +78,16 @@ namespace OpenRCT2::Ui
         virtual ~Window();
 
         void SetWindowManager(IWindowManager * windowManager);
+        void Initialise();
 
         Widget * GetWidgetAt(sint32 x, sint32 y);
 
         rct_string_id GetTitle();
         void SetTitle(rct_string_id title);
+
+        ITabPanelAdapter * GetTabPanelAdapter();
         void SetTabPanelAdapter(ITabPanelAdapter * adapter);
+        sint32 GetTabIndex();
         void SetTabIndex(sint32 index);
 
         void Measure();
@@ -111,8 +112,5 @@ namespace OpenRCT2::Ui
 
         void SetWidgetCursor(Widget * widget);
         void SetWidgetFocus(Widget * widget);
-
-        void InitialiseShim();
-        void ArrangeShim();
     };
 }

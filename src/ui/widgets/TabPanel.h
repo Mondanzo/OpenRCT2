@@ -79,6 +79,7 @@ namespace OpenRCT2::Ui
 
         sint32 GetTabCount();
         void SetAdapter(ITabPanelAdapter * adapter);
+        sint32 GetSelectedIndex();
         void SetSelectedIndex(sint32 index);
         void Invalidate();
 

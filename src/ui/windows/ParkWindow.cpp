@@ -130,6 +130,22 @@ namespace OpenRCT2::Ui
             Style.Colours[2] = COLOUR_DARK_YELLOW;
         }
 
+        void Update() override
+        {
+            if (GetTabIndex() == 0)
+            {
+                Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
+                MinimumSize = { 230, 174 + 9 };
+                MaximumSize = { 230 * 3, (274 + 9) * 3 };
+            }
+            else
+            {
+                Flags |= WINDOW_FLAGS::AUTO_SIZE;
+            }
+
+            Window::Update();
+        }
+
         sint32 GetTabCount() override
         {
             return NUM_PAGES;

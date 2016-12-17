@@ -17,25 +17,36 @@
 #pragma once
 
 #include <vector>
-#include "../Widget.h"
+#include "widgets/Panel.h"
 
 namespace OpenRCT2::Ui
 {
+    class Button;
+    class TabPanel;
+    class TitleBar;
+
     /**
-     * Base class for all widget containers.
+     * The shell for the window containing common widgets such as the title bar, close button
+     * and tab control.
      */
-    class Panel : public Widget
+    class WindowShell : public Panel
     {
-    protected:
-        std::vector<Widget *> Children;
+    private:
+        TitleBar *  _titleBar = nullptr;
+        Button *    _closeButton = nullptr;
+        TabPanel *  _tabPanel = nullptr;
 
     public:
-        void AddChild(Widget * widget);
-        void RemoveAllChildren();
+        WindowShell(Window * window);
+        ~WindowShell();
 
-        sint32 GetChildrenCount() override;
-        Widget * GetChild(sint32 index) override;
+        void Initialise();
 
         void Measure() override;
+        void Arrange() override;
+
+        TitleBar * GetTitleBar();
+        Button * GetCloseButton();
+        TabPanel * GetTabPanel();
     };
 }
