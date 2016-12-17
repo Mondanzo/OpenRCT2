@@ -824,6 +824,7 @@ IDrawingEngine * DrawingEngineFactory::CreateSoftwareWithHardwareDisplay()
 SoftwareDrawingContext::SoftwareDrawingContext(SoftwareDrawingEngine * engine)
 {
     _engine = engine;
+    _next = nullptr;
 }
 
 SoftwareDrawingContext::~SoftwareDrawingContext()

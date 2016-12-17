@@ -51,16 +51,9 @@ namespace OpenRCT2::Ui
     {
         sint32 Top, Left, Right, Bottom;
 
-        Thickness() { }
-        Thickness(sint32 trbl)
-        {
-            Top = Left = Right = Bottom = trbl;
-        }
-        Thickness(sint32 tb, sint32 rl)
-        {
-            Top = Bottom = tb;
-            Left = Right = rl;
-        }
+        Thickness() : Thickness(0) { }
+        Thickness(sint32 trbl) : Thickness(trbl, trbl, trbl, trbl) { }
+        Thickness(sint32 tb, sint32 rl) : Thickness(tb, rl, tb, rl) { }
         Thickness(sint32 t, sint32 r, sint32 b, sint32 l)
         {
             Top = t;
@@ -121,4 +114,7 @@ namespace OpenRCT2::Ui
                      Height + Margin.Top + Margin.Bottom };
         }
     };
+
+    template<typename T>
+    using EventHandler = void (*)(Widget * sender, const T * e);
 }

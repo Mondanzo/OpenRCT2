@@ -148,28 +148,39 @@ void TabPanel::SetupWidgets()
     for (sint32 i = 0; i < numTabs; i++)
     {
         auto tab = &_tabs[i];
+        tab->Parent = this;
+        tab->Index = i;
         tab->Width = TAB_WIDTH;
         tab->Height = TAB_HEIGHT;
         tab->Info = *(_adapter->GetTabInfo(i));
-        if (i == _selectedIndex)
-        {
-            tab->Active = true;
-        }
+        tab->Active = (i == _selectedIndex);
     }
 
     Widget * content = _adapter->GetContent(_selectedIndex);
-    if (content != nullptr)
-    {
-        _container.SetChild(content);
-    }
+    _container.SetChild(content);
 
     InvalidateLayout();
 }
 
+TabPanel::Tab::Tab()
+{
+    Type = BUTTON_TYPE::IMAGE;
+    Image = SPR_TAB;
+    ImageDown = SPR_TAB_ACTIVE;
+
+    FrameTimeout = 0;
+    Offset = 0;
+
+    ClickEvent = ClickHandler;
+}
+
 void TabPanel::Tab::Update()
 {
+    Button::Update();
+
     if (Active)
     {
+        ButtonFlags |= BUTTON_FLAGS::DOWN;
         if (FrameTimeout > 0)
         {
             FrameTimeout--;
@@ -186,26 +197,24 @@ void TabPanel::Tab::Update()
             InvalidateVisual();
         }
     }
+    else
+    {
+        ButtonFlags &= ~BUTTON_FLAGS::DOWN;
+        FrameTimeout = 0;
+        Offset = 0;
+    }
 }
 
 void TabPanel::Tab::Draw(IDrawingContext * dc)
 {
-    uint32 colour = COLOUR_DARK_YELLOW;
-    uint32 sprite = SPR_TAB;
-    if (Active)
-    {
-        sprite = SPR_TAB_ACTIVE;
-    }
-    sprite |= 0x20000000;
-    sprite |= colour << 19;
-    dc->DrawSprite(sprite, 0, 0, 0);
+    Button::Draw(dc);
 
     const TabImage * ti = Info.Image;
     if (ti != nullptr)
     {
         if (ti->FrameCount > 0)
         {
-            sprite = ti->StartFrame;
+            uint32 sprite = ti->StartFrame;
             if (Active)
             {
                 sprite += Offset;
@@ -219,4 +228,10 @@ void TabPanel::Tab::Draw(IDrawingContext * dc)
             handler(dc, Offset);
         }
     }
+}
+
+void TabPanel::Tab::ClickHandler(Widget * sender, const void * e)
+{
+    auto tab = static_cast<TabPanel::Tab *>(sender);
+    tab->Parent->SetSelectedIndex(tab->Index);
 }

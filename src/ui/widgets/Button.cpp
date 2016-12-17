@@ -39,16 +39,16 @@ void Button::Measure()
 void Button::Update()
 {
     bool isCursor = ((Flags & WIDGET_FLAGS::CURSOR) != 0);
-    bool isHighlighted = ((_buttonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0);
+    bool isHighlighted = ((ButtonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0);
     if (isCursor != isHighlighted)
     {
         if (isCursor)
         {
-            _buttonFlags |= BUTTON_FLAGS::HIGHLIGHTED;
+            ButtonFlags |= BUTTON_FLAGS::HIGHLIGHTED;
         }
         else
         {
-            _buttonFlags &= ~BUTTON_FLAGS::HIGHLIGHTED;
+            ButtonFlags &= ~BUTTON_FLAGS::HIGHLIGHTED;
         }
         InvalidateVisual();
     }
@@ -56,86 +56,112 @@ void Button::Update()
 
 void Button::Draw(IDrawingContext * dc)
 {
+    switch (Type) {
+    case BUTTON_TYPE::FLAT:
+        DrawFlat(dc);
+        break;
+    case BUTTON_TYPE::OUTSET:
+        DrawOutset(dc);
+        break;
+    case BUTTON_TYPE::IMAGE:
+        DrawImage(dc);
+        break;
+    }
+}
+
+void Button::DrawFlat(IDrawingContext * dc)
+{
     colour_t colour = Window->Style.GetColour(Style);
 
-    bool isHighlighted = ((_buttonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0);
-    bool isPressed = (_buttonFlags & BUTTON_FLAGS::PRESSED) != 0;
-    if (Type == BUTTON_TYPE::FLAT)
+    // Border
+    if (!IsDisabled() && (IsHighlighted() || IsPressed()))
     {
-        // Border
-        if (!IsDisabled() && (isHighlighted || isPressed))
+        uint8 rectFlags = 0;
+        if (IsHighlighted() && IsPressed())
         {
-            uint8 rectFlags = 0;
-            if (isHighlighted && isPressed)
+            rectFlags = INSET_RECT_FLAG_BORDER_INSET;
+            if (Image == (uint32)-2)
             {
-                rectFlags = INSET_RECT_FLAG_BORDER_INSET;
-                if (Image == (uint32)-2)
-                {
-                    rectFlags = INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_NONE;
-                }
+                rectFlags = INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_NONE;
             }
-            DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, rectFlags);
         }
+        DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, rectFlags);
+    }
 
-        // Draw image
-        if (IsDisabled())
-        {
-            // Draw greyed out (light border bottom right shadow)
-            colour = ColourMapA[NOT_TRANSLUCENT(colour)].lighter;
-            dc->DrawSpriteSolid(Image, 1, 1, colour);
+    // Draw image
+    if (IsDisabled())
+    {
+        // Draw greyed out (light border bottom right shadow)
+        colour = ColourMapA[NOT_TRANSLUCENT(colour)].lighter;
+        dc->DrawSpriteSolid(Image, 1, 1, colour);
 
-            // Draw greyed out (dark)
-            colour = ColourMapA[NOT_TRANSLUCENT(colour)].mid_light;
-            dc->DrawSpriteSolid(Image, 0, 0, colour);
-        }
-        else
-        {
-            uint32 sprite = Image;
-            if (sprite & 0x40000000)
-            {
-                sprite &= ~0x40000000;
-            }
-            else
-            {
-                sprite |= colour << 19;
-            }
-            dc->DrawSprite(sprite, 0, 0, 0);
-        }
+        // Draw greyed out (dark)
+        colour = ColourMapA[NOT_TRANSLUCENT(colour)].mid_light;
+        dc->DrawSpriteSolid(Image, 0, 0, colour);
     }
     else
     {
-        // Border
-        uint8 rectFlags = 0;
-        // if (w->flags & WF_10)
-            rectFlags |= INSET_RECT_FLAG_FILL_MID_LIGHT;
-        if (isHighlighted && isPressed)
+        uint32 sprite = Image;
+        if (sprite & 0x40000000)
         {
-            rectFlags |= INSET_RECT_FLAG_BORDER_INSET;
+            sprite &= ~0x40000000;
         }
-        DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, rectFlags);
-
-        // Text
-        if (Text != STR_NONE)
+        else
         {
-            sint32 l = (Width / 2) - 1;
-            sint32 t = Math::Max(0, (Height / 2) - 6);
-            if (IsDisabled())
-            {
-                colour |= COLOUR_FLAG_INSET;
-            }
-
-            uintptr_t dpip = ((uintptr_t *)dc)[2];
-            rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-            gfx_draw_string_centred_clipped(dpi, Text, nullptr, colour, l, t, Width - 3);
+            sprite |= colour << 19;
         }
+        dc->DrawSprite(sprite, 0, 0, 0);
     }
+}
+
+void Button::DrawOutset(IDrawingContext * dc)
+{
+    colour_t colour = Window->Style.GetColour(Style);
+
+    // Border
+    uint8 rectFlags = 0;
+    // if (w->flags & WF_10)
+        rectFlags |= INSET_RECT_FLAG_FILL_MID_LIGHT;
+    if (IsHighlighted() && IsPressed())
+    {
+        rectFlags |= INSET_RECT_FLAG_BORDER_INSET;
+    }
+    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, rectFlags);
+
+    // Text
+    if (Text != STR_NONE)
+    {
+        sint32 l = (Width / 2) - 1;
+        sint32 t = Math::Max(0, (Height / 2) - 6);
+        if (IsDisabled())
+        {
+            colour |= COLOUR_FLAG_INSET;
+        }
+
+        uintptr_t dpip = ((uintptr_t *)dc)[2];
+        rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
+        gfx_draw_string_centred_clipped(dpi, Text, nullptr, colour, l, t, Width - 3);
+    }
+}
+
+void Button::DrawImage(IDrawingContext * dc)
+{
+    colour_t colour = Window->Style.GetColour(Style);
+    uint32 sprite = Image;
+    if ((IsHighlighted() && IsPressed()) || IsDown())
+    {
+        sprite = ImageDown;
+    }
+    sprite |= 0x20000000;
+    sprite |= colour << 19;
+    dc->DrawSprite(sprite, 0, 0, 0);
 }
 
 void Button::MouseDown(const MouseEventArgs * e)
 {
     if (e->Button == MOUSE_BUTTON::LEFT)
     {
-        _buttonFlags |= BUTTON_FLAGS::PRESSED;
+        ButtonFlags |= BUTTON_FLAGS::PRESSED;
         InvalidateVisual();
     }
 }
@@ -144,7 +170,34 @@ void Button::MouseUp(const MouseEventArgs * e)
 {
     if (e->Button == MOUSE_BUTTON::LEFT)
     {
-        _buttonFlags &= ~BUTTON_FLAGS::PRESSED;
+        ButtonFlags &= ~BUTTON_FLAGS::PRESSED;
         InvalidateVisual();
+
+        if (ButtonFlags & BUTTON_FLAGS::HIGHLIGHTED)
+        {
+            auto handler = ClickEvent;
+            if (handler != nullptr)
+            {
+                handler(this, nullptr);
+            }
+        }
     }
+}
+
+bool Button::IsHighlighted()
+{
+    bool isHighlighted = ((ButtonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0);
+    return isHighlighted;
+}
+
+bool Button::IsPressed()
+{
+    bool isPressed = (ButtonFlags & BUTTON_FLAGS::PRESSED) != 0;
+    return isPressed;
+}
+
+bool Button::IsDown()
+{
+    bool isDown = (ButtonFlags & BUTTON_FLAGS::DOWN) != 0;
+    return isDown;
 }

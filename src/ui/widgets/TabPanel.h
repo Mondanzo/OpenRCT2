@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vector>
+#include "Button.h"
 #include "Container.h"
 
 namespace OpenRCT2::Ui
@@ -45,17 +46,23 @@ namespace OpenRCT2::Ui
     class TabPanel : public Widget
     {
     private:
-        class Tab : public Widget
+        class Tab : public Button
         {
         public:
-            TabInfo Info;
-            bool    Active = false;
-            sint32  Offset = 0;
-            sint32  FrameTimeout = 0;
+            TabPanel *  Parent = nullptr;
+            sint32      Index = 0;
+            TabInfo     Info;
+            bool        Active = false;
+            sint32      Offset = 0;
+            sint32      FrameTimeout = 0;
 
         public:
+            Tab();
             void Update() override;
             void Draw(IDrawingContext * dc) override;
+
+        private:
+            static void ClickHandler(Widget * sender, const void * e);
         };
 
     private:

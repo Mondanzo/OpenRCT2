@@ -427,7 +427,7 @@ void Window::ArrangeShim()
     // Tab panel
     if (_tabPanel != nullptr)
     {
-        _tabPanel->X;
+        _tabPanel->X = 0;
         _tabPanel->Y = 17;
         _tabPanel->Width = Width;
         _tabPanel->Height = Height - _tabPanel->Y;

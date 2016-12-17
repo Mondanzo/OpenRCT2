@@ -14,16 +14,21 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "../localisation/string_ids.h"
 #include "Widget.h"
 
 using namespace OpenRCT2::Ui;
 
 Widget::Widget()
 {
+    Window = nullptr;
+    Bounds = { 0 };
     Flags = WIDGET_FLAGS::AUTO_SIZE |
             WIDGET_FLAGS::ENABLED |
             WIDGET_FLAGS::INHERIT_STYLE;
+    Visibility = VISIBILITY::VISIBLE;
     Style = 0;
+    DefaultTooltip = STR_NONE;
 }
 
 sint32 Widget::GetChildrenCount()

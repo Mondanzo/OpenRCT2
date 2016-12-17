@@ -61,11 +61,11 @@ namespace OpenRCT2::Ui
     {
         const TabImage Park = TabImage::Create(SPR_TAB_PARK);
         const TabImage Admission = TabImage::Create(SPR_TAB_ADMISSION_0, 8, 2);
-        const TabImage Statistics = TabImage::Create(SPR_TAB_STATS_0, 7, 2);
-        const TabImage Objective = TabImage::Create(SPR_TAB_OBJECTIVE_0, 16, 2);
+        const TabImage Statistics = TabImage::Create(SPR_TAB_STATS_0, 7, 4);
+        const TabImage Objective = TabImage::Create(SPR_TAB_OBJECTIVE_0, 16, 4);
         const TabImage Awards = TabImage::Create(SPR_TAB_AWARDS);
 
-        const TabImage RatingChart = TabImage::Create(SPR_TAB_GRAPH_0, 8, 5, [](IDrawingContext * dc, sint32 offset) -> void
+        const TabImage RatingChart = TabImage::Create(SPR_TAB_GRAPH_0, 8, 8, [](IDrawingContext * dc, sint32 offset) -> void
         {
             dc->DrawSprite(SPR_RATING_HIGH, 7, 1, 0);
             dc->DrawSprite(SPR_RATING_LOW, 16, 12, 0);

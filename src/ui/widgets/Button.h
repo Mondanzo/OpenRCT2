@@ -14,6 +14,8 @@
  *****************************************************************************/
 #pragma endregion
 
+#pragma once
+
 #include "../Widget.h"
 
 namespace OpenRCT2::Ui
@@ -22,23 +24,28 @@ namespace OpenRCT2::Ui
     {
         FLAT,
         OUTSET,
+        IMAGE,
     };
 
     namespace BUTTON_FLAGS
     {
         constexpr uint8 HIGHLIGHTED = 1 << 0;
         constexpr uint8 PRESSED     = 1 << 1;
+        constexpr uint8 DOWN        = 1 << 2;
     }
 
     class Button : public Widget
     {
-    private:
-        uint8           _buttonFlags = 0;
+    protected:
+        uint8           ButtonFlags = 0;
 
     public:
         BUTTON_TYPE     Type = BUTTON_TYPE::FLAT;
         rct_string_id   Text = (rct_string_id)-1;
         uint32          Image = 0;
+        uint32          ImageDown = 0;
+
+        EventHandler<void> ClickEvent = nullptr;
 
     public:
         void Measure() override;
@@ -48,5 +55,15 @@ namespace OpenRCT2::Ui
 
         void MouseDown(const MouseEventArgs * e) override;
         void MouseUp(const MouseEventArgs * e) override;
+
+    protected:
+        bool IsHighlighted();
+        bool IsPressed();
+        bool IsDown();
+
+    private:
+        void DrawFlat(IDrawingContext * dc);
+        void DrawOutset(IDrawingContext * dc);
+        void DrawImage(IDrawingContext * dc);
     };
 }
