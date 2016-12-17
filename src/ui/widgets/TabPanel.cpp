@@ -181,6 +181,7 @@ void TabPanel::Tab::Update()
             {
                 Offset = 0;
             }
+            InvalidateVisual();
         }
     }
 }

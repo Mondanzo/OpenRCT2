@@ -35,10 +35,28 @@ void Button::Measure()
     }
 }
 
+void Button::Update()
+{
+    bool isCursor = ((Flags & WIDGET_FLAGS::CURSOR) != 0);
+    bool isHighlighted = ((_buttonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0);
+    if (isCursor != isHighlighted)
+    {
+        if (isCursor)
+        {
+            _buttonFlags |= BUTTON_FLAGS::HIGHLIGHTED;
+        }
+        else
+        {
+            _buttonFlags &= ~BUTTON_FLAGS::HIGHLIGHTED;
+        }
+        InvalidateVisual();
+    }
+}
+
 void Button::Draw(IDrawingContext * dc)
 {
     uint8 colour = COLOUR_DARK_YELLOW;
-    bool isHighlighted = (Flags & WIDGET_FLAGS::CURSOR) != 0;
+    bool isHighlighted = ((_buttonFlags & BUTTON_FLAGS::HIGHLIGHTED) != 0);
     bool isPressed = (_buttonFlags & BUTTON_FLAGS::PRESSED) != 0;
     if (Style == BUTTON_STYLE::FLAT)
     {
@@ -116,6 +134,7 @@ void Button::MouseDown(const MouseEventArgs * e)
     if (e->Button == MOUSE_BUTTON::LEFT)
     {
         _buttonFlags |= BUTTON_FLAGS::PRESSED;
+        InvalidateVisual();
     }
 }
 
@@ -124,5 +143,6 @@ void Button::MouseUp(const MouseEventArgs * e)
     if (e->Button == MOUSE_BUTTON::LEFT)
     {
         _buttonFlags &= ~BUTTON_FLAGS::PRESSED;
+        InvalidateVisual();
     }
 }

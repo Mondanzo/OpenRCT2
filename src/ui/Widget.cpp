@@ -24,6 +24,16 @@ Widget::Widget()
              WIDGET_FLAGS::AUTO_SIZE;
 }
 
+sint32 Widget::GetChildrenCount()
+{
+    return 0;
+}
+
+Widget * Widget::GetChild(sint32 index)
+{
+    return nullptr;
+}
+
 rct_string_id Widget::GetTooltip(sint32 x, sint32 y)
 {
     return DefaultTooltip;
@@ -32,4 +42,14 @@ rct_string_id Widget::GetTooltip(sint32 x, sint32 y)
 void Widget::InvalidateLayout()
 {
     Flags |= WIDGET_FLAGS::LAYOUT_DIRTY;
+}
+
+void Widget::InvalidateVisual()
+{
+    Flags |= WIDGET_FLAGS::VISUAL_DIRTY;
+}
+
+bool Widget::HitTest(sint32 x, sint32 y)
+{
+    return true;
 }

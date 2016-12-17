@@ -25,6 +25,7 @@ namespace OpenRCT2::Ui
 {
     class       Button;
     interface   ITabPanelAdapter;
+    interface   IWindowManager;
     struct      MouseEventArgs;
     class       TabPanel;
     class       TitleBar;
@@ -46,6 +47,8 @@ namespace OpenRCT2::Ui
     class Window
     {
     private:
+        IWindowManager * _windowManager = nullptr;
+
         bool        _shimInitialised = false;
         TitleBar *  _titleBar = nullptr;
         Button *    _closeButton = nullptr;
@@ -75,6 +78,8 @@ namespace OpenRCT2::Ui
         Window();
         virtual ~Window();
 
+        void SetWindowManager(IWindowManager * windowManager);
+
         Widget * GetWidgetAt(sint32 x, sint32 y);
 
         rct_string_id GetTitle();
@@ -85,6 +90,7 @@ namespace OpenRCT2::Ui
         void Measure();
         void Arrange();
 
+        void Invalidate();
         virtual void Update();
         virtual void Draw(IDrawingContext * g);
 
@@ -98,7 +104,7 @@ namespace OpenRCT2::Ui
         Widget * GetWidgetAt(Widget * node, sint32 x, sint32 y);
         void Measure(Widget * node);
         void Arrange(Widget * node);
-        void Update(Widget * node);
+        void Update(Widget * node, xy32 absolutePosition);
         void Draw(IDrawingContext * g, Widget * node);
 
         void SetWidgetCursor(Widget * widget);

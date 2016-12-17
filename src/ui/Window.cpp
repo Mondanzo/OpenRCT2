@@ -24,6 +24,7 @@
 #include "widgets/TabPanel.h"
 #include "widgets/TitleBar.h"
 #include "Window.h"
+#include "WindowManager.h"
 
 using namespace OpenRCT2::Ui;
 
@@ -41,6 +42,11 @@ Window::~Window()
     delete _closeButton;
     delete _titleBar;
     delete _child;
+}
+
+void Window::SetWindowManager(IWindowManager * windowManager)
+{
+    _windowManager = windowManager;
 }
 
 Widget * Window::GetWidgetAt(sint32 x, sint32 y)
@@ -155,6 +161,7 @@ void Window::Arrange()
         // Recursively arrange the widget tree
         Arrange(_child);
     }
+    Invalidate();
 }
 
 void Window::Arrange(Widget * node)
@@ -172,6 +179,11 @@ void Window::Arrange(Widget * node)
     }
 }
 
+void Window::Invalidate()
+{
+    _windowManager->Invalidate(Bounds);
+}
+
 void Window::Update()
 {
     if (!_shimInitialised)
@@ -182,7 +194,7 @@ void Window::Update()
 
     if (_child != nullptr)
     {
-        Update(_child);
+        Update(_child, Location);
     }
 
     if (Flags & WINDOW_FLAGS::LAYOUT_DIRTY)
@@ -200,7 +212,7 @@ void Window::Update()
     }
 }
 
-void Window::Update(Widget * node)
+void Window::Update(Widget * node, xy32 absolutePosition)
 {
     node->Update();
 
@@ -210,10 +222,22 @@ void Window::Update(Widget * node)
         Widget * child = node->GetChild(i);
         if (child != nullptr)
         {
-            Update(child);
+            xy32 childAbsPosition = absolutePosition;
+            childAbsPosition.X += child->X;
+            childAbsPosition.Y += child->Y;
+
+            Update(child, childAbsPosition);
             if (child->Flags & WIDGET_FLAGS::LAYOUT_DIRTY)
             {
+                child->Flags &= ~WIDGET_FLAGS::LAYOUT_DIRTY;
                 Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
+            }
+            if (child->Flags & WIDGET_FLAGS::VISUAL_DIRTY)
+            {
+                child->Flags &= ~WIDGET_FLAGS::VISUAL_DIRTY;
+
+                rect32 widgetBounds = { childAbsPosition.X, childAbsPosition.Y, child->Width, child->Height };
+                _windowManager->Invalidate(widgetBounds);
             }
         }
     }

@@ -34,14 +34,15 @@ namespace OpenRCT2::Ui
 
     namespace WIDGET_FLAGS
     {
-        constexpr uint8 AUTO_SIZE       = 1 << 0;
-        constexpr uint8 ENABLED         = 1 << 1;
-        constexpr uint8 FOCUSABLE       = 1 << 2;
-        constexpr uint8 FOCUS           = 1 << 3;
-        constexpr uint8 CURSOR          = 1 << 4;
-        constexpr uint8 LAYOUT_DIRTY    = 1 << 5;
-        constexpr uint8 STRETCH_H       = 1 << 6;
-        constexpr uint8 STRETCH_V       = 1 << 7;
+        constexpr uint16 AUTO_SIZE       = 1 << 0;
+        constexpr uint16 STRETCH_H       = 1 << 1;
+        constexpr uint16 STRETCH_V       = 1 << 2;
+        constexpr uint16 ENABLED         = 1 << 3;
+        constexpr uint16 FOCUSABLE       = 1 << 4;
+        constexpr uint16 FOCUS           = 1 << 5;
+        constexpr uint16 CURSOR          = 1 << 6;
+        constexpr uint16 LAYOUT_DIRTY    = 1 << 7;
+        constexpr uint16 VISUAL_DIRTY    = 1 << 8;
     }
 
     struct Thickness
@@ -77,7 +78,7 @@ namespace OpenRCT2::Ui
             rect32 Bounds;
         };
         Thickness   Margin;
-        uint8       Flags;
+        uint16      Flags;
         VISIBILITY  Visibility;
 
         rct_string_id DefaultTooltip;
@@ -85,8 +86,8 @@ namespace OpenRCT2::Ui
         Widget();
         virtual ~Widget() = default;
 
-        virtual sint32 GetChildrenCount() { return 0; }
-        virtual Widget * GetChild(sint32 index) { return nullptr; }
+        virtual sint32 GetChildrenCount();
+        virtual Widget * GetChild(sint32 index);
 
         virtual rct_string_id GetTooltip(sint32 x, sint32 y);
 
@@ -95,11 +96,12 @@ namespace OpenRCT2::Ui
         virtual void Measure() { }
         virtual void Arrange() { }
 
+        void InvalidateVisual();
         virtual void Update() { };
         virtual void Draw(IDrawingContext * dc) { };
 
         // Interaction
-        virtual bool HitTest(sint32 x, sint32 y) { return true; }
+        virtual bool HitTest(sint32 x, sint32 y);
         virtual void MouseDown(const MouseEventArgs * e) { };
         virtual void MouseMove(const MouseEventArgs * e) { };
         virtual void MouseUp(const MouseEventArgs * e) { };

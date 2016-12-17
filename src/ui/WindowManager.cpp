@@ -47,7 +47,7 @@ namespace OpenRCT2::Ui
             // _windows.push_back(w2);
 
             Window * w3 = OpenParkWindow();
-            _windows.push_back(w3);
+            AddWindow(w3);
             SetWindowFocus(w3);
         }
 
@@ -63,6 +63,13 @@ namespace OpenRCT2::Ui
         void SetBounds(rect32 bounds) override
         {
             _bounds = bounds;
+        }
+
+        void Invalidate(rect32 bounds) override
+        {
+            bounds.X += _bounds.X;
+            bounds.Y += _bounds.Y;
+            gfx_set_dirty_blocks(bounds.X, bounds.Y, bounds.GetRight(), bounds.GetBottom());
         }
 
         void Update() override
@@ -148,6 +155,12 @@ namespace OpenRCT2::Ui
         }
 
     private:
+        void AddWindow(Window * window)
+        {
+            window->SetWindowManager(this);
+            _windows.push_back(window);
+        }
+
         Window * GetWindowAt(sint32 x, sint32 y)
         {
             for (Window * w : _windows)

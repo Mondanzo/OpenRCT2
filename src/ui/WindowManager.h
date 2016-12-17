@@ -19,11 +19,12 @@
 #include "../common.h"
 #include "Primitives.h"
 
-interface   IDrawingContext;
-struct      MouseEventArgs;
+interface IDrawingContext;
 
 namespace OpenRCT2::Ui
 {
+    struct MouseEventArgs;
+
     interface IWindowManager
     {
         virtual ~IWindowManager() = default;
@@ -31,6 +32,7 @@ namespace OpenRCT2::Ui
         virtual rect32 GetBounds() const abstract;
 
         virtual void SetBounds(rect32 bounds) abstract;
+        virtual void Invalidate(rect32 bounds) abstract;
 
         virtual void Update() abstract;
         virtual void Draw(IDrawingContext * dc) abstract;

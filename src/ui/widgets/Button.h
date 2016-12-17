@@ -43,6 +43,7 @@ namespace OpenRCT2::Ui
     public:
         void Measure() override;
 
+        void Update() override;
         void Draw(IDrawingContext * dc) override;
 
         void MouseDown(const MouseEventArgs * e) override;
