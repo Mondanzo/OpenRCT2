@@ -24,10 +24,18 @@ namespace OpenRCT2::Ui
      */
     class TitleBar : public Widget
     {
+    private:
+        bool _movingWindow = false;
+        xy32 _lastCursorPosition = { 0 };
+
     public:
         rct_string_id Text;
 
     public:
         void Draw(IDrawingContext * dc) override;
+
+        void MouseDown(const MouseEventArgs * e) override;
+        void MouseMove(const MouseEventArgs * e) override;
+        void MouseUp(const MouseEventArgs * e) override;
     };
 }

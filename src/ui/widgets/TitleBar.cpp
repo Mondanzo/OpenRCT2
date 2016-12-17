@@ -17,6 +17,7 @@
 #include "../../drawing/IDrawingContext.h"
 #include "../../localisation/string_ids.h"
 #include "../DrawingContextExtensions.h"
+#include "../MouseEventArgs.h"
 #include "../Window.h"
 #include "TitleBar.h"
 
@@ -61,5 +62,39 @@ void TitleBar::Draw(IDrawingContext * dc)
         uintptr_t dpip = ((uintptr_t *)dc)[2];
         rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
         gfx_draw_string_centred_clipped(dpi, Text, nullptr, COLOUR_WHITE | COLOUR_FLAG_OUTLINE, l, t, width);
+    }
+}
+
+void TitleBar::MouseDown(const MouseEventArgs * e)
+{
+    if (e->Button == MOUSE_BUTTON::LEFT)
+    {
+        _movingWindow = true;
+        _lastCursorPosition = { e->X, e->Y };
+    }
+}
+
+void TitleBar::MouseMove(const MouseEventArgs * e)
+{
+    if (_movingWindow)
+    {
+        xy32 lastPos = _lastCursorPosition;
+        xy32 offset = { e->X - lastPos.X, e->Y - lastPos.Y };
+        if (offset.X != 0 || offset.Y != 0)
+        {
+            Window->Invalidate();
+            Window->X += offset.X;
+            Window->Y += offset.Y;
+            Window->Invalidate();
+        }
+        _lastCursorPosition = { e->X - offset.X, e->Y - offset.Y };
+    }
+}
+
+void TitleBar::MouseUp(const MouseEventArgs * e)
+{
+    if (e->Button == MOUSE_BUTTON::LEFT)
+    {
+        _movingWindow = false;
     }
 }
