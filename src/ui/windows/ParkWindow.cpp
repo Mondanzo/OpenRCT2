@@ -33,6 +33,7 @@ extern "C"
     #include "../../config.h"
     #include "../../interface/colour.h"
     #include "../../localisation/localisation.h"
+    #include "../../management/award.h"
     #include "../../ride/ride.h"
     #include "../../util/util.h"
     #include "../../world/park.h"
@@ -47,6 +48,18 @@ std::string FormatLocaleString(rct_string_id stringId, const void * args = nullp
 
 namespace OpenRCT2::Ui
 {
+    enum PAGE
+    {
+        PAGE_ENTRANCE,
+        PAGE_RATING,
+        PAGE_GUESTS,
+        PAGE_ADMISSION,
+        PAGE_STATS,
+        PAGE_OBJECTIVE,
+        PAGE_AWARDS,
+    };
+    constexpr sint32 NUM_PAGES = 7;
+
     static TabInfo EntranceTabInfo  = { &TabImages::Park, STR_NONE, 0 };
     static TabInfo RatingTabInfo    = { &TabImages::RatingChart, STR_NONE, 0 };
     static TabInfo GuestsTabInfo    = { &TabImages::GuestChart, STR_NONE, 0 };
@@ -65,8 +78,6 @@ namespace OpenRCT2::Ui
         &ObjectiveTabInfo,
         &AwardsTabInfo,
     };
-
-    constexpr sint32 NUM_PAGES = 7;
 
     class EntrancePage : public Container
     {
@@ -231,10 +242,75 @@ namespace OpenRCT2::Ui
         }
     };
 
+    class AwardsPage : public Widget
+    {
+        struct ParkAward
+        {
+            rct_string_id   Text;
+            uint32          Sprite;
+        };
+        static constexpr ParkAward ParkAwards[] = {
+            { STR_AWARD_MOST_UNTIDY,                SPR_AWARD_MOST_UNTIDY },
+            { STR_AWARD_MOST_TIDY,                  SPR_AWARD_MOST_TIDY },
+            { STR_AWARD_BEST_ROLLERCOASTERS,        SPR_AWARD_BEST_ROLLERCOASTERS },
+            { STR_AWARD_BEST_VALUE,                 SPR_AWARD_BEST_VALUE },
+            { STR_AWARD_MOST_BEAUTIFUL,             SPR_AWARD_MOST_BEAUTIFUL },
+            { STR_AWARD_WORST_VALUE,                SPR_AWARD_WORST_VALUE },
+            { STR_AWARD_SAFEST,                     SPR_AWARD_SAFEST },
+            { STR_AWARD_BEST_STAFF,                 SPR_AWARD_BEST_STAFF },
+            { STR_AWARD_BEST_FOOD,                  SPR_AWARD_BEST_FOOD },
+            { STR_AWARD_WORST_FOOD,                 SPR_AWARD_WORST_FOOD },
+            { STR_AWARD_BEST_RESTROOMS,             SPR_AWARD_BEST_RESTROOMS },
+            { STR_AWARD_MOST_DISAPPOINTING,         SPR_AWARD_MOST_DISAPPOINTING },
+            { STR_AWARD_BEST_WATER_RIDES,           SPR_AWARD_BEST_WATER_RIDES },
+            { STR_AWARD_BEST_CUSTOM_DESIGNED_RIDES, SPR_AWARD_BEST_CUSTOM_DESIGNED_RIDES },
+            { STR_AWARD_MOST_DAZZLING_RIDE_COLOURS, SPR_AWARD_MOST_DAZZLING_RIDE_COLOURS },
+            { STR_AWARD_MOST_CONFUSING_LAYOUT,      SPR_AWARD_MOST_CONFUSING_LAYOUT },
+            { STR_AWARD_BEST_GENTLE_RIDES,          SPR_AWARD_BEST_GENTLE_RIDES },
+        };
+
+        void Draw(IDrawingContext * dc)
+        {
+            uintptr_t dpip = ((uintptr_t *)dc)[2];
+            rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
+
+            sint32 x = 4;
+            sint32 y = 4;
+            sint32 count = 0;
+            for (sint32 i = 0; i < MAX_AWARDS; i++) {
+                const rct_award * award = &gCurrentAwards[i];
+                if (award->time != 0)
+                {
+                    const ParkAward * padesc = &ParkAwards[award->type];
+                    dc->DrawSprite(padesc->Sprite, x, y, 0);
+                    gfx_draw_string_left_wrapped(dpi, nullptr, x + 34, y + 6, 180, padesc->Text, COLOUR_BLACK);
+
+                    y += 32;
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                gfx_draw_string_left(dpi, STR_NO_RECENT_AWARDS, nullptr, COLOUR_BLACK, x + 6, y + 6);
+            }
+        }
+    };
+
     class ParkWindow : public Window,
                        public ITabPanelAdapter
     {
     private:
+        static constexpr size32 PageWindowSizes[] = {
+            { 230, 174 + 9 },   // PAGE_ENTRANCE
+            { 230, 182 },       // PAGE_RATING
+            { 230, 182 },       // PAGE_GUESTS
+            { 230, 124 },       // PAGE_ADMISSION
+            { 230, 109 },       // PAGE_STATS
+            { 230, 224 },       // PAGE_OBJECTIVE
+            { 230, 182 },       // PAGE_AWARDS
+        };
+
         Widget *    _currentPage = nullptr;
         bool        _moneyDisabled = false;
 
@@ -263,21 +339,21 @@ namespace OpenRCT2::Ui
 
             SetTitle(FormatLocaleString(gParkName, &gParkNameArgs));
 
-            switch (GetTabIndex()) {
-            case 0:
+            sint32 page = GetTabIndex();
+            switch (page) {
+            case PAGE_ENTRANCE:
                 Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
                 MinimumSize = { 230, 174 + 9 };
                 MaximumSize = { 230 * 3, (274 + 9) * 3 };
                 break;
-            case 3:
+            case PAGE_RATING:
+            case PAGE_GUESTS:
+            case PAGE_ADMISSION:
+            case PAGE_STATS:
+            case PAGE_OBJECTIVE:
+            case PAGE_AWARDS:
                 Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
-                SetSize(230, 124);
-                MinimumSize = Size;
-                MaximumSize = Size;
-                break;
-            case 4:
-                Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
-                SetSize(230, 109);
+                SetSize(PageWindowSizes[page]);
                 MinimumSize = Size;
                 MaximumSize = Size;
                 break;
@@ -297,7 +373,7 @@ namespace OpenRCT2::Ui
         TabInfo GetTabInfo(sint32 index) override
         {
             TabInfo tabInfo = *TabInfos[index];
-            if (index == 3 && (gParkFlags & PARK_FLAGS_NO_MONEY))
+            if (index == PAGE_ADMISSION && (gParkFlags & PARK_FLAGS_NO_MONEY))
             {
                 tabInfo.Flags |= TABINFO_FLAGS::HIDDEN;
             }
@@ -310,14 +386,17 @@ namespace OpenRCT2::Ui
             _currentPage = nullptr;
 
             switch (index) {
-            case 0:
+            case PAGE_ENTRANCE:
                 _currentPage = new EntrancePage();
                 break;
-            case 3:
+            case PAGE_ADMISSION:
                 _currentPage = new AdmissionsPage();
                 break;
-            case 4:
+            case PAGE_STATS:
                 _currentPage = new StatsPage();
+                break;
+            case PAGE_AWARDS:
+                _currentPage = new AwardsPage();
                 break;
             }
 
