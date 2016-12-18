@@ -376,6 +376,20 @@ extern "C"
             }
         }
     }
+
+    void openrct2_window_manager_mouse_wheel(int x, int y, int delta)
+    {
+        auto windowManager = OpenRCT2::_windowManager;
+        if (windowManager != nullptr)
+        {
+            OpenRCT2::Ui::MouseEventArgs e;
+            e.X = gCursorState.x;
+            e.Y = gCursorState.y;
+            e.Button = 0;
+            e.Delta = delta;
+            windowManager->MouseWheel(&e);
+        }
+    }
 }
 
 namespace OpenRCT2

@@ -79,6 +79,7 @@ extern "C"
     void openrct2_window_manager_update();
     void openrct2_window_manager_draw(void * dc);
     void openrct2_window_manager_mouse(int x, int y, int state);
+    void openrct2_window_manager_mouse_wheel(int x, int y, int delta);
 
 #ifdef __cplusplus
 }

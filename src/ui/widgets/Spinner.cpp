@@ -14,9 +14,11 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "../../core/Math.hpp"
 #include "../../drawing/IDrawingContext.h"
 #include "../../localisation/string_ids.h"
 #include "../DrawingContextExtensions.h"
+#include "../MouseEventArgs.h"
 #include "../Window.h"
 #include "Button.h"
 #include "Spinner.h"
@@ -50,6 +52,20 @@ Spinner::~Spinner()
 {
     delete _upButton;
     delete _downButton;
+}
+
+money32 Spinner::GetValue()
+{
+    return _value;
+}
+
+void Spinner::SetValue(money32 value)
+{
+    if (_value != value)
+    {
+        _value = value;
+        InvalidateVisual();
+    }
 }
 
 sint32 Spinner::GetChildrenCount()
@@ -104,7 +120,7 @@ void Spinner::Draw(IDrawingContext * dc)
     {
         stringId = STR_BOTTOM_TOOLBAR_CASH;
     }
-    if (Value == 0 && (SpinnerFlags & SPINNER_FLAGS::SHOW_ZERO_AS_FREE))
+    if (_value == 0 && (SpinnerFlags & SPINNER_FLAGS::SHOW_ZERO_AS_FREE))
     {
         stringId = STR_FREE;
     }
@@ -113,21 +129,58 @@ void Spinner::Draw(IDrawingContext * dc)
     sint32 t = 1;
     uintptr_t dpip = ((uintptr_t *)dc)[2];
     rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-    gfx_draw_string_left(dpi, stringId, &Value, colour, l, t);
+    gfx_draw_string_left(dpi, stringId, &_value, colour, l, t);
+}
+
+void Spinner::MouseWheel(const MouseEventArgs * e)
+{
+    money32 newValue = _value;
+    sint32 deltaWhole = Math::Max(1, abs(e->Delta) / 17);
+    sint32 step = SmallStep;
+    if (e->Delta < 0)
+    {
+        while (deltaWhole > 0 && newValue + step <= MaximumValue)
+        {
+            newValue += step;
+            deltaWhole--;
+        }
+    }
+    else if (e->Delta > 0)
+    {
+        while (deltaWhole > 0 && newValue - step >= MinimumValue)
+        {
+            newValue -= step;
+            deltaWhole--;
+        }
+    }
+    if (newValue != _value)
+    {
+        InvokeChangeEvent(newValue);
+    }
 }
 
 void Spinner::UpHandler()
 {
-    if (IncrementEvent != nullptr)
+    money32 newValue = _value + SmallStep;
+    if (newValue <= MaximumValue)
     {
-        IncrementEvent();
+        InvokeChangeEvent(newValue);
     }
 }
 
 void Spinner::DownHandler()
 {
-    if (DecrementEvent != nullptr)
+    money32 newValue = _value - SmallStep;
+    if (newValue >= MinimumValue)
     {
-        DecrementEvent();
+        InvokeChangeEvent(newValue);
+    }
+}
+
+void Spinner::InvokeChangeEvent(money32 value)
+{
+    if (ChangeEvent != nullptr)
+    {
+        ChangeEvent(value);
     }
 }

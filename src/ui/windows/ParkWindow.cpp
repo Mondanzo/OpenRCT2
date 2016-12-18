@@ -131,14 +131,11 @@ namespace OpenRCT2::Ui
             _feeSpinner.SpinnerFlags |= SPINNER_FLAGS::HIGH_PRECISION |
                                         SPINNER_FLAGS::SHOW_ZERO_AS_FREE;
             _feeSpinner.Width = 76;
-            _feeSpinner.Value = 1000;
-            _feeSpinner.IncrementEvent = [this]() -> void {
-                auto newFee = Math::Min(MONEY(100,00), gParkEntranceFee + MONEY(1,00));
-                park_set_entrance_fee(newFee);
-            };
-            _feeSpinner.DecrementEvent = [this]() -> void {
-                auto newFee = Math::Max(MONEY(0,00), gParkEntranceFee - MONEY(1,00));
-                park_set_entrance_fee(newFee);
+            _feeSpinner.SmallStep = MONEY(1,00);
+            _feeSpinner.MinimumValue = MONEY(0,00);
+            _feeSpinner.MaximumValue = MONEY(100,00);
+            _feeSpinner.ChangeEvent = [this](money32 value) -> void {
+                park_set_entrance_fee(value);
             };
 
             _grid1.Flags |= WIDGET_FLAGS::STRETCH_H;
@@ -161,10 +158,7 @@ namespace OpenRCT2::Ui
 
         void Update() override
         {
-            if (_feeSpinner.Value != gParkEntranceFee)
-            {
-                _feeSpinner.Value = gParkEntranceFee;
-            }
+            _feeSpinner.SetValue(gParkEntranceFee);
             if (_admissionsIncomeValue != gTotalIncomeFromAdmissions)
             {
                 _admissionsIncomeValue = gTotalIncomeFromAdmissions;

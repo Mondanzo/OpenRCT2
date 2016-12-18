@@ -15,6 +15,7 @@
 #pragma endregion
 
 #include "../audio/audio.h"
+#include "../config.h"
 #include "../drawing/drawing.h"
 #include "../editor.h"
 #include "../game.h"
@@ -22,13 +23,13 @@
 #include "../interface/Cursors.h"
 #include "../localisation/localisation.h"
 #include "../localisation/string_ids.h"
+#include "../OpenRCT2.h"
 #include "../platform/platform.h"
 #include "../world/map.h"
 #include "../world/sprite.h"
 #include "viewport.h"
 #include "widget.h"
 #include "window.h"
-#include "../config.h"
 
 #define RCT2_FIRST_WINDOW		(g_window_list)
 #define RCT2_LAST_WINDOW		(gWindowNextSlot - 1)
@@ -309,6 +310,8 @@ static void window_all_wheel_input()
 
 	if (wheel == 0)
 		return;
+
+	openrct2_window_manager_mouse_wheel(gCursorState.x, gCursorState.y, wheel);
 
 	// Check window cursor is over
 	if (!(gInputFlags & INPUT_FLAG_5)) {

@@ -35,18 +35,24 @@ namespace OpenRCT2::Ui
     private:
         Button * _upButton;
         Button * _downButton;
+        money32  _value;
 
     public:
         uint8   Type = 0;
         uint8   SpinnerFlags = 0;
-        money32 Value = 0;
+        money32 SmallStep = 1;
+        money32 LargeStep = 5;
+        money32 MinimumValue = 0;
+        money32 MaximumValue = 100;
 
-        std::function<void()> IncrementEvent;
-        std::function<void()> DecrementEvent;
+        std::function<void(money32)> ChangeEvent;
 
     public:
         Spinner();
         ~Spinner();
+
+        money32 GetValue();
+        void SetValue(money32 value);
 
         sint32 GetChildrenCount() override;
         Widget * GetChild(sint32 index) override;
@@ -56,7 +62,11 @@ namespace OpenRCT2::Ui
 
         void Draw(IDrawingContext * dc) override;
 
+        void MouseWheel(const MouseEventArgs * e) override;
+
+    private:
         void UpHandler();
         void DownHandler();
+        void InvokeChangeEvent(money32 value);
     };
 }
