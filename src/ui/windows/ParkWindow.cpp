@@ -20,6 +20,7 @@
 #include "../../sprites.h"
 #include "../TabImages.h"
 #include "../widgets/Button.h"
+#include "../widgets/Chart.h"
 #include "../widgets/Container.h"
 #include "../widgets/Spinner.h"
 #include "../widgets/StackPanel.h"
@@ -131,6 +132,62 @@ namespace OpenRCT2::Ui
         {
             rct_string_id statusStringId = park_is_open() ? STR_PARK_OPEN : STR_PARK_CLOSED;
             _status.SetText(FormatLocaleString(STR_BLACK_STRING, &statusStringId));
+        }
+    };
+
+    class RatingPage : public Container
+    {
+    private:
+        StackPanel  _grid;
+        TextBlock   _ratingTextBlock;
+        Chart       _chart;
+
+    public:
+        RatingPage()
+        {
+            Margin = Thickness(3);
+
+            _chart.Flags |= WIDGET_FLAGS::STRETCH_H |
+                            WIDGET_FLAGS::STRETCH_V;
+
+            _grid.SetOrientation(ORIENTATION::VERTICAL);
+            _grid.AddChild(&_ratingTextBlock);
+            _grid.AddChild(&_chart);
+            SetChild(&_grid);
+        }
+
+        void Update() override
+        {
+            _ratingTextBlock.SetText(FormatLocaleString(STR_PARK_RATING_LABEL, &gParkRating));
+            _chart.SetValues(gParkRatingHistory, 32);
+        }
+    };
+
+    class GuestsPage : public Container
+    {
+    private:
+        StackPanel  _grid;
+        TextBlock   _guestsTextBlock;
+        Chart       _chart;
+
+    public:
+        GuestsPage()
+        {
+            Margin = Thickness(3);
+
+            _chart.Flags |= WIDGET_FLAGS::STRETCH_H |
+                            WIDGET_FLAGS::STRETCH_V;
+
+            _grid.SetOrientation(ORIENTATION::VERTICAL);
+            _grid.AddChild(&_guestsTextBlock);
+            _grid.AddChild(&_chart);
+            SetChild(&_grid);
+        }
+
+        void Update() override
+        {
+            _guestsTextBlock.SetText(FormatLocaleString(STR_GUESTS_IN_PARK_LABEL, &gNumGuestsInPark));
+            _chart.SetValues(gGuestsInParkHistory, 32);
         }
     };
 
@@ -479,6 +536,12 @@ namespace OpenRCT2::Ui
             switch (index) {
             case PAGE_ENTRANCE:
                 _currentPage = new EntrancePage();
+                break;
+            case PAGE_RATING:
+                _currentPage = new RatingPage();
+                break;
+            case PAGE_GUESTS:
+                _currentPage = new GuestsPage();
                 break;
             case PAGE_ADMISSION:
                 _currentPage = new AdmissionsPage();

@@ -333,6 +333,7 @@
     <ClCompile Include="src\ui\TabImages.cpp" />
     <ClCompile Include="src\ui\Widget.cpp" />
     <ClCompile Include="src\ui\widgets\Button.cpp" />
+    <ClCompile Include="src\ui\widgets\Chart.cpp" />
     <ClCompile Include="src\ui\widgets\Container.cpp" />
     <ClCompile Include="src\ui\widgets\Panel.cpp" />
     <ClCompile Include="src\ui\widgets\Spinner.cpp" />
@@ -599,6 +600,7 @@
     <ClInclude Include="src\ui\TabImages.h" />
     <ClInclude Include="src\ui\Widget.h" />
     <ClInclude Include="src\ui\widgets\Button.h" />
+    <ClInclude Include="src\ui\widgets\Chart.h" />
     <ClInclude Include="src\ui\widgets\Container.h" />
     <ClInclude Include="src\ui\widgets\Panel.h" />
     <ClInclude Include="src\ui\widgets\Spinner.h" />
