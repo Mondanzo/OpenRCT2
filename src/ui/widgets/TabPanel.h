@@ -24,6 +24,11 @@ namespace OpenRCT2::Ui
 {
     struct TabImage;
 
+    namespace TABINFO_FLAGS
+    {
+        constexpr uint8 HIDDEN = 1 << 0;
+    }
+
     struct TabInfo
     {
         const TabImage *    Image;
@@ -35,9 +40,9 @@ namespace OpenRCT2::Ui
     {
         virtual ~ITabPanelAdapter() = default;
 
-        virtual sint32          GetTabCount() abstract;
-        virtual const TabInfo * GetTabInfo(sint32 index) abstract;
-        virtual Widget *        GetContent(sint32 index) abstract;
+        virtual sint32      GetTabCount() abstract;
+        virtual TabInfo     GetTabInfo(sint32 index) abstract;
+        virtual Widget *    GetContent(sint32 index) abstract;
     };
 
     /**
@@ -81,7 +86,7 @@ namespace OpenRCT2::Ui
         void SetAdapter(ITabPanelAdapter * adapter);
         sint32 GetSelectedIndex();
         void SetSelectedIndex(sint32 index);
-        void Invalidate();
+        void Refresh();
 
         sint32 GetChildrenCount() override;
         Widget * GetChild(sint32 index) override;

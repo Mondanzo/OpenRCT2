@@ -235,7 +235,8 @@ namespace OpenRCT2::Ui
                        public ITabPanelAdapter
     {
     private:
-        Widget * _currentPage = nullptr;
+        Widget *    _currentPage = nullptr;
+        bool        _moneyDisabled = false;
 
     public:
         ParkWindow()
@@ -253,6 +254,13 @@ namespace OpenRCT2::Ui
 
         void Update() override
         {
+            bool moneyDisabled = ((gParkFlags & PARK_FLAGS_NO_MONEY) != 0);
+            if (moneyDisabled != _moneyDisabled)
+            {
+                _moneyDisabled = moneyDisabled;
+                RefreshTabPanel();
+            }
+
             SetTitle(FormatLocaleString(gParkName, &gParkNameArgs));
 
             switch (GetTabIndex()) {
@@ -286,9 +294,14 @@ namespace OpenRCT2::Ui
             return NUM_PAGES;
         }
 
-        const TabInfo * GetTabInfo(sint32 index) override
+        TabInfo GetTabInfo(sint32 index) override
         {
-            return TabInfos[index];
+            TabInfo tabInfo = *TabInfos[index];
+            if (index == 3 && (gParkFlags & PARK_FLAGS_NO_MONEY))
+            {
+                tabInfo.Flags |= TABINFO_FLAGS::HIDDEN;
+            }
+            return tabInfo;
         }
 
         Widget * GetContent(sint32 index) override

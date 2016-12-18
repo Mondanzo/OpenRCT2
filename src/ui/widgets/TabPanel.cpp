@@ -61,7 +61,7 @@ void TabPanel::SetSelectedIndex(sint32 index)
     }
 }
 
-void TabPanel::Invalidate()
+void TabPanel::Refresh()
 {
     _dirty = true;
 }
@@ -88,6 +88,7 @@ Widget * TabPanel::GetChild(sint32 index)
 void TabPanel::Measure()
 {
     size32 size;
+    // TODO don't include hidden tabs
     size.Width = 3 + (GetTabCount() * TAB_WIDTH) + 3;
     size.Height = TAB_HEIGHT + 1;
 
@@ -108,9 +109,17 @@ void TabPanel::Arrange()
     sint32 x = 3;
     for (Tab &tab : _tabs)
     {
-        tab.X = x;
-        tab.Y = 0;
-        x += TAB_WIDTH;
+        if (tab.Info.Flags & TABINFO_FLAGS::HIDDEN)
+        {
+            tab.Visibility = VISIBILITY::COLLAPSED;
+        }
+        else
+        {
+            tab.Visibility = VISIBILITY::VISIBLE;
+            tab.X = x;
+            tab.Y = 0;
+            x += TAB_WIDTH;
+        }
     }
 }
 
@@ -155,7 +164,7 @@ void TabPanel::SetupWidgets()
         tab->Index = i;
         tab->Width = TAB_WIDTH;
         tab->Height = TAB_HEIGHT;
-        tab->Info = *(_adapter->GetTabInfo(i));
+        tab->Info = _adapter->GetTabInfo(i);
         tab->Active = (i == _selectedIndex);
     }
 

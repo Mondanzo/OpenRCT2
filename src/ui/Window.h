@@ -98,6 +98,7 @@ namespace OpenRCT2::Ui
         void SetTabPanelAdapter(ITabPanelAdapter * adapter);
         sint32 GetTabIndex();
         void SetTabIndex(sint32 index);
+        void RefreshTabPanel();
 
         void Measure();
         void Arrange();

@@ -188,6 +188,15 @@ void Window::SetTabIndex(sint32 index)
     }
 }
 
+void Window::RefreshTabPanel()
+{
+    auto tabPanel = _windowShell->GetTabPanel();
+    if (tabPanel != nullptr)
+    {
+        tabPanel->Refresh();
+    }
+}
+
 void Window::Measure()
 {
     if (_child != nullptr)
