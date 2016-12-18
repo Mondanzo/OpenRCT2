@@ -107,6 +107,34 @@ Widget * Window::GetWidgetAt(Widget * node, sint32 x, sint32 y)
     return nullptr;
 }
 
+void Window::SetLocation(sint32 x, sint32 y)
+{
+    SetLocation({ x, y });
+}
+
+void Window::SetLocation(xy32 location)
+{
+    Invalidate();
+    Location = location;
+    Invalidate();
+}
+
+void Window::SetSize(sint32 width, sint32 height)
+{
+    SetSize({ width, height });
+}
+
+void Window::SetSize(size32 size)
+{
+    if (Size.Width != size.Width || Size.Height != size.Height)
+    {
+        Invalidate();
+        Size = size;
+        Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
+        Invalidate();
+    }
+}
+
 rct_string_id Window::GetTitle()
 {
     return _title;
@@ -166,16 +194,18 @@ void Window::Measure()
     {
         Measure(_child);
 
+        size32 size;
         if ((Flags & WIDGET_FLAGS::AUTO_SIZE) || (Width == 0 && Height == 0))
         {
-            Width = _child->Width;
-            Height = _child->Height;
+            size.Width = _child->Width;
+            size.Height = _child->Height;
         }
         else
         {
-            Width = Math::Clamp(MinimumSize.Width, Width, MaximumSize.Width);
-            Height = Math::Clamp(MinimumSize.Height, Height, MaximumSize.Height);
+            size.Width = Math::Clamp(MinimumSize.Width, Width, MaximumSize.Width);
+            size.Height = Math::Clamp(MinimumSize.Height, Height, MaximumSize.Height);
         }
+        SetSize(size);
     }
 }
 
@@ -226,7 +256,10 @@ void Window::Arrange(Widget * node)
 
 void Window::Invalidate()
 {
-    _windowManager->Invalidate(Bounds);
+    if (_windowManager != nullptr)
+    {
+        _windowManager->Invalidate(Bounds);
+    }
 }
 
 void Window::Update()
@@ -403,13 +436,7 @@ void Window::MouseMove(const MouseEventArgs * e)
                           cursorPos.Y + _resizeCursorDelta.Y - Y };
         newSize.Width = Math::Clamp(MinimumSize.Width, newSize.Width, MaximumSize.Width);
         newSize.Height = Math::Clamp(MinimumSize.Height, newSize.Height, MaximumSize.Height);
-        if (Width != newSize.Width || Height != newSize.Height)
-        {
-            Invalidate();
-            Size = newSize;
-            Invalidate();
-            Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
-        }
+        SetSize(newSize);
     }
     else
     {

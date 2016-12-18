@@ -176,10 +176,8 @@ namespace OpenRCT2::Ui
     public:
         ParkWindow()
         {
-            X = 333;
-            Y = 200;
-            Width = 230;
-            Height = 174 + 9;
+            SetLocation(333, 200);
+            SetSize(230, 174 + 9);
 
             Flags |= WINDOW_FLAGS::HAS_TAB_PANEL;
             SetTitle(STR_PARK_CLOSED);
@@ -200,7 +198,7 @@ namespace OpenRCT2::Ui
                 break;
             case 3:
                 Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
-                Size = { 230, 124 };
+                SetSize(230, 124);
                 MinimumSize = Size;
                 MaximumSize = Size;
                 break;

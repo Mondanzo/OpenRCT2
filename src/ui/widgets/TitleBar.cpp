@@ -91,10 +91,10 @@ void TitleBar::MouseMove(const MouseEventArgs * e)
         if (offset.X != 0 || offset.Y != 0)
         {
             Window * window = ParentWindow;
-            window->Invalidate();
-            window->X += offset.X;
-            window->Y += offset.Y;
-            window->Invalidate();
+            xy32 location = window->Location;
+            location.X += offset.X;
+            location.Y += offset.Y;
+            window->SetLocation(location);
         }
         _lastCursorPosition = { e->X - offset.X, e->Y - offset.Y };
     }

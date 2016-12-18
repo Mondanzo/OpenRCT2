@@ -85,6 +85,11 @@ namespace OpenRCT2::Ui
 
         Widget * GetWidgetAt(sint32 x, sint32 y);
 
+        void SetLocation(sint32 x, sint32 y);
+        void SetLocation(xy32 location);
+        void SetSize(sint32 width, sint32 height);
+        void SetSize(size32 size);
+
         rct_string_id GetTitle();
         void SetTitle(rct_string_id title);
 
