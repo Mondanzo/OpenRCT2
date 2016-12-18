@@ -30,8 +30,11 @@
 
 extern "C"
 {
+    #include "../../config.h"
     #include "../../interface/colour.h"
     #include "../../localisation/localisation.h"
+    #include "../../ride/ride.h"
+    #include "../../util/util.h"
     #include "../../world/park.h"
 }
 
@@ -175,6 +178,49 @@ namespace OpenRCT2::Ui
         }
     };
 
+    class StatsPage : public Container
+    {
+    private:
+        StackPanel  _grid0;
+        TextBlock   _textBlocks[5];
+
+    public:
+        StatsPage()
+        {
+            _grid0.SetOrientation(ORIENTATION::VERTICAL);
+            _grid0.Margin = Thickness(3);
+            SetChild(&_grid0);
+
+            for (sint32 i = 0; i < 5; i++)
+            {
+                _textBlocks[i].Flags &= ~WIDGET_FLAGS::AUTO_SIZE;
+                _textBlocks[i].Height = 10;
+                _grid0.AddChild(&_textBlocks[i]);
+            }
+        }
+
+        void Update() override
+        {
+            sint32 parkSize = gParkSize * 10;
+            rct_string_id stringId = STR_PARK_SIZE_METRIC_LABEL;
+            if (gConfigGeneral.measurement_format == MEASUREMENT_FORMAT_IMPERIAL)
+            {
+                stringId = STR_PARK_SIZE_IMPERIAL_LABEL;
+                parkSize = squaredmetres_to_squaredfeet(parkSize);
+            }
+            _textBlocks[0].SetText(FormatLocaleString(stringId, &parkSize));
+
+            sint16 numRides = ride_get_count();
+            _textBlocks[1].SetText(FormatLocaleString(STR_NUMBER_OF_RIDES_LABEL, &numRides));
+
+            sint16 numStaff = peep_get_staff_count();
+            _textBlocks[2].SetText(FormatLocaleString(STR_STAFF_LABEL, &numStaff));
+
+            _textBlocks[3].SetText(FormatLocaleString(STR_GUESTS_IN_PARK_LABEL, &gNumGuestsInPark));
+            _textBlocks[4].SetText(FormatLocaleString(STR_TOTAL_ADMISSIONS, &gTotalAdmissions));
+        }
+    };
+
     class ParkWindow : public Window,
                        public ITabPanelAdapter
     {
@@ -211,6 +257,12 @@ namespace OpenRCT2::Ui
                 MinimumSize = Size;
                 MaximumSize = Size;
                 break;
+            case 4:
+                Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
+                SetSize(230, 109);
+                MinimumSize = Size;
+                MaximumSize = Size;
+                break;
             default:
                 Flags |= WINDOW_FLAGS::AUTO_SIZE;
                 break;
@@ -240,6 +292,9 @@ namespace OpenRCT2::Ui
                 break;
             case 3:
                 _currentPage = new AdmissionsPage();
+                break;
+            case 4:
+                _currentPage = new StatsPage();
                 break;
             }
 

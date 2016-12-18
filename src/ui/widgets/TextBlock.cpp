@@ -24,7 +24,8 @@ using namespace OpenRCT2::Ui;
 
 TextBlock::TextBlock()
 {
-    Flags |= WIDGET_FLAGS::AUTO_SIZE;
+    Flags |= WIDGET_FLAGS::AUTO_SIZE |
+             WIDGET_FLAGS::STRETCH_H;
     HorizontalAlignment = HORIZONTAL_ALIGNMENT::LEFT;
     VerticalAlignment = VERTICAL_ALIGNMENT::MIDDLE;
 }
