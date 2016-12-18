@@ -168,7 +168,17 @@ namespace OpenRCT2::Ui
 
         void Update() override
         {
+            bool feeLocked = ((gParkFlags & PARK_FLAGS_PARK_FREE_ENTRY) && !gCheatsUnlockAllPrices);
+            if (feeLocked)
+            {
+                _feeSpinner.SpinnerFlags |= SPINNER_FLAGS::READ_ONLY;
+            }
+            else
+            {
+                _feeSpinner.SpinnerFlags &= ~SPINNER_FLAGS::READ_ONLY;
+            }
             _feeSpinner.SetValue(gParkEntranceFee);
+
             if (_admissionsIncomeValue != gTotalIncomeFromAdmissions)
             {
                 _admissionsIncomeValue = gTotalIncomeFromAdmissions;

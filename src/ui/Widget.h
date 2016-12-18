@@ -88,6 +88,9 @@ namespace OpenRCT2::Ui
 
         virtual rct_string_id GetTooltip(sint32 x, sint32 y);
 
+        void SetEnabled(bool value);
+        void SetVisibility(VISIBILITY value);
+
         // Layout
         void InvalidateLayout();
         virtual void Measure() { }

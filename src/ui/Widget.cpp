@@ -46,6 +46,36 @@ rct_string_id Widget::GetTooltip(sint32 x, sint32 y)
     return DefaultTooltip;
 }
 
+void Widget::SetEnabled(bool value)
+{
+    if (IsEnabled() != value)
+    {
+        if (value)
+        {
+            Flags |= WIDGET_FLAGS::ENABLED;
+        }
+        else
+        {
+            Flags &= WIDGET_FLAGS::ENABLED;
+        }
+        InvalidateVisual();
+    }
+}
+
+void Widget::SetVisibility(VISIBILITY value)
+{
+    if (value != Visibility)
+    {
+        if (value == VISIBILITY::COLLAPSED ||
+            Visibility == VISIBILITY::COLLAPSED)
+        {
+            InvalidateLayout();
+        }
+        Visibility = value;
+        InvalidateVisual();
+    }
+}
+
 void Widget::InvalidateLayout()
 {
     Flags |= WIDGET_FLAGS::LAYOUT_DIRTY;

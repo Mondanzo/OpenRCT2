@@ -80,7 +80,7 @@ Widget * Window::GetWidgetAt(Widget * node, sint32 x, sint32 y)
     for (sint32 i = numChildren - 1; i >= 0; i--)
     {
         Widget * child = node->GetChild(i);
-        if (child != nullptr)
+        if (child != nullptr && child->IsVisible())
         {
             rect32 bounds = child->Bounds;
             if (bounds.Contains(x, y))
@@ -358,6 +358,11 @@ void Window::Draw(IDrawingContext * dc)
 
 void Window::Draw(IDrawingContext * dc, Widget * node)
 {
+    if (!node->IsVisible())
+    {
+        return;
+    }
+
     IDrawingContext * dc2 = dc->Nest(node->X, node->Y, node->Width, node->Height);
     if (dc2 != nullptr)
     {

@@ -24,6 +24,7 @@ namespace OpenRCT2::Ui
     {
         constexpr uint8 HIGH_PRECISION      = 1 << 0;
         constexpr uint8 SHOW_ZERO_AS_FREE   = 1 << 1;
+        constexpr uint8 READ_ONLY           = 1 << 2;
     };
 
     /**
@@ -60,6 +61,7 @@ namespace OpenRCT2::Ui
         void Measure() override;
         void Arrange() override;
 
+        void Update() override;
         void Draw(IDrawingContext * dc) override;
 
         void MouseWheel(const MouseEventArgs * e) override;

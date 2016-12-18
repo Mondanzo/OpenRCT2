@@ -107,12 +107,31 @@ void Spinner::Arrange()
     _downButton->Height = buttonHeight;
 }
 
+void Spinner::Update()
+{
+    if (SpinnerFlags & SPINNER_FLAGS::READ_ONLY)
+    {
+        _upButton->SetVisibility(VISIBILITY::HIDDEN);
+        _downButton->SetVisibility(VISIBILITY::HIDDEN);
+    }
+    else
+    {
+        _upButton->SetVisibility(VISIBILITY::VISIBLE);
+        _downButton->SetVisibility(VISIBILITY::VISIBLE);
+        _upButton->SetEnabled(IsEnabled());
+        _downButton->SetEnabled(IsEnabled());
+    }
+}
+
 void Spinner::Draw(IDrawingContext * dc)
 {
     colour_t colour = ParentWindow->Style.GetColour(Style);
 
-    uint8 press = INSET_RECT_F_60;
-    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, press);
+    if (!(SpinnerFlags & SPINNER_FLAGS::READ_ONLY))
+    {
+        uint8 press = INSET_RECT_F_60;
+        DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, press);
+    }
 
     // Draw text
     rct_string_id stringId = STR_CURRENCY_FORMAT_LABEL;
@@ -124,7 +143,6 @@ void Spinner::Draw(IDrawingContext * dc)
     {
         stringId = STR_FREE;
     }
-
     sint32 l = 1;
     sint32 t = 1;
     uintptr_t dpip = ((uintptr_t *)dc)[2];
@@ -134,6 +152,11 @@ void Spinner::Draw(IDrawingContext * dc)
 
 void Spinner::MouseWheel(const MouseEventArgs * e)
 {
+    if (IsDisabled() || (SpinnerFlags & SPINNER_FLAGS::READ_ONLY))
+    {
+        return;
+    }
+
     money32 newValue = _value;
     sint32 deltaWhole = Math::Max(1, abs(e->Delta) / 17);
     sint32 step = SmallStep;
