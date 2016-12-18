@@ -36,6 +36,10 @@ void Button::Measure()
             Width = 24;
             Height = 24;
         }
+        else if (Type == BUTTON_TYPE::OUTSET)
+        {
+            Height = 12;
+        }
     }
 }
 

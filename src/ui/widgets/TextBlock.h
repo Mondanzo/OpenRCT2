@@ -38,6 +38,8 @@ namespace OpenRCT2::Ui
     private:
         std::string             _text;
         colour_t                _colour = 0;
+        bool                    _wrap = false;
+        sint32                  _lastMeasuredWidth;
 
     public:
         HORIZONTAL_ALIGNMENT    HorizontalAlignment;
@@ -50,9 +52,11 @@ namespace OpenRCT2::Ui
         void SetText(const std::string &value);
         colour_t GetColour();
         void SetColour(colour_t value);
+        void SetWrapping(bool value);
 
         void Measure() override;
 
+        void Update() override;
         void Draw(IDrawingContext * dc) override;
     };
 }

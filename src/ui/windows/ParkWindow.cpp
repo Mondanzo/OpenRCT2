@@ -35,6 +35,7 @@ extern "C"
     #include "../../localisation/localisation.h"
     #include "../../management/award.h"
     #include "../../ride/ride.h"
+    #include "../../scenario/scenario.h"
     #include "../../util/util.h"
     #include "../../world/park.h"
 }
@@ -242,6 +243,96 @@ namespace OpenRCT2::Ui
         }
     };
 
+    class ObjectivePage : public Container
+    {
+    private:
+        StackPanel  _grid;
+        TextBlock   _detailsTextBlock;
+        TextBlock   _objectiveLabelTextBlock;
+        TextBlock   _objectiveTextBlock;
+        TextBlock   _outcomeTextBlock;
+        Button      _enterNameButton;
+
+    public:
+        ObjectivePage()
+        {
+            Margin = Thickness(4);
+
+            _detailsTextBlock.SetWrapping(true);
+            _detailsTextBlock.VerticalAlignment = VERTICAL_ALIGNMENT::TOP;
+            _detailsTextBlock.Margin.Bottom = 5;
+
+            _objectiveLabelTextBlock.SetText(FormatLocaleString(STR_OBJECTIVE_LABEL));
+            _objectiveLabelTextBlock.VerticalAlignment = VERTICAL_ALIGNMENT::TOP;
+            _objectiveTextBlock.Margin.Bottom = 10;
+
+            _objectiveTextBlock.SetWrapping(true);
+            _objectiveTextBlock.VerticalAlignment = VERTICAL_ALIGNMENT::TOP;
+
+            _outcomeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_V;
+            _outcomeTextBlock.SetWrapping(true);
+            _outcomeTextBlock.VerticalAlignment = VERTICAL_ALIGNMENT::TOP;
+
+            _enterNameButton.Flags |= WIDGET_FLAGS::STRETCH_H;
+            _enterNameButton.Type = BUTTON_TYPE::OUTSET;
+            _enterNameButton.Text = STR_ENTER_NAME_INTO_SCENARIO_CHART;
+            _enterNameButton.Margin = Thickness(0, 2);
+
+            _grid.SetOrientation(ORIENTATION::VERTICAL);
+            _grid.AddChild(&_detailsTextBlock);
+            _grid.AddChild(&_objectiveLabelTextBlock);
+            _grid.AddChild(&_objectiveTextBlock);
+            _grid.AddChild(&_outcomeTextBlock);
+            _grid.AddChild(&_enterNameButton);
+            SetChild(&_grid);
+        }
+
+        void Update() override
+        {
+            // Details
+            set_format_arg(0, rct_string_id, STR_STRING);
+            set_format_arg(2, const char *, gScenarioDetails);
+            _detailsTextBlock.SetText(FormatLocaleString(STR_BLACK_STRING, gCommonFormatArgs));
+
+            // Objective
+            rct_string_id stringId = ObjectiveNames[gScenarioObjectiveType];
+            set_format_arg(0, uint16, gScenarioObjectiveNumGuests);
+            set_format_arg(2, sint16, date_get_total_months(MONTH_OCTOBER, gScenarioObjectiveYear));
+            set_format_arg(4, money32, gScenarioObjectiveCurrency);
+            _objectiveTextBlock.SetText(FormatLocaleString(stringId, gCommonFormatArgs));
+
+            // Objective outcome
+            if (gScenarioCompletedCompanyValue != MONEY32_UNDEFINED)
+            {
+                _outcomeTextBlock.SetVisibility(VISIBILITY::VISIBLE);
+                if (gScenarioCompletedCompanyValue == 0x80000001)
+                {
+                    // Objective failed
+                    _outcomeTextBlock.SetText(FormatLocaleString(STR_OBJECTIVE_FAILED));
+                }
+                else
+                {
+                    // Objective completed
+                    set_format_arg(0, money32, gScenarioCompletedCompanyValue);
+                    _outcomeTextBlock.SetText(FormatLocaleString(STR_OBJECTIVE_ACHIEVED, gCommonFormatArgs));
+                }
+                if (gParkFlags & PARK_FLAGS_SCENARIO_COMPLETE_NAME_INPUT)
+                {
+                    _enterNameButton.SetVisibility(VISIBILITY::VISIBLE);
+                }
+                else
+                {
+                    _enterNameButton.SetVisibility(VISIBILITY::COLLAPSED);
+                }
+            }
+            else
+            {
+                _outcomeTextBlock.SetVisibility(VISIBILITY::COLLAPSED);
+                _enterNameButton.SetVisibility(VISIBILITY::COLLAPSED);
+            }
+        }
+    };
+
     class AwardsPage : public Widget
     {
         struct ParkAward
@@ -394,6 +485,9 @@ namespace OpenRCT2::Ui
                 break;
             case PAGE_STATS:
                 _currentPage = new StatsPage();
+                break;
+            case PAGE_OBJECTIVE:
+                _currentPage = new ObjectivePage();
                 break;
             case PAGE_AWARDS:
                 _currentPage = new AwardsPage();

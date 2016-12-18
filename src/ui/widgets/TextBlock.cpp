@@ -15,6 +15,7 @@
 #pragma endregion
 
 #include "../../core/Math.hpp"
+#include "../../core/String.hpp"
 #include "../../drawing/IDrawingContext.h"
 #include "../../localisation/string_ids.h"
 #include "../DrawingContextExtensions.h"
@@ -41,6 +42,10 @@ void TextBlock::SetText(const std::string &value)
     {
         _text = value;
         InvalidateVisual();
+        if (Flags & WIDGET_FLAGS::AUTO_SIZE)
+        {
+            InvalidateLayout();
+        }
     }
 }
 
@@ -58,11 +63,39 @@ void TextBlock::SetColour(colour_t value)
     }
 }
 
+void TextBlock::SetWrapping(bool value)
+{
+    _wrap = value;
+}
+
 void TextBlock::Measure()
 {
     if (Flags & WIDGET_FLAGS::AUTO_SIZE)
     {
         Height = 12;
+        if (_wrap)
+        {
+            _lastMeasuredWidth = Width;
+
+            char buffer[4096];
+            String::Set(buffer, sizeof(buffer), _text.c_str());
+
+            sint32 numLines;
+            sint32 fontSpriteBase;
+            gCurrentFontSpriteBase = FONT_SPRITE_BASE_MEDIUM;
+            gfx_wrap_string(buffer, Width, &numLines, &fontSpriteBase);
+            numLines++;
+            sint32 lineHeight = font_get_line_height(fontSpriteBase);
+            Height = numLines * lineHeight + 2;
+        }
+    }
+}
+
+void TextBlock::Update()
+{
+    if (_wrap && _lastMeasuredWidth != Width)
+    {
+        InvalidateLayout();
     }
 }
 
@@ -79,7 +112,14 @@ void TextBlock::Draw(IDrawingContext * dc)
         rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
         if (HorizontalAlignment == HORIZONTAL_ALIGNMENT::LEFT)
         {
-            gfx_draw_string_left(dpi, STR_STRING, &text, _colour, l, t);
+            if (_wrap)
+            {
+                gfx_draw_string_left_wrapped(dpi, &text, l, t, Width, STR_STRING, _colour);
+            }
+            else
+            {
+                gfx_draw_string_left(dpi, STR_STRING, &text, _colour, l, t);
+            }
         }
         else
         {
