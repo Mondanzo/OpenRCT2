@@ -135,19 +135,19 @@ void Window::SetSize(size32 size)
     }
 }
 
-rct_string_id Window::GetTitle()
+std::string Window::GetTitle()
 {
     return _title;
 }
 
-void Window::SetTitle(rct_string_id title)
+void Window::SetTitle(const std::string &title)
 {
     _title = title;
 
     auto titleBar = _windowShell->GetTitleBar();
     if (titleBar != nullptr)
     {
-        titleBar->Text = title;
+        titleBar->SetText(title);
     }
 }
 

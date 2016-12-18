@@ -14,6 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
+#include <string>
 #include "../Widget.h"
 
 namespace OpenRCT2::Ui
@@ -25,13 +26,14 @@ namespace OpenRCT2::Ui
     class TitleBar : public Widget
     {
     private:
-        bool _movingWindow = false;
-        xy32 _lastCursorPosition = { 0 };
+        std::string _text;
+        bool        _movingWindow = false;
+        xy32        _lastCursorPosition = { 0 };
 
     public:
-        rct_string_id Text;
+        std::string GetText();
+        void SetText(const std::string &value);
 
-    public:
         void Measure() override;
 
         void Draw(IDrawingContext * dc) override;

@@ -14,6 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
+#include <string>
 #include "../Widget.h"
 
 namespace OpenRCT2::Ui
@@ -34,14 +35,21 @@ namespace OpenRCT2::Ui
 
     class TextBlock : public Widget
     {
+    private:
+        std::string             _text;
+        colour_t                _colour = 0;
+
     public:
         HORIZONTAL_ALIGNMENT    HorizontalAlignment;
         VERTICAL_ALIGNMENT      VerticalAlignment;
-        rct_string_id           Text = (rct_string_id)-1;
-        void *                  TextArgs = nullptr;
 
     public:
         TextBlock();
+
+        std::string GetText();
+        void SetText(const std::string &value);
+        colour_t GetColour();
+        void SetColour(colour_t value);
 
         void Measure() override;
 

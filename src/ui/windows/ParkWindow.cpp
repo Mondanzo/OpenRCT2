@@ -31,7 +31,15 @@
 extern "C"
 {
     #include "../../interface/colour.h"
+    #include "../../localisation/localisation.h"
     #include "../../world/park.h"
+}
+
+std::string FormatLocaleString(rct_string_id stringId, const void * args = nullptr)
+{
+    utf8 buffer[4096];
+    format_string(buffer, sizeof(buffer), stringId, (void *)args);
+    return std::string(buffer);
 }
 
 namespace OpenRCT2::Ui
@@ -67,8 +75,6 @@ namespace OpenRCT2::Ui
         Button          _toolbarButtons[4];
         TextBlock       _status;
 
-        rct_string_id   _statusArg;
-
     public:
         EntrancePage()
         {
@@ -103,10 +109,13 @@ namespace OpenRCT2::Ui
 
             _status.Flags |= WIDGET_FLAGS::STRETCH_H;
             _status.HorizontalAlignment = HORIZONTAL_ALIGNMENT::MIDDLE;
-            _status.Text = STR_BLACK_STRING;
-            _status.TextArgs = &_statusArg;
-            _statusArg = STR_PARK_OPEN;
             _grid0.AddChild(&_status);
+        }
+
+        void Update() override
+        {
+            rct_string_id statusStringId = park_is_open() ? STR_PARK_OPEN : STR_PARK_CLOSED;
+            _status.SetText(FormatLocaleString(STR_BLACK_STRING, &statusStringId));
         }
     };
 
@@ -118,7 +127,7 @@ namespace OpenRCT2::Ui
         TextBlock   _feeTextBlock;
         Spinner     _feeSpinner;
         TextBlock   _admissionsIncomeTextBlock;
-        money32     _admissionsIncomeValue;
+        money32     _admissionsIncomeValue = MONEY32_UNDEFINED;
 
     public:
         AdmissionsPage()
@@ -126,7 +135,7 @@ namespace OpenRCT2::Ui
             _feeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_H;
             _feeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_V;
             _feeTextBlock.Margin.Left = 14;
-            _feeTextBlock.Text = STR_ADMISSION_PRICE;
+            _feeTextBlock.SetText(FormatLocaleString(STR_ADMISSION_PRICE));
 
             _feeSpinner.SpinnerFlags |= SPINNER_FLAGS::HIGH_PRECISION |
                                         SPINNER_FLAGS::SHOW_ZERO_AS_FREE;
@@ -146,8 +155,6 @@ namespace OpenRCT2::Ui
 
             _admissionsIncomeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_H;
             _admissionsIncomeTextBlock.Margin = Thickness(6);
-            _admissionsIncomeTextBlock.Text = STR_INCOME_FROM_ADMISSIONS;
-            _admissionsIncomeTextBlock.TextArgs = &_admissionsIncomeValue;
 
             _grid0.SetOrientation(ORIENTATION::VERTICAL);
             _grid0.AddChild(&_grid1);
@@ -162,7 +169,8 @@ namespace OpenRCT2::Ui
             if (_admissionsIncomeValue != gTotalIncomeFromAdmissions)
             {
                 _admissionsIncomeValue = gTotalIncomeFromAdmissions;
-                _admissionsIncomeTextBlock.InvalidateVisual();
+                std::string text = FormatLocaleString(STR_INCOME_FROM_ADMISSIONS, &_admissionsIncomeValue);
+                _admissionsIncomeTextBlock.SetText(text);
             }
         }
     };
@@ -180,7 +188,6 @@ namespace OpenRCT2::Ui
             SetSize(230, 174 + 9);
 
             Flags |= WINDOW_FLAGS::HAS_TAB_PANEL;
-            SetTitle(STR_PARK_CLOSED);
             SetTabPanelAdapter(this);
 
             Style.Colours[0] = COLOUR_GREY;
@@ -190,6 +197,8 @@ namespace OpenRCT2::Ui
 
         void Update() override
         {
+            SetTitle(FormatLocaleString(gParkName, &gParkNameArgs));
+
             switch (GetTabIndex()) {
             case 0:
                 Flags &= ~WINDOW_FLAGS::AUTO_SIZE;

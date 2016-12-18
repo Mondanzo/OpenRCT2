@@ -29,6 +29,34 @@ TextBlock::TextBlock()
     VerticalAlignment = VERTICAL_ALIGNMENT::MIDDLE;
 }
 
+std::string TextBlock::GetText()
+{
+    return _text;
+}
+
+void TextBlock::SetText(const std::string &value)
+{
+    if (_text != value)
+    {
+        _text = value;
+        InvalidateVisual();
+    }
+}
+
+colour_t TextBlock::GetColour()
+{
+    return _colour;
+}
+
+void TextBlock::SetColour(colour_t value)
+{
+    if (_colour != value)
+    {
+        _colour = value;
+        InvalidateVisual();
+    }
+}
+
 void TextBlock::Measure()
 {
     if (Flags & WIDGET_FLAGS::AUTO_SIZE)
@@ -40,21 +68,23 @@ void TextBlock::Measure()
 void TextBlock::Draw(IDrawingContext * dc)
 {
     // Draw text
-    if (Text != STR_NONE)
+    if (!_text.empty())
     {
+        const char * text = _text.c_str();
+
         sint32 l = 0;
         sint32 t = 0;
         uintptr_t dpip = ((uintptr_t *)dc)[2];
         rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
         if (HorizontalAlignment == HORIZONTAL_ALIGNMENT::LEFT)
         {
-            gfx_draw_string_left(dpi, Text, TextArgs, COLOUR_BLACK, l, t);
+            gfx_draw_string_left(dpi, STR_STRING, &text, _colour, l, t);
         }
         else
         {
             sint32 width = Width - 4;
             l = 2 + (width / 2);
-            gfx_draw_string_centred_clipped(dpi, Text, TextArgs, COLOUR_BLACK, l, t, width);
+            gfx_draw_string_centred_clipped(dpi, STR_STRING, &text, _colour, l, t, width);
         }
     }
 }

@@ -29,6 +29,16 @@ extern "C"
 
 using namespace OpenRCT2::Ui;
 
+std::string TitleBar::GetText()
+{
+    return _text;
+}
+
+void TitleBar::SetText(const std::string &value)
+{
+    _text = value;
+}
+
 void TitleBar::Measure()
 {
     if (Flags & WIDGET_FLAGS::AUTO_SIZE)
@@ -60,8 +70,9 @@ void TitleBar::Draw(IDrawingContext * dc)
     }
 
     // Draw text
-    if (Text != STR_NONE)
+    if (!_text.empty())
     {
+        const char * text = _text.c_str();
         sint32 l = 2;
         sint32 t = 1;
         sint32 width = Width - 4;
@@ -69,7 +80,7 @@ void TitleBar::Draw(IDrawingContext * dc)
 
         uintptr_t dpip = ((uintptr_t *)dc)[2];
         rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-        gfx_draw_string_centred_clipped(dpi, Text, nullptr, COLOUR_WHITE | COLOUR_FLAG_OUTLINE, l, t, width);
+        gfx_draw_string_centred_clipped(dpi, STR_STRING, &text, COLOUR_WHITE | COLOUR_FLAG_OUTLINE, l, t, width);
     }
 }
 

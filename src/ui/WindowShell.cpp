@@ -42,7 +42,7 @@ void WindowShell::Initialise()
     if (ParentWindow->Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
     {
         _titleBar = new TitleBar();
-        _titleBar->Text = ParentWindow->GetTitle();
+        _titleBar->SetText(ParentWindow->GetTitle());
         AddChild(_titleBar);
     }
 

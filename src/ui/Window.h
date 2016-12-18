@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <string>
 #include "../common.h"
 #include "Primitives.h"
 #include "WindowStyle.h"
@@ -59,8 +60,8 @@ namespace OpenRCT2::Ui
         Widget * _focusWidget = nullptr;
         Widget * _holdWidget = nullptr;
 
-        rct_string_id _title = (rct_string_id)-1;
-        ITabPanelAdapter * _tabPanelAdapter = nullptr;
+        std::string         _title;
+        ITabPanelAdapter *  _tabPanelAdapter = nullptr;
 
         xy32 _resizeCursorDelta;
 
@@ -90,8 +91,8 @@ namespace OpenRCT2::Ui
         void SetSize(sint32 width, sint32 height);
         void SetSize(size32 size);
 
-        rct_string_id GetTitle();
-        void SetTitle(rct_string_id title);
+        std::string GetTitle();
+        void SetTitle(const std::string &title);
 
         ITabPanelAdapter * GetTabPanelAdapter();
         void SetTabPanelAdapter(ITabPanelAdapter * adapter);
