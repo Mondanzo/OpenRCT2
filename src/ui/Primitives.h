@@ -25,6 +25,11 @@ struct xy32
     sint32 X, Y;
 };
 
+struct xyz32
+{
+    sint32 X, Y, Z;
+};
+
 struct size32
 {
     sint32 Width, Height;

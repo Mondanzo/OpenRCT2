@@ -14,6 +14,8 @@
  *****************************************************************************/
 #pragma endregion
 
+#pragma once
+
 #include "../Widget.h"
 
 namespace OpenRCT2::Ui

@@ -132,6 +132,17 @@ namespace OpenRCT2::Ui
         {
             rct_string_id statusStringId = park_is_open() ? STR_PARK_OPEN : STR_PARK_CLOSED;
             _status.SetText(FormatLocaleString(STR_BLACK_STRING, &statusStringId));
+
+            xyz32 viewLocation = { 0 };
+            for (sint32 i = 0; i < 4; i++) {
+                if (gParkEntranceX[i] != SPRITE_LOCATION_NULL) {
+                    viewLocation.X = gParkEntranceX[i] + 16;
+                    viewLocation.Y = gParkEntranceY[i] + 16;
+                    viewLocation.Z = gParkEntranceZ[i] + 32;
+                    break;
+                }
+            }
+            _viewport.SetLocation(viewLocation);
         }
     };
 

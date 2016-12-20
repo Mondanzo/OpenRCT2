@@ -21,6 +21,8 @@
 #include "Primitives.h"
 #include "WindowStyle.h"
 
+#undef TRANSPARENT
+
 interface IDrawingContext;
 
 namespace OpenRCT2::Ui
