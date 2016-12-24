@@ -51,6 +51,6 @@ namespace OpenRCT2::Ui
         void Draw(IDrawingContext * dc) override;
 
     private:
-        rect32 GetAbsoluteBounds();
+        rect32 GetViewportRenderBounds();
     };
 }

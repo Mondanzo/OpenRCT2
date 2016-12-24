@@ -72,11 +72,11 @@ void ViewportWidget::Update()
             return;
         }
 
-        rect32 absoluteBounds = GetAbsoluteBounds();
+        rect32 renderBounds = GetViewportRenderBounds();
         rct_window dummy;
         viewport_create(
             &dummy,
-            absoluteBounds.X, absoluteBounds.Y, absoluteBounds.Width, absoluteBounds.Height,
+            renderBounds.X, renderBounds.Y, renderBounds.Width, renderBounds.Height,
             _zoom,
             _location.X,
             _location.Y,
@@ -84,6 +84,32 @@ void ViewportWidget::Update()
             0,
             -1);
         _viewport = dummy.viewport;
+    }
+    else
+    {
+        rect32 renderBounds = GetViewportRenderBounds();
+
+        _viewport->x = renderBounds.X;
+        _viewport->y = renderBounds.Y;
+        _viewport->width = renderBounds.Width;
+        _viewport->height = renderBounds.Height;
+        _viewport->view_width = renderBounds.Width << _zoom;
+        _viewport->view_height = renderBounds.Height << _zoom;
+        _viewport->zoom = _zoom;
+
+        xyz32 location = _location;
+        if (_trackFlags & VIEWPORT_TRACK_FLAGS::TRACK_SPRITE)
+        {
+            rct_sprite * sprite = get_sprite(_spriteIndex);
+            location.X = sprite->unknown.x;
+            location.Y = sprite->unknown.y;
+            location.Z = sprite->unknown.z;
+        }
+
+        xy32 viewPosition;
+        center_2d_coordinates(location.X, location.Y, location.Z, &viewPosition.X, &viewPosition.Y, _viewport);
+        _viewport->view_x = viewPosition.X;
+        _viewport->view_y = viewPosition.Y;
     }
 }
 
@@ -94,20 +120,20 @@ void ViewportWidget::Draw(IDrawingContext * dc)
 
     if (_viewport != nullptr)
     {
-        rect32 absoluteBounds = GetAbsoluteBounds();
+        rect32 renderBounds = GetViewportRenderBounds();
 
         uintptr_t dpip = ((uintptr_t *)dc)[2];
         rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-        viewport_render(dpi, _viewport, absoluteBounds.X, absoluteBounds.Y, absoluteBounds.GetRight() - 1, absoluteBounds.GetBottom() - 1);
+        viewport_render(dpi, _viewport, renderBounds.X, renderBounds.Y, renderBounds.GetRight(), renderBounds.GetBottom());
     }
 }
 
-rect32 ViewportWidget::GetAbsoluteBounds()
+rect32 ViewportWidget::GetViewportRenderBounds()
 {
-    rect32 absoluteBounds;
-    absoluteBounds.X = ParentWindow->X;
-    absoluteBounds.Y = ParentWindow->Y;
-    absoluteBounds.Width = Width - 2;
-    absoluteBounds.Height = Height - 2;
-    return absoluteBounds;
+    rect32 renderBounds;
+    renderBounds.X = 1;
+    renderBounds.Y = 1;
+    renderBounds.Width = Width - 2;
+    renderBounds.Height = Height - 2;
+    return renderBounds;
 }
