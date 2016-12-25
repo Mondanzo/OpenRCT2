@@ -18,9 +18,23 @@
 
 #include "../common.h"
 
-extern "C" {
+extern "C"
+{
     #include "drawing.h"
 }
+
+namespace STRING_FLAGS
+{
+    constexpr uint32 HALIGN_LEFT        = 0b0000;
+    constexpr uint32 HALIGN_MIDDLE      = 0b0001;
+    constexpr uint32 HALIGN_RIGHT       = 0b0011;
+    constexpr uint32 VALIGN_TOP         = 0b0100;
+    constexpr uint32 VALIGN_MIDDLE      = 0b1000;
+    constexpr uint32 VALIGN_BOTTOM      = 0b1100;
+
+    constexpr uint32 CLIPPED            = 1 << 4;
+    constexpr uint32 WRAPPED            = 1 << 5;
+};
 
 interface IDrawingEngine;
 
@@ -42,5 +56,7 @@ interface IDrawingContext
     virtual void DrawGlyph(uint32 image, sint32 x, sint32 y, uint8 * palette)                             abstract;
 
     // Extensions
+    void DrawString(rct_string_id stringId, const void * args, sint32 x, sint32 y, uint32 colour, uint32 flags, sint32 width = 0);
+    void DrawString(const utf8 * text, sint32 x, sint32 y, uint32 colour, uint32 flags, sint32 width = 0);
     void FillRect3D(sint32 left, sint32 top, sint32 right, sint32 bottom, uint32 colour, uint32 flags);
 };

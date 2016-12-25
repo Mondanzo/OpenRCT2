@@ -77,9 +77,9 @@ void TitleBar::Draw(IDrawingContext * dc)
         sint32 width = Width - 4;
         l += width / 2;
 
-        uintptr_t dpip = ((uintptr_t *)dc)[2];
-        rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-        gfx_draw_string_centred_clipped(dpi, STR_STRING, &text, COLOUR_WHITE | COLOUR_FLAG_OUTLINE, l, t, width);
+        uint32 stringFlags = STRING_FLAGS::HALIGN_MIDDLE |
+                             STRING_FLAGS::CLIPPED;
+        dc->DrawString(text, l, t, COLOUR_WHITE | COLOUR_FLAG_OUTLINE, stringFlags, width);
     }
 }
 

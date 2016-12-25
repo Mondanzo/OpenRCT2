@@ -144,9 +144,7 @@ void Spinner::Draw(IDrawingContext * dc)
     }
     sint32 l = 1;
     sint32 t = 1;
-    uintptr_t dpip = ((uintptr_t *)dc)[2];
-    rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-    gfx_draw_string_left(dpi, stringId, &_value, colour, l, t);
+    dc->DrawString(stringId, nullptr, l, t, colour, 0, 0);
 }
 
 void Spinner::MouseWheel(const MouseEventArgs * e)

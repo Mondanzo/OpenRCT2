@@ -15,10 +15,61 @@
 #pragma endregion
 
 #include "../drawing/DrawingContext.h"
+#include "../localisation/string_ids.h"
 
 extern "C"
 {
     #include "../interface/colour.h"
+}
+
+void IDrawingContext::DrawString(rct_string_id stringId, const void * args, sint32 x, sint32 y, uint32 colour, uint32 flags, sint32 width)
+{
+    // HACK we can't get dpi easily from IDrawingContext
+    uintptr_t dpip = ((uintptr_t *)this)[2];
+    rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
+
+    uint32 halign = flags & 0b11;
+    uint32 valign = flags & 0b1100;
+
+    if (halign == STRING_FLAGS::HALIGN_LEFT)
+    {
+        if (flags & STRING_FLAGS::CLIPPED)
+        {
+            gfx_draw_string_left_clipped(dpi, stringId, (void *)args, colour, x, y, width);
+        }
+        else if (flags & STRING_FLAGS::WRAPPED)
+        {
+            gfx_draw_string_left_wrapped(dpi, (void *)args, x, y, width, stringId, colour);
+        }
+        else
+        {
+            gfx_draw_string_left(dpi, stringId, (void *)args, colour, x, y);
+        }
+    }
+    else if (halign == STRING_FLAGS::HALIGN_MIDDLE)
+    {
+        if (flags & STRING_FLAGS::CLIPPED)
+        {
+            gfx_draw_string_centred_clipped(dpi, stringId, (void *)args, colour, x, y, width);
+        }
+        else if (flags & STRING_FLAGS::WRAPPED)
+        {
+            gfx_draw_string_centred_wrapped(dpi, (void *)args, x, y, width, stringId, colour);
+        }
+        else
+        {
+            gfx_draw_string_centred(dpi, stringId, x, y, colour, (void *)args);
+        }
+    }
+    else
+    {
+        gfx_draw_string_right(dpi, stringId, (void *)args, colour, x, y);
+    }
+}
+
+void IDrawingContext::DrawString(const utf8 * text, sint32 x, sint32 y, uint32 colour, uint32 flags, sint32 width)
+{
+    DrawString(STR_STRING, &text, x, y, colour, flags, width);
 }
 
 void IDrawingContext::FillRect3D(sint32 left, sint32 top, sint32 right, sint32 bottom, uint32 colour, uint32 flags)

@@ -104,27 +104,22 @@ void TextBlock::Draw(IDrawingContext * dc)
     if (!_text.empty())
     {
         const char * text = _text.c_str();
-
         sint32 l = 0;
         sint32 t = 0;
-        uintptr_t dpip = ((uintptr_t *)dc)[2];
-        rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-        if (HorizontalAlignment == HORIZONTAL_ALIGNMENT::LEFT)
+        sint32 width = 0;
+        uint32 stringFlags = 0;
+
+        if (HorizontalAlignment == HORIZONTAL_ALIGNMENT::MIDDLE)
         {
-            if (_wrap)
-            {
-                gfx_draw_string_left_wrapped(dpi, &text, l, t, Width, STR_STRING, _colour);
-            }
-            else
-            {
-                gfx_draw_string_left(dpi, STR_STRING, &text, _colour, l, t);
-            }
-        }
-        else
-        {
-            sint32 width = Width - 4;
+            width = Width - 4;
             l = 2 + (width / 2);
-            gfx_draw_string_centred_clipped(dpi, STR_STRING, &text, _colour, l, t, width);
+            stringFlags |= STRING_FLAGS::HALIGN_MIDDLE;
         }
+        if (_wrap)
+        {
+            stringFlags |= STRING_FLAGS::WRAPPED;
+        }
+
+        dc->DrawString(text, l, t, _colour, stringFlags, width);
     }
 }

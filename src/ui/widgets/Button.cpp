@@ -161,9 +161,9 @@ void Button::DrawOutset(IDrawingContext * dc)
             colour |= COLOUR_FLAG_INSET;
         }
 
-        uintptr_t dpip = ((uintptr_t *)dc)[2];
-        rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
-        gfx_draw_string_centred_clipped(dpi, Text, nullptr, colour, l, t, Width - 3);
+        uint32 stringFlags = STRING_FLAGS::HALIGN_MIDDLE |
+                             STRING_FLAGS::CLIPPED;
+        dc->DrawString(Text, nullptr, l, t, colour, stringFlags, Width - 3);
     }
 }
 
