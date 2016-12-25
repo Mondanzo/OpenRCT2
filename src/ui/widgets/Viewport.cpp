@@ -15,7 +15,6 @@
 #pragma endregion
 
 #include "../../drawing/DrawingContext.h"
-#include "../DrawingContextExtensions.h"
 #include "../Window.h"
 #include "Viewport.h"
 
@@ -116,7 +115,7 @@ void ViewportWidget::Update()
 void ViewportWidget::Draw(IDrawingContext * dc)
 {
     colour_t colour = ParentWindow->Style.GetColour(Style);
-    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_60);
+    dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_60);
 
     if (_viewport != nullptr)
     {

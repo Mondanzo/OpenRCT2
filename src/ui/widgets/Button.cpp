@@ -17,7 +17,6 @@
 #include "../../core/Math.hpp"
 #include "../../drawing/DrawingContext.h"
 #include "../../localisation/string_ids.h"
-#include "../DrawingContextExtensions.h"
 #include "../MouseEventArgs.h"
 #include "../Window.h"
 #include "Button.h"
@@ -107,7 +106,7 @@ void Button::DrawFlat(IDrawingContext * dc)
                 rectFlags = INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_NONE;
             }
         }
-        DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, rectFlags);
+        dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, rectFlags);
     }
 
     // Draw image
@@ -150,7 +149,7 @@ void Button::DrawOutset(IDrawingContext * dc)
     {
         rectFlags |= INSET_RECT_FLAG_BORDER_INSET;
     }
-    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, rectFlags);
+    dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, rectFlags);
 
     // Text
     if (Text != STR_NONE)

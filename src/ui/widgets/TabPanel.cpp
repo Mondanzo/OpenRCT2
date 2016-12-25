@@ -17,7 +17,6 @@
 #include "../../core/Math.hpp"
 #include "../../drawing/DrawingContext.h"
 #include "../../sprites.h"
-#include "../DrawingContextExtensions.h"
 #include "../MouseEventArgs.h"
 #include "../TabImages.h"
 #include "../Window.h"
@@ -135,7 +134,7 @@ void TabPanel::Update()
 void TabPanel::Draw(IDrawingContext * dc)
 {
     colour_t colour = ParentWindow->Style.GetColour(Style);
-    DCExtensions::FillRectInset(dc, 0, 26, Width - 1, Height - 1, colour, 0);
+    dc->FillRect3D(0, 26, Width - 1, Height - 1, colour, 0);
 }
 
 void TabPanel::SetupWidgets()

@@ -40,4 +40,7 @@ interface IDrawingContext
     virtual void DrawSpriteRawMasked(sint32 x, sint32 y, uint32 maskImage, uint32 colourImage)            abstract;
     virtual void DrawSpriteSolid(uint32 image, sint32 x, sint32 y, uint8 colour)                          abstract;
     virtual void DrawGlyph(uint32 image, sint32 x, sint32 y, uint8 * palette)                             abstract;
+
+    // Extensions
+    void FillRect3D(sint32 left, sint32 top, sint32 right, sint32 bottom, uint32 colour, uint32 flags);
 };

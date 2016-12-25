@@ -15,7 +15,6 @@
 #pragma endregion
 
 #include "../../drawing/DrawingContext.h"
-#include "../DrawingContextExtensions.h"
 #include "../Window.h"
 #include "Chart.h"
 
@@ -38,7 +37,7 @@ void Chart::Draw(IDrawingContext * dc)
     rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
 
     colour_t colour = ParentWindow->Style.GetColour(Style);
-    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_30);
+    dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_30);
 
     if (_values != nullptr && _valuesCount > 0)
     {

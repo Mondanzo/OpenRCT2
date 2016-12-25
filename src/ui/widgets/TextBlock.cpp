@@ -18,7 +18,6 @@
 #include "../../core/String.hpp"
 #include "../../drawing/DrawingContext.h"
 #include "../../localisation/string_ids.h"
-#include "../DrawingContextExtensions.h"
 #include "TextBlock.h"
 
 using namespace OpenRCT2::Ui;

@@ -17,7 +17,6 @@
 #include "../../core/Math.hpp"
 #include "../../drawing/DrawingContext.h"
 #include "../../localisation/string_ids.h"
-#include "../DrawingContextExtensions.h"
 #include "../MouseEventArgs.h"
 #include "../Window.h"
 #include "Button.h"
@@ -130,7 +129,7 @@ void Spinner::Draw(IDrawingContext * dc)
     if (!(SpinnerFlags & SPINNER_FLAGS::READ_ONLY))
     {
         uint8 press = INSET_RECT_F_60;
-        DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, press);
+        dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, press);
     }
 
     // Draw text

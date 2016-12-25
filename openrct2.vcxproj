@@ -88,6 +88,7 @@
     <None Include="openrct2.exe" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\drawing\DrawingContextExtensions.cpp" />
     <ClCompile Include="src\rct2\addresses.c" />
     <ClCompile Include="src\audio\audio.c" />
     <ClCompile Include="src\audio\mixer.cpp" />
@@ -329,7 +330,6 @@
     <ClCompile Include="src\title\TitleSequence.cpp" />
     <ClCompile Include="src\title\TitleSequenceManager.cpp" />
     <ClCompile Include="src\title\TitleSequencePlayer.cpp" />
-    <ClCompile Include="src\ui\DrawingContextExtensions.cpp" />
     <ClCompile Include="src\ui\TabImages.cpp" />
     <ClCompile Include="src\ui\Widget.cpp" />
     <ClCompile Include="src\ui\widgets\Button.cpp" />
@@ -594,7 +594,6 @@
     <ClInclude Include="src\title\TitleSequence.h" />
     <ClInclude Include="src\title\TitleSequenceManager.h" />
     <ClInclude Include="src\title\TitleSequencePlayer.h" />
-    <ClInclude Include="src\ui\DrawingContextExtensions.h" />
     <ClInclude Include="src\ui\MouseEventArgs.h" />
     <ClInclude Include="src\ui\Primitives.h" />
     <ClInclude Include="src\ui\TabImages.h" />

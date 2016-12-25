@@ -19,7 +19,6 @@
 #include "../interface/Cursors.h"
 #include "../localisation/string_ids.h"
 #include "../sprites.h"
-#include "DrawingContextExtensions.h"
 #include "MouseEventArgs.h"
 #include "widgets/Button.h"
 #include "widgets/Panel.h"
@@ -350,7 +349,7 @@ void Window::Draw(IDrawingContext * dc)
     uint8 press = 0;
     // uint8 press = (w->flags & WF_10 ? INSET_RECT_FLAG_FILL_MID_LIGHT : 0);
     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
-    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, bgColour, press);
+    dc->FillRect3D(0, 0, Width - 1, Height - 1, bgColour, press);
 
     // Draw content
     if (_child != nullptr)

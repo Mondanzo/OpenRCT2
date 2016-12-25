@@ -16,7 +16,6 @@
 
 #include "../../drawing/DrawingContext.h"
 #include "../../localisation/string_ids.h"
-#include "../DrawingContextExtensions.h"
 #include "../MouseEventArgs.h"
 #include "../Window.h"
 #include "TitleBar.h"
@@ -57,7 +56,7 @@ void TitleBar::Draw(IDrawingContext * dc)
     // {
     //     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
     // }
-    DCExtensions::FillRectInset(dc, 0, 0, Width - 1, Height - 1, colour, press);
+    dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, press);
 
     // Black caption bars look slightly green, this fixes that
     if (colour == 0)
