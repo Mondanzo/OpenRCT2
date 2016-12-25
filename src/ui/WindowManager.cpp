@@ -16,7 +16,7 @@
 
 #include <algorithm>
 #include <vector>
-#include "../drawing/IDrawingContext.h"
+#include "../drawing/DrawingContext.h"
 #include "MouseEventArgs.h"
 #include "Window.h"
 #include "WindowManager.h"

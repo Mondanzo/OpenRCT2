@@ -14,7 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
-#include "../drawing/IDrawingContext.h"
+#include "../drawing/DrawingContext.h"
 #include "DrawingContextExtensions.h"
 
 extern "C"

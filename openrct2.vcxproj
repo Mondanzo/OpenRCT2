@@ -487,8 +487,8 @@
     <ClInclude Include="src\drawing\engines\opengl\SwapFramebuffer.h" />
     <ClInclude Include="src\drawing\engines\opengl\TextureCache.h" />
     <ClInclude Include="src\drawing\font.h" />
-    <ClInclude Include="src\drawing\IDrawingContext.h" />
-    <ClInclude Include="src\drawing\IDrawingEngine.h" />
+    <ClInclude Include="src\drawing\DrawingContext.h" />
+    <ClInclude Include="src\drawing\DrawingEngine.h" />
     <ClInclude Include="src\drawing\NewDrawing.h" />
     <ClInclude Include="src\drawing\Rain.h" />
     <ClInclude Include="src\drawing\lightfx.h" />

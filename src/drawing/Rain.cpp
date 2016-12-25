@@ -22,7 +22,7 @@ extern "C"
     #include "../config.h"
 }
 
-#include "IDrawingEngine.h"
+#include "DrawingEngine.h"
 #include "Rain.h"
 #include "../core/Math.hpp"
 

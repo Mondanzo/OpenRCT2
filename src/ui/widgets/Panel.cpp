@@ -15,7 +15,7 @@
 #pragma endregion
 
 #include "../../core/Math.hpp"
-#include "../../drawing/IDrawingContext.h"
+#include "../../drawing/DrawingContext.h"
 #include "Panel.h"
 
 using namespace OpenRCT2::Ui;

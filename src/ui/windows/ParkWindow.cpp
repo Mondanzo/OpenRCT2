@@ -15,7 +15,7 @@
 #pragma endregion
 
 #include "../../core/Math.hpp"
-#include "../../drawing/IDrawingContext.h"
+#include "../../drawing/DrawingContext.h"
 #include "../../localisation/string_ids.h"
 #include "../../sprites.h"
 #include "../TabImages.h"

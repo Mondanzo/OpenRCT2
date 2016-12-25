@@ -16,7 +16,7 @@
 
 #ifdef DISABLE_OPENGL
 
-#include "../../IDrawingEngine.h"
+#include "../../DrawingEngine.h"
 
 IDrawingEngine * DrawingEngineFactory::CreateOpenGL()
 {
@@ -44,8 +44,8 @@ IDrawingEngine * DrawingEngineFactory::CreateOpenGL()
 #include "../../../core/Exception.hpp"
 #include "../../../core/Math.hpp"
 #include "../../../core/Memory.hpp"
-#include "../../IDrawingContext.h"
-#include "../../IDrawingEngine.h"
+#include "../../DrawingContext.h"
+#include "../../DrawingEngine.h"
 #include "../../Rain.h"
 #include "../../../config.h"
 #include "../../../OpenRCT2.h"

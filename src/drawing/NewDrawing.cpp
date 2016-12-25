@@ -15,8 +15,8 @@
 #pragma endregion
 
 #include "../core/Exception.hpp"
-#include "IDrawingContext.h"
-#include "IDrawingEngine.h"
+#include "DrawingContext.h"
+#include "DrawingEngine.h"
 #include "NewDrawing.h"
 
 extern "C"

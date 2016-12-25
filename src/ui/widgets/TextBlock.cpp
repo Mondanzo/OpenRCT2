@@ -16,7 +16,7 @@
 
 #include "../../core/Math.hpp"
 #include "../../core/String.hpp"
-#include "../../drawing/IDrawingContext.h"
+#include "../../drawing/DrawingContext.h"
 #include "../../localisation/string_ids.h"
 #include "../DrawingContextExtensions.h"
 #include "TextBlock.h"

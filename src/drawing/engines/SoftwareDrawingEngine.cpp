@@ -18,8 +18,8 @@
 #include "../../core/Math.hpp"
 #include "../../core/Memory.hpp"
 #include "../../OpenRCT2.h"
-#include "../IDrawingContext.h"
-#include "../IDrawingEngine.h"
+#include "../DrawingContext.h"
+#include "../DrawingEngine.h"
 #include "../Rain.h"
 
 extern "C"
