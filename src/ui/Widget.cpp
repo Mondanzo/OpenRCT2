@@ -26,8 +26,6 @@ Widget::Widget()
     Flags = WIDGET_FLAGS::AUTO_SIZE |
             WIDGET_FLAGS::ENABLED |
             WIDGET_FLAGS::INHERIT_STYLE;
-    Visibility = VISIBILITY::VISIBLE;
-    Style = 0;
     DefaultTooltip = STR_NONE;
 }
 
@@ -62,18 +60,33 @@ void Widget::SetEnabled(bool value)
     }
 }
 
+VISIBILITY Widget::GetVisibility() const
+{
+    return _visibility;
+}
+
 void Widget::SetVisibility(VISIBILITY value)
 {
-    if (value != Visibility)
+    if (value != _visibility)
     {
         if (value == VISIBILITY::COLLAPSED ||
-            Visibility == VISIBILITY::COLLAPSED)
+            _visibility == VISIBILITY::COLLAPSED)
         {
             InvalidateLayout();
         }
-        Visibility = value;
+        _visibility = value;
         InvalidateVisual();
     }
+}
+
+uint8 Widget::GetStyle() const
+{
+    return _style;
+}
+
+void Widget::SetStyle(uint8 value)
+{
+    _style = value;
 }
 
 void Widget::InvalidateLayout()

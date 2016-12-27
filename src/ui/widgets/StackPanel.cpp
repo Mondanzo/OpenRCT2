@@ -40,7 +40,7 @@ void StackPanel::Measure()
         for (sint32 i = 0; i < numChildren; i++)
         {
             Widget * widget = GetChild(i);
-            if (widget->Visibility != VISIBILITY::COLLAPSED)
+            if (widget->GetVisibility() != VISIBILITY::COLLAPSED)
             {
                 size32 widgetSize = widget->GetSizeWithMargin();
                 minSize.Width += widgetSize.Width;
@@ -61,7 +61,7 @@ void StackPanel::Measure()
         for (sint32 i = 0; i < numChildren; i++)
         {
             Widget * widget = GetChild(i);
-            if (widget->Visibility != VISIBILITY::COLLAPSED)
+            if (widget->GetVisibility() != VISIBILITY::COLLAPSED)
             {
                 size32 widgetSize = widget->GetSizeWithMargin();
                 minSize.Width = Math::Max(minSize.Width, widgetSize.Width);
@@ -95,7 +95,7 @@ void StackPanel::Arrange()
         for (sint32 i = 0; i < numChildren; i++)
         {
             Widget * widget = GetChild(i);
-            if (widget->Visibility != VISIBILITY::COLLAPSED)
+            if (widget->GetVisibility() != VISIBILITY::COLLAPSED)
             {
                 widget->X = x + widget->Margin.Left;
                 widget->Y = y + widget->Margin.Top;
@@ -118,7 +118,7 @@ void StackPanel::Arrange()
         for (sint32 i = 0; i < numChildren; i++)
         {
             Widget * widget = GetChild(i);
-            if (widget->Visibility != VISIBILITY::COLLAPSED)
+            if (widget->GetVisibility() != VISIBILITY::COLLAPSED)
             {
                 widget->X = x + widget->Margin.Left;
                 widget->Y = y + widget->Margin.Top;

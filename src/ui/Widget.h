@@ -65,6 +65,10 @@ namespace OpenRCT2::Ui
 
     class Widget
     {
+    private:
+        VISIBILITY _visibility = VISIBILITY::VISIBLE;
+        uint8      _style = 0;
+
     public:
         Window * ParentWindow;
         union
@@ -75,8 +79,6 @@ namespace OpenRCT2::Ui
         };
         Thickness   Margin;
         uint16      Flags;
-        VISIBILITY  Visibility;
-        uint8       Style;
 
         rct_string_id DefaultTooltip;
 
@@ -89,7 +91,12 @@ namespace OpenRCT2::Ui
         virtual rct_string_id GetTooltip(sint32 x, sint32 y);
 
         void SetEnabled(bool value);
+
+        VISIBILITY GetVisibility() const;
         void SetVisibility(VISIBILITY value);
+
+        uint8 GetStyle() const;
+        void SetStyle(uint8 value);
 
         // Layout
         void InvalidateLayout();
@@ -110,7 +117,7 @@ namespace OpenRCT2::Ui
         // Helpers
         bool IsEnabled() { return (Flags & WIDGET_FLAGS::ENABLED) != 0; }
         bool IsDisabled() { return !IsEnabled(); }
-        bool IsVisible() { return Visibility == VISIBILITY::VISIBLE; }
+        bool IsVisible() { return _visibility == VISIBILITY::VISIBLE; }
         size32 GetSizeWithMargin()
         {
             return { Width + Margin.Left + Margin.Right,

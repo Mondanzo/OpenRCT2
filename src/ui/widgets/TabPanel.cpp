@@ -110,11 +110,11 @@ void TabPanel::Arrange()
     {
         if (tab.Info.Flags & TABINFO_FLAGS::HIDDEN)
         {
-            tab.Visibility = VISIBILITY::COLLAPSED;
+            tab.SetVisibility(VISIBILITY::COLLAPSED);
         }
         else
         {
-            tab.Visibility = VISIBILITY::VISIBLE;
+            tab.SetVisibility(VISIBILITY::VISIBLE);
             tab.X = x;
             tab.Y = 0;
             x += TAB_WIDTH;
@@ -134,7 +134,7 @@ void TabPanel::Update()
 void TabPanel::Draw(IDrawingContext * dc)
 {
     const WindowStyle * style = ParentWindow->GetStyle();
-    colour_t colour = style->GetColour(Style);
+    colour_t colour = style->GetColour(GetStyle());
     dc->FillRect3D(0, 26, Width - 1, Height - 1, colour, 0);
 }
 

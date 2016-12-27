@@ -117,7 +117,7 @@ void WindowShell::Arrange()
 
         _tabPanel->Width = Width;
         _tabPanel->Height = Height - _tabPanel->Y;
-        _tabPanel->Style = 1;
+        _tabPanel->SetStyle(1);
         _tabPanel->Flags &= ~WIDGET_FLAGS::INHERIT_STYLE;
     }
 }

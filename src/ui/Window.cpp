@@ -387,9 +387,9 @@ void Window::Update(Widget * node, xy32 absolutePosition)
 
             if (child->Flags & WIDGET_FLAGS::INHERIT_STYLE)
             {
-                if (child->Style != node->Style)
+                if (child->GetStyle() != node->GetStyle())
                 {
-                    child->Style = node->Style;
+                    child->SetStyle(node->GetStyle());
                     child->InvalidateVisual();
                 }
             }
