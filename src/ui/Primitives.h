@@ -59,4 +59,6 @@ struct rect32
     }
 };
 
+constexpr size32 SIZE32_MAX = { INT32_MAX, INT32_MAX };
+
 #pragma pack(pop)

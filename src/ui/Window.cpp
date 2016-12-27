@@ -278,17 +278,14 @@ void Window::Measure()
     {
         Measure(_child);
 
-        size32 size;
+        size32 size = _child->GetSize();
         if ((_flags & WIDGET_FLAGS::AUTO_SIZE) || (_bounds.Width == 0 && _bounds.Height == 0))
         {
             size.Width = _child->GetWidth();
             size.Height = _child->GetHeight();
         }
-        else
-        {
-            size.Width = Math::Clamp(_minimumSize.Width, _bounds.Width, _maximumSize.Width);
-            size.Height = Math::Clamp(_minimumSize.Height, _bounds.Height, _maximumSize.Height);
-        }
+        size.Width = Math::Clamp(_minimumSize.Width, size.Width, _maximumSize.Width);
+        size.Height = Math::Clamp(_minimumSize.Height, size.Height, _maximumSize.Height);
         SetSize(size);
     }
 }

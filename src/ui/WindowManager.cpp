@@ -219,7 +219,7 @@ namespace OpenRCT2::Ui
             // Unset, set cursor flag
             if (_cursorWindow != nullptr)
             {
-                _focusWindow->SetFlag(WINDOW_FLAGS::CURSOR, false);
+                _cursorWindow->SetFlag(WINDOW_FLAGS::CURSOR, false);
             }
             _cursorWindow = w;
             if (w != nullptr)

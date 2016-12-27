@@ -506,9 +506,6 @@ namespace OpenRCT2::Ui
                 SetMinimumSize({ 230, 174 + 9 });
                 SetMaximumSize({ 230 * 3, (274 + 9) * 3 });
                 break;
-            case PAGE_STATS:
-                SetFlag(WINDOW_FLAGS::AUTO_SIZE, true);
-                break;
             case PAGE_RATING:
             case PAGE_GUESTS:
             case PAGE_ADMISSION:
@@ -519,8 +516,11 @@ namespace OpenRCT2::Ui
                 SetMinimumSize(GetSize());
                 SetMaximumSize(GetSize());
                 break;
+            case PAGE_STATS:
             default:
                 SetFlag(WINDOW_FLAGS::AUTO_SIZE, true);
+                SetMinimumSize(PageWindowSizes[page]);
+                SetMaximumSize(SIZE32_MAX);
                 break;
             }
 
