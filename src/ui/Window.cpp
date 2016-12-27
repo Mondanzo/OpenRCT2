@@ -37,10 +37,10 @@ using namespace OpenRCT2::Ui;
 
 Window::Window()
 {
-    Flags = WINDOW_FLAGS::AUTO_SIZE |
-            WINDOW_FLAGS::HAS_TITLE_BAR |
-            WINDOW_FLAGS::HAS_CLOSE_BUTTON |
-            WINDOW_FLAGS::LAYOUT_DIRTY;
+    _flags = WINDOW_FLAGS::AUTO_SIZE |
+             WINDOW_FLAGS::HAS_TITLE_BAR |
+             WINDOW_FLAGS::HAS_CLOSE_BUTTON |
+             WINDOW_FLAGS::LAYOUT_DIRTY;
 
     _windowShell = new WindowShell(this);
 }
@@ -158,7 +158,7 @@ void Window::SetSize(size32 size)
     {
         Invalidate();
         _bounds.Size = size;
-        Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
+        _flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
         Invalidate();
     }
 }
@@ -181,6 +181,33 @@ const WindowStyle * Window::GetStyle() const
 void Window::SetStyle(const WindowStyle * style)
 {
     _style = *style;
+}
+
+uint32 Window::GetFlags() const
+{
+    return _flags;
+}
+
+bool Window::HasFlag(uint32 flag) const
+{
+    return (_flags & flag) == flag;
+}
+
+void Window::SetFlags(uint32 flags)
+{
+    _flags = flags;
+}
+
+void Window::SetFlag(uint32 flag, bool value)
+{
+    if (value)
+    {
+        _flags |= flag;
+    }
+    else
+    {
+        _flags &= ~flag;
+    }
 }
 
 std::string Window::GetTitle()
@@ -252,7 +279,7 @@ void Window::Measure()
         Measure(_child);
 
         size32 size;
-        if ((Flags & WIDGET_FLAGS::AUTO_SIZE) || (_bounds.Width == 0 && _bounds.Height == 0))
+        if ((_flags & WIDGET_FLAGS::AUTO_SIZE) || (_bounds.Width == 0 && _bounds.Height == 0))
         {
             size.Width = _child->Width;
             size.Height = _child->Height;
@@ -326,16 +353,16 @@ void Window::Update()
         Update(_child, _bounds.XY);
     }
 
-    if (Flags & WINDOW_FLAGS::LAYOUT_DIRTY)
+    if (_flags & WINDOW_FLAGS::LAYOUT_DIRTY)
     {
-        Flags &= ~WINDOW_FLAGS::LAYOUT_DIRTY;
+        _flags &= ~WINDOW_FLAGS::LAYOUT_DIRTY;
         Invalidate();
         Measure();
         Arrange();
         Invalidate();
     }
 
-    if (!(Flags & WINDOW_FLAGS::CURSOR))
+    if (!(_flags & WINDOW_FLAGS::CURSOR))
     {
         // If the cursor is not over the window, it can't be over any
         // widget within the window.
@@ -372,7 +399,7 @@ void Window::Update(Widget * node, xy32 absolutePosition)
             if (child->Flags & WIDGET_FLAGS::LAYOUT_DIRTY)
             {
                 child->Flags &= ~WIDGET_FLAGS::LAYOUT_DIRTY;
-                Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
+                _flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
             }
             if (child->Flags & WIDGET_FLAGS::VISUAL_DIRTY)
             {
@@ -442,7 +469,7 @@ void Window::DrawSizeGrip(IDrawingContext * dc)
 {
     const WindowStyle * style = GetStyle();
     uint32 colour = style->Colours[0];
-    if (Flags & WINDOW_FLAGS::HAS_TAB_PANEL)
+    if (_flags & WINDOW_FLAGS::HAS_TAB_PANEL)
     {
         colour = style->Colours[1];
     }
@@ -457,7 +484,7 @@ void Window::DrawSizeGrip(IDrawingContext * dc)
 bool Window::HitTest(sint32 x, sint32 y)
 {
     bool result = true;
-    bool isTransparent = (Flags & WINDOW_FLAGS::TRANSPARENT) != 0;
+    bool isTransparent = (_flags & WINDOW_FLAGS::TRANSPARENT) != 0;
     if (isTransparent)
     {
         // Need to check if a widget is at this position
@@ -475,7 +502,7 @@ void Window::MouseDown(const MouseEventArgs * e)
     {
         _resizeCursorDelta = { _bounds.Width - e->X,
                                _bounds.Height - e->Y };
-        Flags |= WINDOW_FLAGS::RESIZING;
+        _flags |= WINDOW_FLAGS::RESIZING;
     }
     else
     {
@@ -493,7 +520,7 @@ void Window::MouseDown(const MouseEventArgs * e)
 
 void Window::MouseMove(const MouseEventArgs * e)
 {
-    if (Flags & WINDOW_FLAGS::RESIZING)
+    if (_flags & WINDOW_FLAGS::RESIZING)
     {
         xy32 cursorPos = { _bounds.X + e->X, _bounds.Y + e->Y };
         size32 newSize = {cursorPos.X + _resizeCursorDelta.X - _bounds.X,
@@ -539,11 +566,11 @@ void Window::MouseMove(const MouseEventArgs * e)
 
 void Window::MouseUp(const MouseEventArgs * e)
 {
-    if (Flags & WINDOW_FLAGS::RESIZING)
+    if (_flags & WINDOW_FLAGS::RESIZING)
     {
         if (e->Button == MOUSE_BUTTON::LEFT)
         {
-            Flags &= ~WINDOW_FLAGS::RESIZING;
+            _flags &= ~WINDOW_FLAGS::RESIZING;
         }
     }
     else
@@ -603,7 +630,7 @@ void Window::SetWidgetFocus(Widget * widget)
 
 bool Window::IsResizable()
 {
-    if (Flags & WINDOW_FLAGS::AUTO_SIZE)
+    if (_flags & WINDOW_FLAGS::AUTO_SIZE)
     {
         return false;
     }

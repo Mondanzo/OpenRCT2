@@ -82,7 +82,7 @@ namespace OpenRCT2::Ui
             // Force all windows to re-layout
             for (Window * w : _windows)
             {
-                w->Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
+                w->SetFlag(WINDOW_FLAGS::LAYOUT_DIRTY, true);
             }
         }
 
@@ -219,12 +219,12 @@ namespace OpenRCT2::Ui
             // Unset, set cursor flag
             if (_cursorWindow != nullptr)
             {
-                _cursorWindow->Flags &= ~WINDOW_FLAGS::CURSOR;
+                _focusWindow->SetFlag(WINDOW_FLAGS::CURSOR, false);
             }
             _cursorWindow = w;
             if (w != nullptr)
             {
-                w->Flags |= WINDOW_FLAGS::CURSOR;
+                w->SetFlag(WINDOW_FLAGS::CURSOR, true);
             }
         }
 
@@ -233,12 +233,12 @@ namespace OpenRCT2::Ui
             // Unset, set focus flag
             if (_focusWindow != nullptr)
             {
-                _focusWindow->Flags &= ~WINDOW_FLAGS::FOCUS;
+                _focusWindow->SetFlag(WINDOW_FLAGS::FOCUS, false);
             }
             _focusWindow = w;
             if (w != nullptr)
             {
-                w->Flags |= WINDOW_FLAGS::FOCUS;
+                w->SetFlag(WINDOW_FLAGS::FOCUS, true);
 
                 // Move window to top of window list
                 auto pos = std::find(_windows.begin(), _windows.end(), w);

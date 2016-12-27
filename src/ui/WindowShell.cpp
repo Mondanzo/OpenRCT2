@@ -39,7 +39,7 @@ WindowShell::~WindowShell()
 void WindowShell::Initialise()
 {
     // Title bar
-    if (ParentWindow->Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
+    if (ParentWindow->HasFlag(WINDOW_FLAGS::HAS_TITLE_BAR))
     {
         _titleBar = new TitleBar();
         _titleBar->SetText(ParentWindow->GetTitle());
@@ -47,7 +47,7 @@ void WindowShell::Initialise()
     }
 
     // Close button
-    if (ParentWindow->Flags & WINDOW_FLAGS::HAS_TITLE_BAR)
+    if (ParentWindow->HasFlag(WINDOW_FLAGS::HAS_TITLE_BAR))
     {
         _closeButton = new Button();
         _closeButton->Text = STR_CLOSE_X;

@@ -478,7 +478,7 @@ namespace OpenRCT2::Ui
             SetLocation(333, 200);
             SetSize(230, 174 + 9);
 
-            Flags |= WINDOW_FLAGS::HAS_TAB_PANEL;
+            SetFlag(WINDOW_FLAGS::HAS_TAB_PANEL, true);
             SetTabPanelAdapter(this);
 
             WindowStyle style;
@@ -502,25 +502,25 @@ namespace OpenRCT2::Ui
             sint32 page = GetTabIndex();
             switch (page) {
             case PAGE_ENTRANCE:
-                Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
+                SetFlag(WINDOW_FLAGS::AUTO_SIZE, false);
                 SetMinimumSize({ 230, 174 + 9 });
                 SetMaximumSize({ 230 * 3, (274 + 9) * 3 });
                 break;
             case PAGE_STATS:
-                Flags |= WINDOW_FLAGS::AUTO_SIZE;
+                SetFlag(WINDOW_FLAGS::AUTO_SIZE, true);
                 break;
             case PAGE_RATING:
             case PAGE_GUESTS:
             case PAGE_ADMISSION:
             case PAGE_OBJECTIVE:
             case PAGE_AWARDS:
-                Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
+                SetFlag(WINDOW_FLAGS::AUTO_SIZE, false);
                 SetSize(PageWindowSizes[page]);
                 SetMinimumSize(GetSize());
                 SetMaximumSize(GetSize());
                 break;
             default:
-                Flags |= WINDOW_FLAGS::AUTO_SIZE;
+                SetFlag(WINDOW_FLAGS::AUTO_SIZE, true);
                 break;
             }
 
