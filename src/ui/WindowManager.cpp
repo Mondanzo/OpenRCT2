@@ -65,6 +65,11 @@ namespace OpenRCT2::Ui
             return font_get_line_height(spriteBase);
         }
 
+        float GetUiScale() const override
+        {
+            return 2;
+        }
+
         void Invalidate(rect32 bounds) override
         {
             bounds.X += _bounds.X;
@@ -102,7 +107,8 @@ namespace OpenRCT2::Ui
             for (auto it = _windows.rbegin(); it != _windows.rend(); it++)
             {
                 Window * w = *it;
-                IDrawingContext * nestedDC = dc->Nest(w->X, w->Y, w->Width, w->Height);
+                rect32 bounds = w->GetBounds();
+                IDrawingContext * nestedDC = dc->Nest(bounds.X, bounds.Y, bounds.Width, bounds.Height);
                 if (nestedDC != nullptr)
                 {
                     w->Draw(nestedDC);
@@ -117,7 +123,8 @@ namespace OpenRCT2::Ui
             _holdWindow = w;
             if (w != nullptr)
             {
-                MouseEventArgs e2 = e->CopyAndOffset(-w->X, -w->Y);
+                xy32 wpos = w->GetLocation();
+                MouseEventArgs e2 = e->CopyAndOffset(-wpos.X, -wpos.Y);
                 w->MouseDown(&e2);
             }
         }
@@ -141,7 +148,8 @@ namespace OpenRCT2::Ui
 
             if (w != nullptr)
             {
-                MouseEventArgs e2 = e->CopyAndOffset(-w->X, -w->Y);
+                xy32 wpos = w->GetLocation();
+                MouseEventArgs e2 = e->CopyAndOffset(-wpos.X, -wpos.Y);
                 w->MouseMove(&e2);
             }
         }
@@ -156,7 +164,8 @@ namespace OpenRCT2::Ui
             }
             if (w != nullptr)
             {
-                MouseEventArgs e2 = e->CopyAndOffset(-w->X, -w->Y);
+                xy32 wpos = w->GetLocation();
+                MouseEventArgs e2 = e->CopyAndOffset(-wpos.X, -wpos.Y);
                 w->MouseUp(&e2);
             }
         }
@@ -166,7 +175,8 @@ namespace OpenRCT2::Ui
             Window * w = GetWindowAt(e->X, e->Y);
             if (w != nullptr)
             {
-                MouseEventArgs e2 = e->CopyAndOffset(-w->X, -w->Y);
+                xy32 wpos = w->GetLocation();
+                MouseEventArgs e2 = e->CopyAndOffset(-wpos.X, -wpos.Y);
                 w->MouseWheel(&e2);
             }
         }
@@ -190,7 +200,7 @@ namespace OpenRCT2::Ui
         {
             for (Window * w : _windows)
             {
-                rect32 windowBounds = w->Bounds;
+                rect32 windowBounds = w->GetBounds();
                 if (windowBounds.Contains(x, y))
                 {
                     sint32 relX = x - windowBounds.X;

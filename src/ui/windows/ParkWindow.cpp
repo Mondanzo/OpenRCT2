@@ -501,8 +501,8 @@ namespace OpenRCT2::Ui
             switch (page) {
             case PAGE_ENTRANCE:
                 Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
-                MinimumSize = { 230, 174 + 9 };
-                MaximumSize = { 230 * 3, (274 + 9) * 3 };
+                SetMinimumSize({ 230, 174 + 9 });
+                SetMaximumSize({ 230 * 3, (274 + 9) * 3 });
                 break;
             case PAGE_STATS:
                 Flags |= WINDOW_FLAGS::AUTO_SIZE;
@@ -514,8 +514,8 @@ namespace OpenRCT2::Ui
             case PAGE_AWARDS:
                 Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
                 SetSize(PageWindowSizes[page]);
-                MinimumSize = Size;
-                MaximumSize = Size;
+                SetMinimumSize(GetSize());
+                SetMaximumSize(GetSize());
                 break;
             default:
                 Flags |= WINDOW_FLAGS::AUTO_SIZE;

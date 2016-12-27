@@ -67,15 +67,11 @@ namespace OpenRCT2::Ui
 
         xy32 _resizeCursorDelta;
 
+        rect32 _bounds = { 0 };
+        size32 _minimumSize = { 0 };
+        size32 _maximumSize = { 0 };
+
     public:
-        union
-        {
-            struct { sint32 X, Y, Width, Height; };
-            struct { xy32 Location; size32 Size; };
-            rect32 Bounds;
-        };
-        size32 MinimumSize = { 0 };
-        size32 MaximumSize = { 0 };
         uint32 Flags;
         WindowStyle Style;
 
@@ -88,10 +84,19 @@ namespace OpenRCT2::Ui
 
         Widget * GetWidgetAt(sint32 x, sint32 y);
 
+        rect32 GetBounds() const;
+        xy32 GetLocation() const;
+        size32 GetSize() const;
+        size32 GetMinimumSize() const;
+        size32 GetMaximumSize() const;
+
+        void SetBounds(rect32 bounds);
         void SetLocation(sint32 x, sint32 y);
         void SetLocation(xy32 location);
         void SetSize(sint32 width, sint32 height);
         void SetSize(size32 size);
+        void SetMinimumSize(size32 size);
+        void SetMaximumSize(size32 size);
 
         std::string GetTitle();
         void SetTitle(const std::string &title);

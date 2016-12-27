@@ -105,7 +105,7 @@ void TitleBar::MouseMove(const MouseEventArgs * e)
         if (offset.X != 0 || offset.Y != 0)
         {
             Window * window = ParentWindow;
-            xy32 location = window->Location;
+            xy32 location = window->GetLocation();
             location.X += offset.X;
             location.Y += offset.Y;
             window->SetLocation(location);

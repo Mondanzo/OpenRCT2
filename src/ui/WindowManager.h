@@ -32,6 +32,7 @@ namespace OpenRCT2::Ui
 
         virtual rect32 GetBounds() const abstract;
         virtual sint32 GetLineHeight(sint32 fontSize) const abstract;
+        virtual float  GetUiScale() const abstract;
 
         virtual void SetBounds(rect32 bounds) abstract;
         virtual void Invalidate(rect32 bounds) abstract;

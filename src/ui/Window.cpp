@@ -37,7 +37,6 @@ using namespace OpenRCT2::Ui;
 
 Window::Window()
 {
-    Bounds = { 0, 0, 0, 0 };
     Flags = WINDOW_FLAGS::AUTO_SIZE |
             WINDOW_FLAGS::HAS_TITLE_BAR |
             WINDOW_FLAGS::HAS_CLOSE_BUTTON |
@@ -106,6 +105,36 @@ Widget * Window::GetWidgetAt(Widget * node, sint32 x, sint32 y)
     return nullptr;
 }
 
+rect32 Window::GetBounds() const
+{
+    return _bounds;
+}
+
+xy32 Window::GetLocation() const
+{
+    return _bounds.XY;
+}
+
+size32 Window::GetSize() const
+{
+    return _bounds.Size;
+}
+
+size32 Window::GetMinimumSize() const
+{
+    return _minimumSize;
+}
+
+size32 Window::GetMaximumSize() const
+{
+    return _maximumSize;
+}
+
+void Window::SetBounds(rect32 bounds)
+{
+    _bounds = bounds;
+}
+
 void Window::SetLocation(sint32 x, sint32 y)
 {
     SetLocation({ x, y });
@@ -114,7 +143,7 @@ void Window::SetLocation(sint32 x, sint32 y)
 void Window::SetLocation(xy32 location)
 {
     Invalidate();
-    Location = location;
+    _bounds.XY = location;
     Invalidate();
 }
 
@@ -125,13 +154,23 @@ void Window::SetSize(sint32 width, sint32 height)
 
 void Window::SetSize(size32 size)
 {
-    if (Size.Width != size.Width || Size.Height != size.Height)
+    if (_bounds.Width != size.Width || _bounds.Height != size.Height)
     {
         Invalidate();
-        Size = size;
+        _bounds.Size = size;
         Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
         Invalidate();
     }
+}
+
+void Window::SetMinimumSize(size32 size)
+{
+    _minimumSize = size;
+}
+
+void Window::SetMaximumSize(size32 size)
+{
+    _maximumSize = size;
 }
 
 std::string Window::GetTitle()
@@ -203,15 +242,15 @@ void Window::Measure()
         Measure(_child);
 
         size32 size;
-        if ((Flags & WIDGET_FLAGS::AUTO_SIZE) || (Width == 0 && Height == 0))
+        if ((Flags & WIDGET_FLAGS::AUTO_SIZE) || (_bounds.Width == 0 && _bounds.Height == 0))
         {
             size.Width = _child->Width;
             size.Height = _child->Height;
         }
         else
         {
-            size.Width = Math::Clamp(MinimumSize.Width, Width, MaximumSize.Width);
-            size.Height = Math::Clamp(MinimumSize.Height, Height, MaximumSize.Height);
+            size.Width = Math::Clamp(_minimumSize.Width, _bounds.Width, _maximumSize.Width);
+            size.Height = Math::Clamp(_minimumSize.Height, _bounds.Height, _maximumSize.Height);
         }
         SetSize(size);
     }
@@ -239,8 +278,8 @@ void Window::Arrange()
         // Child fills window
         _child->X = 0;
         _child->Y = 0;
-        _child->Width = Width;
-        _child->Height = Height;
+        _child->Width = _bounds.Width;
+        _child->Height = _bounds.Height;
 
         // Recursively arrange the widget tree
         Arrange(_child);
@@ -266,7 +305,7 @@ void Window::Invalidate()
 {
     if (_windowManager != nullptr)
     {
-        _windowManager->Invalidate(Bounds);
+        _windowManager->Invalidate(_bounds);
     }
 }
 
@@ -274,7 +313,7 @@ void Window::Update()
 {
     if (_child != nullptr)
     {
-        Update(_child, Location);
+        Update(_child, _bounds.XY);
     }
 
     if (Flags & WINDOW_FLAGS::LAYOUT_DIRTY)
@@ -349,7 +388,7 @@ void Window::Draw(IDrawingContext * dc)
     uint8 press = 0;
     // uint8 press = (w->flags & WF_10 ? INSET_RECT_FLAG_FILL_MID_LIGHT : 0);
     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
-    dc->FillRect3D(0, 0, Width - 1, Height - 1, bgColour, press);
+    dc->FillRect3D(0, 0, _bounds.Width - 1, _bounds.Height - 1, bgColour, press);
 
     // Draw content
     if (_child != nullptr)
@@ -423,7 +462,8 @@ void Window::MouseDown(const MouseEventArgs * e)
     if (e->Button == MOUSE_BUTTON::LEFT &&
         IsInResizeGripBounds(e->X, e->Y))
     {
-        _resizeCursorDelta = { Width - e->X, Height - e->Y };
+        _resizeCursorDelta = { _bounds.Width - e->X,
+                               _bounds.Height - e->Y };
         Flags |= WINDOW_FLAGS::RESIZING;
     }
     else
@@ -444,11 +484,11 @@ void Window::MouseMove(const MouseEventArgs * e)
 {
     if (Flags & WINDOW_FLAGS::RESIZING)
     {
-        xy32 cursorPos = { X + e->X, Y + e->Y };
-        size32 newSize = {cursorPos.X + _resizeCursorDelta.X - X,
-                          cursorPos.Y + _resizeCursorDelta.Y - Y };
-        newSize.Width = Math::Clamp(MinimumSize.Width, newSize.Width, MaximumSize.Width);
-        newSize.Height = Math::Clamp(MinimumSize.Height, newSize.Height, MaximumSize.Height);
+        xy32 cursorPos = { _bounds.X + e->X, _bounds.Y + e->Y };
+        size32 newSize = {cursorPos.X + _resizeCursorDelta.X - _bounds.X,
+                          cursorPos.Y + _resizeCursorDelta.Y - _bounds.Y };
+        newSize.Width = Math::Clamp(_minimumSize.Width, newSize.Width, _maximumSize.Width);
+        newSize.Height = Math::Clamp(_minimumSize.Height, newSize.Height, _maximumSize.Height);
         SetSize(newSize);
     }
     else
@@ -556,8 +596,8 @@ bool Window::IsResizable()
     {
         return false;
     }
-    if (MinimumSize.Width == MaximumSize.Width &&
-        MinimumSize.Height == MaximumSize.Height)
+    if (_minimumSize.Width == _maximumSize.Width &&
+        _minimumSize.Height == _maximumSize.Height)
     {
         return false;
     }
@@ -566,7 +606,10 @@ bool Window::IsResizable()
 
 rect32 Window::GetResizeGripBounds()
 {
-    rect32 bounds = { Width - 18, Height - 18, 18, 18 };
+    rect32 bounds = { _bounds.Width - 18,
+                      _bounds.Height - 18,
+                      18,
+                      18 };
     return bounds;
 }
 
