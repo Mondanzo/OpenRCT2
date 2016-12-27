@@ -38,7 +38,7 @@ void Chart::Draw(IDrawingContext * dc)
 
     const WindowStyle * style = GetParentWindow()->GetStyle();
     colour_t colour = style->GetColour(GetStyle());
-    dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_30);
+    dc->FillRect3D(0, 0, GetWidth() - 1, GetHeight() - 1, colour, INSET_RECT_F_30);
 
     if (_values != nullptr && _valuesCount > 0)
     {

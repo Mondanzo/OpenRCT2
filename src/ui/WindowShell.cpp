@@ -67,14 +67,14 @@ void WindowShell::Measure()
     if (_titleBar != nullptr)
     {
         size.Width = 16;
-        size.Height += _titleBar->Height;
+        size.Height += _titleBar->GetHeight();
     }
     if (_tabPanel != nullptr)
     {
-        size.Width = Math::Max(size.Width, _tabPanel->Width);
-        size.Height += _tabPanel->Height;
+        size.Width = Math::Max(size.Width, _tabPanel->GetWidth());
+        size.Height += _tabPanel->GetHeight();
     }
-    Size = size;
+    SetSize(size);
 }
 
 void WindowShell::Arrange()
@@ -82,24 +82,24 @@ void WindowShell::Arrange()
     // Title bar
     if (_titleBar != nullptr)
     {
-        _titleBar->X = 1;
-        _titleBar->Y = 1;
-        _titleBar->Width = Width - 2;
+        _titleBar->SetX(1);
+        _titleBar->SetY(1);
+        _titleBar->SetWidth(GetWidth() - 2);
     }
 
     // Close button
     if (_closeButton != nullptr)
     {
-        _closeButton->Width = 11;
-        _closeButton->Height = 12;
+        _closeButton->SetWidth(11);
+        _closeButton->SetHeight(12);
         if (_titleBar != nullptr)
         {
-            _closeButton->Height = _titleBar->Height - 2;
-            _closeButton->Width = _closeButton->Height - 1;
+            _closeButton->SetHeight(_titleBar->GetHeight() - 2);
+            _closeButton->SetWidth(_closeButton->GetHeight() - 1);
         }
 
-        _closeButton->X = Width - _closeButton->Width - 2;
-        _closeButton->Y = 2;
+        _closeButton->SetX(GetWidth() - _closeButton->GetWidth() - 2);
+        _closeButton->SetY(2);
 
         _closeButton->ButtonFlags |= BUTTON_FLAGS::STYLE_LIGHT;
     }
@@ -107,16 +107,15 @@ void WindowShell::Arrange()
     // Tab panel
     if (_tabPanel != nullptr)
     {
-        _tabPanel->X = 0;
-
-        _tabPanel->Y = 17;
+        _tabPanel->SetX(0);
+        _tabPanel->SetY(17);
         if (_titleBar != nullptr)
         {
-            _tabPanel->Y = _titleBar->Bounds.GetBottom() + 2;
+            _tabPanel->SetY(_titleBar->GetBottom() + 2);
         }
 
-        _tabPanel->Width = Width;
-        _tabPanel->Height = Height - _tabPanel->Y;
+        _tabPanel->SetWidth(GetWidth());
+        _tabPanel->SetHeight(GetHeight() - _tabPanel->GetY());
         _tabPanel->SetStyle(1);
         _tabPanel->Flags &= ~WIDGET_FLAGS::INHERIT_STYLE;
     }

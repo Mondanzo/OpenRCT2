@@ -95,7 +95,7 @@ namespace OpenRCT2::Ui
     public:
         EntrancePage()
         {
-            Margin = Thickness(2, 0, 0, 2);
+            SetMargin(Thickness(2, 0, 0, 2));
 
             _grid0.SetOrientation(ORIENTATION::VERTICAL);
             SetChild(&_grid0);
@@ -109,7 +109,7 @@ namespace OpenRCT2::Ui
             _viewport.Flags |= WIDGET_FLAGS::STRETCH_V;
             _grid1.AddChild(&_viewport);
 
-            _toolbar.Margin = Thickness(3, 0, 0, 0);
+            _toolbar.SetMargin(Thickness(3, 0, 0, 0));
             _toolbar.SetOrientation(ORIENTATION::VERTICAL);
             _grid1.AddChild(&_toolbar);
 
@@ -157,7 +157,7 @@ namespace OpenRCT2::Ui
     public:
         RatingPage()
         {
-            Margin = Thickness(3);
+            SetMargin(Thickness(3));
 
             _chart.Flags |= WIDGET_FLAGS::STRETCH_H |
                             WIDGET_FLAGS::STRETCH_V;
@@ -185,7 +185,7 @@ namespace OpenRCT2::Ui
     public:
         GuestsPage()
         {
-            Margin = Thickness(3);
+            SetMargin(Thickness(3));
 
             _chart.Flags |= WIDGET_FLAGS::STRETCH_H |
                             WIDGET_FLAGS::STRETCH_V;
@@ -218,12 +218,12 @@ namespace OpenRCT2::Ui
         {
             _feeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_H;
             _feeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_V;
-            _feeTextBlock.Margin.Left = 14;
+            _feeTextBlock.SetMargin(Thickness(0, 0, 0, 14));
             _feeTextBlock.SetText(FormatLocaleString(STR_ADMISSION_PRICE));
 
             _feeSpinner.SpinnerFlags |= SPINNER_FLAGS::HIGH_PRECISION |
                                         SPINNER_FLAGS::SHOW_ZERO_AS_FREE;
-            _feeSpinner.Width = 76;
+            _feeSpinner.SetWidth(76);
             _feeSpinner.SmallStep = MONEY(1,00);
             _feeSpinner.MinimumValue = MONEY(0,00);
             _feeSpinner.MaximumValue = MONEY(100,00);
@@ -233,12 +233,12 @@ namespace OpenRCT2::Ui
 
             _grid1.Flags |= WIDGET_FLAGS::STRETCH_H;
             _grid1.SetOrientation(ORIENTATION::HORIZONTAL);
-            _grid1.Margin = Thickness(6);
+            _grid1.SetMargin(Thickness(6));
             _grid1.AddChild(&_feeTextBlock);
             _grid1.AddChild(&_feeSpinner);
 
             _admissionsIncomeTextBlock.Flags |= WIDGET_FLAGS::STRETCH_H;
-            _admissionsIncomeTextBlock.Margin = Thickness(6);
+            _admissionsIncomeTextBlock.SetMargin(Thickness(6));
 
             _grid0.SetOrientation(ORIENTATION::VERTICAL);
             _grid0.AddChild(&_grid1);
@@ -279,7 +279,7 @@ namespace OpenRCT2::Ui
         StatsPage()
         {
             _grid0.SetOrientation(ORIENTATION::VERTICAL);
-            _grid0.Margin = Thickness(3);
+            _grid0.SetMargin(Thickness(3));
             SetChild(&_grid0);
 
             for (sint32 i = 0; i < 5; i++)
@@ -323,15 +323,15 @@ namespace OpenRCT2::Ui
     public:
         ObjectivePage()
         {
-            Margin = Thickness(4);
+            SetMargin(Thickness(4));
 
             _detailsTextBlock.SetWrapping(true);
             _detailsTextBlock.VerticalAlignment = VERTICAL_ALIGNMENT::TOP;
-            _detailsTextBlock.Margin.Bottom = 5;
+            _detailsTextBlock.SetMargin(Thickness(0, 0, 5, 0));
 
             _objectiveLabelTextBlock.SetText(FormatLocaleString(STR_OBJECTIVE_LABEL));
             _objectiveLabelTextBlock.VerticalAlignment = VERTICAL_ALIGNMENT::TOP;
-            _objectiveTextBlock.Margin.Bottom = 10;
+            _detailsTextBlock.SetMargin(Thickness(0, 0, 10, 0));
 
             _objectiveTextBlock.SetWrapping(true);
             _objectiveTextBlock.VerticalAlignment = VERTICAL_ALIGNMENT::TOP;
@@ -343,7 +343,7 @@ namespace OpenRCT2::Ui
             _enterNameButton.Flags |= WIDGET_FLAGS::STRETCH_H;
             _enterNameButton.Type = BUTTON_TYPE::OUTSET;
             _enterNameButton.Text = STR_ENTER_NAME_INTO_SCENARIO_CHART;
-            _enterNameButton.Margin = Thickness(0, 2);
+            _enterNameButton.SetMargin(Thickness(0, 2));
 
             _grid.SetOrientation(ORIENTATION::VERTICAL);
             _grid.AddChild(&_detailsTextBlock);

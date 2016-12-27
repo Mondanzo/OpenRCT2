@@ -46,7 +46,7 @@ void TitleBar::Measure()
         IWindowManager * wm = GetWindowManager();
         sint32 lineHeight = wm->GetLineHeight(FONT_SIZE_MEDIUM);
 
-        Height = lineHeight + 4;
+        SetHeight(lineHeight + 4);
     }
 }
 
@@ -60,16 +60,16 @@ void TitleBar::Draw(IDrawingContext * dc)
     // {
     //     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
     // }
-    dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, press);
+    dc->FillRect3D(0, 0, GetWidth() - 1, GetHeight() - 1, colour, press);
 
     // Black caption bars look slightly green, this fixes that
     if (colour == 0)
     {
-        dc->FillRect(1, 1, Width - 2, Height - 2, ColourMapA[colour].dark);
+        dc->FillRect(1, 1, GetWidth() - 2, GetHeight() - 2, ColourMapA[colour].dark);
     }
     else
     {
-        dc->FilterRect(PALETTE_DARKEN_3, 1, 1, Width - 2, Height - 2);
+        dc->FilterRect(PALETTE_DARKEN_3, 1, 1, GetWidth() - 2, GetHeight() - 2);
     }
 
     // Draw text
@@ -78,7 +78,7 @@ void TitleBar::Draw(IDrawingContext * dc)
         const char * text = _text.c_str();
         sint32 l = 2;
         sint32 t = 1;
-        sint32 width = Width - 4;
+        sint32 width = GetWidth() - 4;
         l += width / 2;
 
         uint32 stringFlags = STRING_FLAGS::HALIGN_MIDDLE |

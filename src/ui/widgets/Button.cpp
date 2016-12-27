@@ -32,12 +32,12 @@ void Button::Measure()
     {
         if (Type == BUTTON_TYPE::FLAT)
         {
-            Width = 24;
-            Height = 24;
+            SetWidth(24);
+            SetHeight(24);
         }
         else if (Type == BUTTON_TYPE::OUTSET)
         {
-            Height = 12;
+            SetHeight(12);
         }
     }
 }
@@ -106,7 +106,7 @@ void Button::DrawFlat(IDrawingContext * dc)
                 rectFlags = INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_NONE;
             }
         }
-        dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, rectFlags);
+        dc->FillRect3D(0, 0, GetWidth() - 1, GetHeight() - 1, colour, rectFlags);
     }
 
     // Draw image
@@ -149,13 +149,13 @@ void Button::DrawOutset(IDrawingContext * dc)
     {
         rectFlags |= INSET_RECT_FLAG_BORDER_INSET;
     }
-    dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, rectFlags);
+    dc->FillRect3D(0, 0, GetWidth() - 1, GetHeight() - 1, colour, rectFlags);
 
     // Text
     if (Text != STR_NONE)
     {
-        sint32 l = (Width / 2) - 1;
-        sint32 t = Math::Max(0, (Height / 2) - 6);
+        sint32 l = (GetWidth() / 2) - 1;
+        sint32 t = Math::Max(0, (GetHeight() / 2) - 6);
         if (IsDisabled())
         {
             colour |= COLOUR_FLAG_INSET;
@@ -163,7 +163,7 @@ void Button::DrawOutset(IDrawingContext * dc)
 
         uint32 stringFlags = STRING_FLAGS::HALIGN_MIDDLE |
                              STRING_FLAGS::CLIPPED;
-        dc->DrawString(Text, nullptr, l, t, colour, stringFlags, Width - 3);
+        dc->DrawString(Text, nullptr, l, t, colour, stringFlags, GetWidth() - 3);
     }
 }
 

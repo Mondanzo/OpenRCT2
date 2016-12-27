@@ -66,7 +66,7 @@ void ViewportWidget::Update()
 {
     if (_viewport == nullptr)
     {
-        if (Width < 8 || Height < 8)
+        if (GetWidth() < 8 || GetHeight() < 8)
         {
             return;
         }
@@ -115,7 +115,7 @@ void ViewportWidget::Update()
 void ViewportWidget::Draw(IDrawingContext * dc)
 {
     colour_t colour = GetStyleColour();
-    dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_60);
+    dc->FillRect3D(0, 0, GetWidth() - 1, GetHeight() - 1, colour, INSET_RECT_F_60);
 
     if (_viewport != nullptr)
     {
@@ -132,7 +132,7 @@ rect32 ViewportWidget::GetViewportRenderBounds()
     rect32 renderBounds;
     renderBounds.X = 1;
     renderBounds.Y = 1;
-    renderBounds.Width = Width - 2;
-    renderBounds.Height = Height - 2;
+    renderBounds.Width = GetWidth() - 2;
+    renderBounds.Height = GetHeight() - 2;
     return renderBounds;
 }

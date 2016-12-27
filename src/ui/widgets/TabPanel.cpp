@@ -95,15 +95,15 @@ void TabPanel::Measure()
     size.Width = Math::Max(size.Width, containerSize.Width);
     size.Height += containerSize.Height;
 
-    Size = size;
+    SetSize(size);
 }
 
 void TabPanel::Arrange()
 {
-    _container.X = 1;
-    _container.Y = TAB_HEIGHT;
-    _container.Width = Width - _container.X - 1;
-    _container.Height = Height - _container.Y - 1;
+    _container.SetX(1);
+    _container.SetY(TAB_HEIGHT);
+    _container.SetWidth(GetWidth() - _container.GetX() - 1);
+    _container.SetHeight(GetHeight() - _container.GetY() - 1);
 
     sint32 x = 3;
     for (Tab &tab : _tabs)
@@ -115,8 +115,8 @@ void TabPanel::Arrange()
         else
         {
             tab.SetVisibility(VISIBILITY::VISIBLE);
-            tab.X = x;
-            tab.Y = 0;
+            tab.SetX(x);
+            tab.SetY(0);
             x += TAB_WIDTH;
         }
     }
@@ -134,7 +134,7 @@ void TabPanel::Update()
 void TabPanel::Draw(IDrawingContext * dc)
 {
     colour_t colour = GetStyleColour();
-    dc->FillRect3D(0, 26, Width - 1, Height - 1, colour, 0);
+    dc->FillRect3D(0, 26, GetWidth() - 1, GetHeight() - 1, colour, 0);
 }
 
 void TabPanel::SetupWidgets()
@@ -161,8 +161,8 @@ void TabPanel::SetupWidgets()
         auto tab = &_tabs[i];
         tab->Parent = this;
         tab->Index = i;
-        tab->Width = TAB_WIDTH;
-        tab->Height = TAB_HEIGHT;
+        tab->SetWidth(TAB_WIDTH);
+        tab->SetHeight(TAB_HEIGHT);
         tab->Info = _adapter->GetTabInfo(i);
         tab->Active = (i == _selectedIndex);
     }

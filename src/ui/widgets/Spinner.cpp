@@ -85,25 +85,25 @@ void Spinner::Measure()
 {
     if (Flags & WIDGET_FLAGS::AUTO_SIZE)
     {
-        Height = 12;
+        SetHeight(12);
     }
 }
 
 void Spinner::Arrange()
 {
     sint32 buttonWidth = 11;
-    sint32 buttonHeight = (Height - 2) / 2;
-    sint32 buttonX = Width - 11;
+    sint32 buttonHeight = (GetHeight() - 2) / 2;
+    sint32 buttonX = GetWidth() - 11;
 
-    _upButton->X = buttonX;
-    _upButton->Y = 1;
-    _upButton->Width = buttonWidth;
-    _upButton->Height = buttonHeight;
+    _upButton->SetX(buttonX);
+    _upButton->SetY(1);
+    _upButton->SetWidth(buttonWidth);
+    _upButton->SetHeight(buttonHeight);
 
-    _downButton->X = buttonX;
-    _downButton->Y = Height - 1 - buttonHeight;
-    _downButton->Width = buttonWidth;
-    _downButton->Height = buttonHeight;
+    _downButton->SetX(buttonX);
+    _downButton->SetY(GetHeight() - 1 - buttonHeight);
+    _downButton->SetWidth(buttonWidth);
+    _downButton->SetHeight(buttonHeight);
 }
 
 void Spinner::Update()
@@ -129,7 +129,7 @@ void Spinner::Draw(IDrawingContext * dc)
     if (!(SpinnerFlags & SPINNER_FLAGS::READ_ONLY))
     {
         uint8 press = INSET_RECT_F_60;
-        dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, press);
+        dc->FillRect3D(0, 0, GetWidth() - 1, GetHeight() - 1, colour, press);
     }
 
     // Draw text

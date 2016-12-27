@@ -50,10 +50,10 @@ struct rect32
         };
     };
 
-    sint32 GetRight() { return X + Width; }
-    sint32 GetBottom() { return Y + Height; }
+    sint32 GetRight() const { return X + Width; }
+    sint32 GetBottom() const { return Y + Height; }
 
-    bool Contains(sint32 x, sint32 y)
+    bool Contains(sint32 x, sint32 y) const
     {
         return x >= X && y >= Y && x < GetRight() && y < GetBottom();
     }

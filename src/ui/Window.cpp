@@ -80,7 +80,7 @@ Widget * Window::GetWidgetAt(Widget * node, sint32 x, sint32 y)
         Widget * child = node->GetChild(i);
         if (child != nullptr && child->IsVisible())
         {
-            rect32 bounds = child->Bounds;
+            rect32 bounds = child->GetBounds();
             if (bounds.Contains(x, y))
             {
                 // Recurse
@@ -281,8 +281,8 @@ void Window::Measure()
         size32 size;
         if ((_flags & WIDGET_FLAGS::AUTO_SIZE) || (_bounds.Width == 0 && _bounds.Height == 0))
         {
-            size.Width = _child->Width;
-            size.Height = _child->Height;
+            size.Width = _child->GetWidth();
+            size.Height = _child->GetHeight();
         }
         else
         {
@@ -313,10 +313,7 @@ void Window::Arrange()
     if (_child != nullptr)
     {
         // Child fills window
-        _child->X = 0;
-        _child->Y = 0;
-        _child->Width = _bounds.Width;
-        _child->Height = _bounds.Height;
+        _child->SetBounds({ 0, 0, _bounds.Width, _bounds.Height });
 
         // Recursively arrange the widget tree
         Arrange(_child);
@@ -382,8 +379,8 @@ void Window::Update(Widget * node, xy32 absolutePosition)
         if (child != nullptr)
         {
             xy32 childAbsPosition = absolutePosition;
-            childAbsPosition.X += child->X;
-            childAbsPosition.Y += child->Y;
+            childAbsPosition.X += child->GetX();
+            childAbsPosition.Y += child->GetY();
 
             if (child->Flags & WIDGET_FLAGS::INHERIT_STYLE)
             {
@@ -405,7 +402,7 @@ void Window::Update(Widget * node, xy32 absolutePosition)
             {
                 child->Flags &= ~WIDGET_FLAGS::VISUAL_DIRTY;
 
-                rect32 widgetBounds = { childAbsPosition.X, childAbsPosition.Y, child->Width, child->Height };
+                rect32 widgetBounds = { childAbsPosition.X, childAbsPosition.Y, child->GetWidth(), child->GetHeight() };
                 _windowManager->Invalidate(widgetBounds);
             }
         }
@@ -447,7 +444,7 @@ void Window::Draw(IDrawingContext * dc, Widget * node)
         return;
     }
 
-    IDrawingContext * dc2 = dc->Nest(node->X, node->Y, node->Width, node->Height);
+    IDrawingContext * dc2 = dc->Nest(node->GetX(), node->GetY(), node->GetWidth(), node->GetHeight());
     if (dc2 != nullptr)
     {
         node->Draw(dc2);
@@ -513,7 +510,7 @@ void Window::MouseDown(const MouseEventArgs * e)
     _holdWidget = widget;
     if (widget != nullptr)
     {
-        MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+        MouseEventArgs e2 = e->CopyAndOffset(-widget->GetX(), -widget->GetY());
         widget->MouseDown(&e2);
     }
 }
@@ -548,7 +545,7 @@ void Window::MouseMove(const MouseEventArgs * e)
 
         if (widget != nullptr)
         {
-            MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+            MouseEventArgs e2 = e->CopyAndOffset(-widget->GetX(), -widget->GetY());
             widget->MouseMove(&e2);
         }
 
@@ -583,7 +580,7 @@ void Window::MouseUp(const MouseEventArgs * e)
         }
         if (widget != nullptr)
         {
-            MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+            MouseEventArgs e2 = e->CopyAndOffset(-widget->GetX(), -widget->GetY());
             widget->MouseUp(&e2);
         }
         _holdWidget = nullptr;
@@ -595,7 +592,7 @@ void Window::MouseWheel(const MouseEventArgs * e)
     Widget * widget = GetWidgetAt(e->X, e->Y);
     if (widget != nullptr)
     {
-        MouseEventArgs e2 = e->CopyAndOffset(-widget->X, -widget->Y);
+        MouseEventArgs e2 = e->CopyAndOffset(-widget->GetX(), -widget->GetY());
         widget->MouseWheel(&e2);
     }
 }

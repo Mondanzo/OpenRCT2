@@ -70,15 +70,10 @@ namespace OpenRCT2::Ui
         VISIBILITY      _visibility = VISIBILITY::VISIBLE;
         uint8           _style = 0;
         rct_string_id   _defaultTooltip = (rct_string_id)-1;
+        rect32          _bounds = { 0 };
+        Thickness       _margin;
 
     public:
-        union
-        {
-            struct { sint32 X, Y, Width, Height; };
-            struct { xy32 Location; size32 Size; };
-            rect32 Bounds;
-        };
-        Thickness   Margin;
         uint16      Flags;
 
         Widget();
@@ -91,6 +86,25 @@ namespace OpenRCT2::Ui
 
         Window * GetParentWindow();
         void SetParentWindow(Window * value);
+
+        rect32 GetBounds() const;
+        sint32 GetX() const;
+        sint32 GetY() const;
+        sint32 GetRight() const;
+        sint32 GetBottom() const;
+        sint32 GetWidth() const;
+        sint32 GetHeight() const;
+        size32 GetSize() const;
+
+        void SetBounds(rect32 value);
+        void SetX(sint32 value);
+        void SetY(sint32 value);
+        void SetWidth(sint32 value);
+        void SetHeight(sint32 value);
+        void SetSize(size32 value);
+
+        Thickness GetMargin() const;
+        void SetMargin(Thickness value);
 
         void SetEnabled(bool value);
 
@@ -122,8 +136,8 @@ namespace OpenRCT2::Ui
         bool IsVisible() { return _visibility == VISIBILITY::VISIBLE; }
         size32 GetSizeWithMargin()
         {
-            return { Width + Margin.Left + Margin.Right,
-                     Height + Margin.Top + Margin.Bottom };
+            return { _bounds.Width + _margin.Left + _margin.Right,
+                     _bounds.Height + _margin.Top + _margin.Bottom };
         }
         colour_t GetStyleColour();
     };

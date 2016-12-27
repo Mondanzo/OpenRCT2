@@ -78,14 +78,14 @@ void StackPanel::Measure()
         }
     }
 
-    Size = minSize;
+    SetSize(minSize);
     _measuredSize = nonStretchSize;
 }
 
 void StackPanel::Arrange()
 {
-    sint32 spareWidth = Width - _measuredSize.Width;
-    sint32 spareHeight = Height - _measuredSize.Height;
+    sint32 spareWidth = GetWidth() - _measuredSize.Width;
+    sint32 spareHeight = GetHeight() - _measuredSize.Height;
 
     sint32 numChildren = GetChildrenCount();
     sint32 x = 0;
@@ -97,19 +97,21 @@ void StackPanel::Arrange()
             Widget * widget = GetChild(i);
             if (widget->GetVisibility() != VISIBILITY::COLLAPSED)
             {
-                widget->X = x + widget->Margin.Left;
-                widget->Y = y + widget->Margin.Top;
+                Thickness wmargin = widget->GetMargin();
+
+                widget->SetX(x + wmargin.Left);
+                widget->SetY(y + wmargin.Top);
                 if (widget->Flags & WIDGET_FLAGS::STRETCH_H)
                 {
-                    sint32 marginWidth = widget->Margin.Left + widget->Margin.Right;
-                    widget->Width = spareWidth - marginWidth;
+                    sint32 marginWidth = wmargin.Left + wmargin.Right;
+                    widget->SetWidth(spareWidth - marginWidth);
                 }
                 if (widget->Flags & WIDGET_FLAGS::STRETCH_V)
                 {
-                    sint32 marginHeight = widget->Margin.Top + widget->Margin.Bottom;
-                    widget->Height = Height - marginHeight;
+                    sint32 marginHeight = wmargin.Top + wmargin.Bottom;
+                    widget->SetHeight(GetHeight() - marginHeight);
                 }
-                x += widget->Margin.Left + widget->Width + widget->Margin.Right;
+                x += wmargin.Left + widget->GetWidth() + wmargin.Right;
             }
         }
     }
@@ -120,19 +122,21 @@ void StackPanel::Arrange()
             Widget * widget = GetChild(i);
             if (widget->GetVisibility() != VISIBILITY::COLLAPSED)
             {
-                widget->X = x + widget->Margin.Left;
-                widget->Y = y + widget->Margin.Top;
+                Thickness margin = widget->GetMargin();
+
+                widget->SetX(x + margin.Left);
+                widget->SetY(y + margin.Top);
                 if (widget->Flags & WIDGET_FLAGS::STRETCH_H)
                 {
-                    sint32 marginWidth = widget->Margin.Left + widget->Margin.Right;
-                    widget->Width = Width - marginWidth;
+                    sint32 marginWidth = margin.Left + margin.Right;
+                    widget->SetWidth(GetWidth() - marginWidth);
                 }
                 if (widget->Flags & WIDGET_FLAGS::STRETCH_V)
                 {
-                    sint32 marginHeight = widget->Margin.Top + widget->Margin.Bottom;
-                    widget->Height = spareHeight - marginHeight;
+                    sint32 marginHeight = margin.Top + margin.Bottom;
+                    widget->SetHeight(spareHeight - marginHeight);
                 }
-                y += widget->Margin.Top + widget->Height + widget->Margin.Bottom;
+                y += margin.Top + widget->GetHeight() + margin.Bottom;
             }
         }
     }

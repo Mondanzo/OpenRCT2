@@ -52,9 +52,12 @@ void Panel::Measure()
         size32 size = { 0, 0 };
         for (Widget * widget : Children)
         {
-            size.Width = Math::Max(size.Width, widget->X + widget->Width + widget->Margin.Right);
-            size.Height = Math::Max(size.Height, widget->Y + widget->Height + widget->Margin.Bottom);
+            sint32 right = widget->GetRight() + widget->GetMargin().Right;
+            sint32 bottom = widget->GetBottom() + widget->GetMargin().Bottom;
+
+            size.Width = Math::Max(size.Width, right);
+            size.Height = Math::Max(size.Height, bottom);
         }
-        Size = size;
+        SetSize(size);
     }
 }

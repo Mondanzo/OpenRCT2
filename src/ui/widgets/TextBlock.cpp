@@ -75,10 +75,10 @@ void TextBlock::Measure()
         IWindowManager * wm = GetWindowManager();
         sint32 lineHeight = wm->GetLineHeight(FONT_SIZE_MEDIUM);
 
-        Height = lineHeight + 2;
+        SetHeight(lineHeight + 2);
         if (_wrap)
         {
-            _lastMeasuredWidth = Width;
+            _lastMeasuredWidth = GetWidth();
 
             char buffer[4096];
             String::Set(buffer, sizeof(buffer), _text.c_str());
@@ -86,17 +86,17 @@ void TextBlock::Measure()
             sint32 numLines;
             sint32 fontSpriteBase;
             gCurrentFontSpriteBase = FONT_SPRITE_BASE_MEDIUM;
-            gfx_wrap_string(buffer, Width, &numLines, &fontSpriteBase);
+            gfx_wrap_string(buffer, GetWidth(), &numLines, &fontSpriteBase);
             numLines++;
             sint32 lineHeight = font_get_line_height(fontSpriteBase);
-            Height = numLines * lineHeight + 2;
+            SetHeight(numLines * lineHeight + 2);
         }
     }
 }
 
 void TextBlock::Update()
 {
-    if (_wrap && _lastMeasuredWidth != Width)
+    if (_wrap && _lastMeasuredWidth != GetWidth())
     {
         InvalidateLayout();
     }
@@ -110,7 +110,7 @@ void TextBlock::Draw(IDrawingContext * dc)
         const char * text = _text.c_str();
         sint32 l = 0;
         sint32 t = 0;
-        sint32 width = Width - 4;
+        sint32 width = GetWidth() - 4;
         uint32 stringFlags = 0;
 
         if (HorizontalAlignment == HORIZONTAL_ALIGNMENT::MIDDLE)

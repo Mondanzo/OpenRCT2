@@ -53,7 +53,7 @@ void Container::Measure()
         {
             size = child->GetSizeWithMargin();
         }
-        Size = size;
+        SetSize(size);
     }
 }
 
@@ -62,10 +62,10 @@ void Container::Arrange()
     Widget * child = _child;
     if (child != nullptr)
     {
-        Thickness margin = child->Margin;
-        child->X = margin.Left;
-        child->Y = margin.Top;
-        child->Width = Width - margin.Left - margin.Right;
-        child->Height = Height - margin.Top - margin.Bottom;
+        Thickness margin = child->GetMargin();
+        child->SetX(margin.Left);
+        child->SetY(margin.Top);
+        child->SetWidth(GetWidth() - margin.Left - margin.Right);
+        child->SetHeight(GetHeight() - margin.Top - margin.Bottom);
     }
 }

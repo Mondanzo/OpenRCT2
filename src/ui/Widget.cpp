@@ -23,7 +23,6 @@ using namespace OpenRCT2::Ui;
 
 Widget::Widget()
 {
-    Bounds = { 0 };
     Flags = WIDGET_FLAGS::AUTO_SIZE |
             WIDGET_FLAGS::ENABLED |
             WIDGET_FLAGS::INHERIT_STYLE;
@@ -52,6 +51,86 @@ Window * Widget::GetParentWindow()
 void Widget::SetParentWindow(Window * value)
 {
     _parentWindow = value;
+}
+
+rect32 Widget::GetBounds() const
+{
+    return _bounds;
+}
+
+sint32 Widget::GetX() const
+{
+    return _bounds.X;
+}
+
+sint32 Widget::GetY() const
+{
+    return _bounds.Y;
+}
+
+sint32 Widget::GetRight() const
+{
+    return _bounds.GetRight();
+}
+
+sint32 Widget::GetBottom() const
+{
+    return _bounds.GetBottom();
+}
+
+sint32 Widget::GetWidth() const
+{
+    return _bounds.Width;
+}
+
+sint32 Widget::GetHeight() const
+{
+    return _bounds.Height;
+}
+
+size32 Widget::GetSize() const
+{
+    return _bounds.Size;
+}
+
+void Widget::SetBounds(rect32 value)
+{
+    _bounds = value;
+}
+
+void Widget::SetX(sint32 value)
+{
+    _bounds.X = value;
+}
+
+void Widget::SetY(sint32 value)
+{
+    _bounds.Y = value;
+}
+
+void Widget::SetWidth(sint32 value)
+{
+    _bounds.Width = value;
+}
+
+void Widget::SetHeight(sint32 value)
+{
+    _bounds.Height = value;
+}
+
+void Widget::SetSize(size32 value)
+{
+    _bounds.Size = value;
+}
+
+Thickness Widget::GetMargin() const
+{
+    return _margin;
+}
+
+void Widget::SetMargin(Thickness value)
+{
+    _margin = value;
 }
 
 void Widget::SetEnabled(bool value)
