@@ -66,11 +66,12 @@ namespace OpenRCT2::Ui
     class Widget
     {
     private:
-        VISIBILITY _visibility = VISIBILITY::VISIBLE;
-        uint8      _style = 0;
+        Window *        _parentWindow = nullptr;
+        VISIBILITY      _visibility = VISIBILITY::VISIBLE;
+        uint8           _style = 0;
+        rct_string_id   _defaultTooltip = (rct_string_id)-1;
 
     public:
-        Window * ParentWindow;
         union
         {
             struct { sint32 X, Y, Width, Height; };
@@ -80,8 +81,6 @@ namespace OpenRCT2::Ui
         Thickness   Margin;
         uint16      Flags;
 
-        rct_string_id DefaultTooltip;
-
         Widget();
         virtual ~Widget() = default;
 
@@ -89,6 +88,9 @@ namespace OpenRCT2::Ui
         virtual Widget * GetChild(sint32 index);
 
         virtual rct_string_id GetTooltip(sint32 x, sint32 y);
+
+        Window * GetParentWindow();
+        void SetParentWindow(Window * value);
 
         void SetEnabled(bool value);
 
@@ -123,5 +125,6 @@ namespace OpenRCT2::Ui
             return { Width + Margin.Left + Margin.Right,
                      Height + Margin.Top + Margin.Bottom };
         }
+        colour_t GetStyleColour();
     };
 }

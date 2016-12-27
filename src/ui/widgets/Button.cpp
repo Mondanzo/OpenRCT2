@@ -92,8 +92,7 @@ void Button::Draw(IDrawingContext * dc)
 
 void Button::DrawFlat(IDrawingContext * dc)
 {
-    const WindowStyle * style = ParentWindow->GetStyle();
-    colour_t colour = style->GetColour(GetStyle());
+    colour_t colour = GetStyleColour();
 
     // Border
     if (!IsDisabled() && (IsHighlighted() || IsPressed()))
@@ -138,8 +137,7 @@ void Button::DrawFlat(IDrawingContext * dc)
 
 void Button::DrawOutset(IDrawingContext * dc)
 {
-    const WindowStyle * style = ParentWindow->GetStyle();
-    colour_t colour = style->GetColour(GetStyle());
+    colour_t colour = GetStyleColour();
 
     // Border
     uint8 rectFlags = 0;
@@ -171,8 +169,7 @@ void Button::DrawOutset(IDrawingContext * dc)
 
 void Button::DrawImage(IDrawingContext * dc)
 {
-    const WindowStyle * style = ParentWindow->GetStyle();
-    colour_t colour = style->GetColour(GetStyle());
+    colour_t colour = GetStyleColour();
     uint32 sprite = Image;
     if ((IsHighlighted() && IsPressed()) || IsDown())
     {

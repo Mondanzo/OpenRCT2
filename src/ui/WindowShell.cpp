@@ -26,7 +26,7 @@ using namespace OpenRCT2::Ui;
 
 WindowShell::WindowShell(Window * window)
 {
-    ParentWindow = window;
+    SetParentWindow(window);
 }
 
 WindowShell::~WindowShell()
@@ -39,15 +39,15 @@ WindowShell::~WindowShell()
 void WindowShell::Initialise()
 {
     // Title bar
-    if (ParentWindow->HasFlag(WINDOW_FLAGS::HAS_TITLE_BAR))
+    if (GetParentWindow()->HasFlag(WINDOW_FLAGS::HAS_TITLE_BAR))
     {
         _titleBar = new TitleBar();
-        _titleBar->SetText(ParentWindow->GetTitle());
+        _titleBar->SetText(GetParentWindow()->GetTitle());
         AddChild(_titleBar);
     }
 
     // Close button
-    if (ParentWindow->HasFlag(WINDOW_FLAGS::HAS_TITLE_BAR))
+    if (GetParentWindow()->HasFlag(WINDOW_FLAGS::HAS_TITLE_BAR))
     {
         _closeButton = new Button();
         _closeButton->Text = STR_CLOSE_X;
@@ -57,7 +57,7 @@ void WindowShell::Initialise()
 
     // Tab panel
     _tabPanel = new TabPanel();
-    _tabPanel->SetAdapter(ParentWindow->GetTabPanelAdapter());
+    _tabPanel->SetAdapter(GetParentWindow()->GetTabPanelAdapter());
     AddChild(_tabPanel);
 }
 

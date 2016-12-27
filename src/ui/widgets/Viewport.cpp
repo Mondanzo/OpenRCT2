@@ -114,8 +114,7 @@ void ViewportWidget::Update()
 
 void ViewportWidget::Draw(IDrawingContext * dc)
 {
-    const WindowStyle * style = ParentWindow->GetStyle();
-    colour_t colour = style->GetColour(GetStyle());
+    colour_t colour = GetStyleColour();
     dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_60);
 
     if (_viewport != nullptr)

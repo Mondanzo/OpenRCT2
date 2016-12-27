@@ -124,8 +124,7 @@ void Spinner::Update()
 
 void Spinner::Draw(IDrawingContext * dc)
 {
-    const WindowStyle * style = ParentWindow->GetStyle();
-    colour_t colour = style->GetColour(GetStyle());
+    colour_t colour = GetStyleColour();
 
     if (!(SpinnerFlags & SPINNER_FLAGS::READ_ONLY))
     {

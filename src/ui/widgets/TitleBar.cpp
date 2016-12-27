@@ -52,8 +52,7 @@ void TitleBar::Measure()
 
 void TitleBar::Draw(IDrawingContext * dc)
 {
-    const WindowStyle * style = ParentWindow->GetStyle();
-    colour_t colour = style->GetColour(GetStyle());
+    colour_t colour = GetStyleColour();
 
     uint8 press = INSET_RECT_F_60;
     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
@@ -105,7 +104,7 @@ void TitleBar::MouseMove(const MouseEventArgs * e)
         xy32 offset = { e->X - lastPos.X, e->Y - lastPos.Y };
         if (offset.X != 0 || offset.Y != 0)
         {
-            Window * window = ParentWindow;
+            Window * window = GetParentWindow();
             xy32 location = window->GetLocation();
             location.X += offset.X;
             location.Y += offset.Y;

@@ -372,7 +372,7 @@ void Window::Update()
 
 void Window::Update(Widget * node, xy32 absolutePosition)
 {
-    node->ParentWindow = this;
+    node->SetParentWindow(this);
     node->Update();
 
     sint32 numChildren = node->GetChildrenCount();

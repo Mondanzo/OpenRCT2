@@ -16,17 +16,17 @@
 
 #include "../localisation/string_ids.h"
 #include "Widget.h"
+#include "Window.h"
+#include "WindowStyle.h"
 
 using namespace OpenRCT2::Ui;
 
 Widget::Widget()
 {
-    ParentWindow = nullptr;
     Bounds = { 0 };
     Flags = WIDGET_FLAGS::AUTO_SIZE |
             WIDGET_FLAGS::ENABLED |
             WIDGET_FLAGS::INHERIT_STYLE;
-    DefaultTooltip = STR_NONE;
 }
 
 sint32 Widget::GetChildrenCount()
@@ -41,7 +41,17 @@ Widget * Widget::GetChild(sint32 index)
 
 rct_string_id Widget::GetTooltip(sint32 x, sint32 y)
 {
-    return DefaultTooltip;
+    return _defaultTooltip;
+}
+
+Window * Widget::GetParentWindow()
+{
+    return _parentWindow;
+}
+
+void Widget::SetParentWindow(Window * value)
+{
+    _parentWindow = value;
 }
 
 void Widget::SetEnabled(bool value)
@@ -102,4 +112,15 @@ void Widget::InvalidateVisual()
 bool Widget::HitTest(sint32 x, sint32 y)
 {
     return true;
+}
+
+colour_t Widget::GetStyleColour()
+{
+    colour_t colour = 0;
+    if (_parentWindow != nullptr)
+    {
+        const WindowStyle * style = _parentWindow->GetStyle();
+        colour = style->GetColour(_style);
+    }
+    return colour;
 }
