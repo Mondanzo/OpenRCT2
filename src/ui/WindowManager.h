@@ -23,16 +23,19 @@ interface IDrawingContext;
 
 namespace OpenRCT2::Ui
 {
-    struct MouseEventArgs;
+    struct  MouseEventArgs;
+    class   Window;
 
     interface IWindowManager
     {
         virtual ~IWindowManager() = default;
 
         virtual rect32 GetBounds() const abstract;
+        virtual sint32 GetLineHeight(sint32 fontSize) const abstract;
 
         virtual void SetBounds(rect32 bounds) abstract;
         virtual void Invalidate(rect32 bounds) abstract;
+        virtual void RefreshAllWindows() abstract;
 
         virtual void Update() abstract;
         virtual void Draw(IDrawingContext * dc) abstract;
@@ -42,7 +45,10 @@ namespace OpenRCT2::Ui
         virtual void MouseMove(const MouseEventArgs * e) abstract;
         virtual void MouseUp(const MouseEventArgs * e) abstract;
         virtual void MouseWheel(const MouseEventArgs * e) abstract;
+
+        virtual void ShowWindow(Window * window) abstract;
     };
 
     IWindowManager * CreateWindowManager();
+    IWindowManager * GetWindowManager();
 }

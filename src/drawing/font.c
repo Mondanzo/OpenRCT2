@@ -107,6 +107,21 @@ int font_sprite_get_codepoint_sprite(int fontSpriteBase, int codepoint)
 	return SPR_CHAR_START + (IMAGE_TYPE_REMAP | (fontSpriteBase + font_sprite_get_codepoint_offset(codepoint)));
 }
 
+int font_get_sprite_base_from_size(uint16 size)
+{
+	switch (size) {
+	case FONT_SIZE_TINY:
+		return FONT_SPRITE_BASE_TINY;
+	case FONT_SIZE_SMALL:
+		return FONT_SPRITE_BASE_SMALL;
+	default:
+	case FONT_SIZE_MEDIUM:
+		return FONT_SPRITE_BASE_MEDIUM;
+	case FONT_SIZE_BIG:
+		return FONT_SPRITE_BASE_BIG;
+	}
+}
+
 int font_get_size_from_sprite_base(uint16 spriteBase)
 {
 	switch (spriteBase) {

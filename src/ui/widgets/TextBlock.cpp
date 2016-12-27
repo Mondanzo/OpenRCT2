@@ -18,6 +18,7 @@
 #include "../../core/String.hpp"
 #include "../../drawing/DrawingContext.h"
 #include "../../localisation/string_ids.h"
+#include "../WindowManager.h"
 #include "TextBlock.h"
 
 using namespace OpenRCT2::Ui;
@@ -71,7 +72,10 @@ void TextBlock::Measure()
 {
     if (Flags & WIDGET_FLAGS::AUTO_SIZE)
     {
-        Height = 12;
+        IWindowManager * wm = GetWindowManager();
+        sint32 lineHeight = wm->GetLineHeight(FONT_SIZE_MEDIUM);
+
+        Height = lineHeight + 2;
         if (_wrap)
         {
             _lastMeasuredWidth = Width;
@@ -106,12 +110,11 @@ void TextBlock::Draw(IDrawingContext * dc)
         const char * text = _text.c_str();
         sint32 l = 0;
         sint32 t = 0;
-        sint32 width = 0;
+        sint32 width = Width - 4;
         uint32 stringFlags = 0;
 
         if (HorizontalAlignment == HORIZONTAL_ALIGNMENT::MIDDLE)
         {
-            width = Width - 4;
             l = 2 + (width / 2);
             stringFlags |= STRING_FLAGS::HALIGN_MIDDLE;
         }

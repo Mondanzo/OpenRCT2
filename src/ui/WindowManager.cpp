@@ -21,10 +21,13 @@
 #include "Window.h"
 #include "WindowManager.h"
 
+extern "C"
+{
+    #include "../localisation/language.h"
+}
+
 namespace OpenRCT2::Ui
 {
-    Window * OpenParkWindow();
-
     class WindowManager : public IWindowManager
     {
     private:
@@ -35,22 +38,11 @@ namespace OpenRCT2::Ui
         Window * _focusWindow = nullptr;
         Window * _holdWindow = nullptr;
 
+        sint32 _lastLanguage = -1;
+
     public:
         WindowManager()
         {
-            // Window * w = new Window();
-            // w->Bounds = { 32, 32, 512, 386 };
-            // _windows.push_back(w);
-            // 
-            // Window * w2 = new Window();
-            // w2->Bounds = { 256, 88, 200, 100 };
-            // _windows.push_back(w2);
-
-            Window * w3 = OpenParkWindow();
-            AddWindow(w3);
-            SetWindowFocus(w3);
-            w3->Initialise();
-            Update();
         }
 
         virtual ~WindowManager()
@@ -67,6 +59,12 @@ namespace OpenRCT2::Ui
             _bounds = bounds;
         }
 
+        sint32 GetLineHeight(sint32 fontSize) const override
+        {
+            sint32 spriteBase = font_get_sprite_base_from_size(fontSize);
+            return font_get_line_height(spriteBase);
+        }
+
         void Invalidate(rect32 bounds) override
         {
             bounds.X += _bounds.X;
@@ -74,8 +72,25 @@ namespace OpenRCT2::Ui
             gfx_set_dirty_blocks(bounds.X, bounds.Y, bounds.GetRight(), bounds.GetBottom());
         }
 
+        void RefreshAllWindows() override
+        {
+            // Force all windows to re-layout
+            for (Window * w : _windows)
+            {
+                w->Flags |= WINDOW_FLAGS::LAYOUT_DIRTY;
+            }
+        }
+
         void Update() override
         {
+            // HACK Check if language has changed and force a refresh.
+            //      Eventually this should be called from the set language code.
+            if (gCurrentLanguage != _lastLanguage)
+            {
+                _lastLanguage = gCurrentLanguage;
+                RefreshAllWindows();
+            }
+
             for (Window * w : _windows)
             {
                 w->Update();
@@ -154,6 +169,14 @@ namespace OpenRCT2::Ui
                 MouseEventArgs e2 = e->CopyAndOffset(-w->X, -w->Y);
                 w->MouseWheel(&e2);
             }
+        }
+
+        void ShowWindow(Window * window) override
+        {
+            AddWindow(window);
+            SetWindowFocus(window);
+
+            window->Initialise();
         }
 
     private:

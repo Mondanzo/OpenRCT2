@@ -27,6 +27,7 @@
 #include "title/TitleScreen.h"
 #include "title/TitleSequenceManager.h"
 #include "ui/MouseEventArgs.h"
+#include "ui/Window.h"
 #include "ui/WindowManager.h"
 
 extern "C"
@@ -50,6 +51,11 @@ using namespace OpenRCT2::Ui;
 
 // The game update inverval in milliseconds, (1000 / 40fps) = 25ms
 constexpr uint32 UPDATE_TIME_MS = 25;
+
+namespace OpenRCT2::Ui
+{
+    Window * OpenParkWindow();
+}
 
 extern "C"
 {
@@ -225,6 +231,7 @@ extern "C"
         rct2_copy_original_user_files_over();
 
         OpenRCT2::_windowManager = CreateWindowManager();
+        OpenParkWindow();
         return true;
     }
 
@@ -534,4 +541,9 @@ namespace OpenRCT2
 
         sprite_position_tween_restore();
     }
+}
+
+IWindowManager * OpenRCT2::Ui::GetWindowManager()
+{
+    return OpenRCT2::_windowManager;
 }

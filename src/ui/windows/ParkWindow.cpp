@@ -28,6 +28,7 @@
 #include "../widgets/TextBlock.h"
 #include "../widgets/Viewport.h"
 #include "../Window.h"
+#include "../WindowManager.h"
 
 extern "C"
 {
@@ -283,8 +284,6 @@ namespace OpenRCT2::Ui
 
             for (sint32 i = 0; i < 5; i++)
             {
-                _textBlocks[i].Flags &= ~WIDGET_FLAGS::AUTO_SIZE;
-                _textBlocks[i].Height = 10;
                 _grid0.AddChild(&_textBlocks[i]);
             }
         }
@@ -505,10 +504,12 @@ namespace OpenRCT2::Ui
                 MinimumSize = { 230, 174 + 9 };
                 MaximumSize = { 230 * 3, (274 + 9) * 3 };
                 break;
+            case PAGE_STATS:
+                Flags |= WINDOW_FLAGS::AUTO_SIZE;
+                break;
             case PAGE_RATING:
             case PAGE_GUESTS:
             case PAGE_ADMISSION:
-            case PAGE_STATS:
             case PAGE_OBJECTIVE:
             case PAGE_AWARDS:
                 Flags &= ~WINDOW_FLAGS::AUTO_SIZE;
@@ -574,6 +575,9 @@ namespace OpenRCT2::Ui
 
     Window * OpenParkWindow()
     {
-        return new ParkWindow();
+        Window * window = new ParkWindow();
+        IWindowManager * wm = GetWindowManager();
+        wm->ShowWindow(window);
+        return window;
     }
 }

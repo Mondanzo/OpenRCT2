@@ -144,7 +144,7 @@ void Spinner::Draw(IDrawingContext * dc)
     }
     sint32 l = 1;
     sint32 t = 1;
-    dc->DrawString(stringId, nullptr, l, t, colour, 0, 0);
+    dc->DrawString(stringId, &_value, l, t, colour, 0, 0);
 }
 
 void Spinner::MouseWheel(const MouseEventArgs * e)

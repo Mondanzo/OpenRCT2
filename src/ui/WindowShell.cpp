@@ -67,7 +67,7 @@ void WindowShell::Measure()
     if (_titleBar != nullptr)
     {
         size.Width = 16;
-        size.Height = 14;
+        size.Height += _titleBar->Height;
     }
     if (_tabPanel != nullptr)
     {
@@ -85,16 +85,22 @@ void WindowShell::Arrange()
         _titleBar->X = 1;
         _titleBar->Y = 1;
         _titleBar->Width = Width - 2;
-        _titleBar->Height = 14;
     }
 
     // Close button
     if (_closeButton != nullptr)
     {
-        _closeButton->X = Width - 13;
-        _closeButton->Y = 2;
         _closeButton->Width = 11;
         _closeButton->Height = 12;
+        if (_titleBar != nullptr)
+        {
+            _closeButton->Height = _titleBar->Height - 2;
+            _closeButton->Width = _closeButton->Height - 1;
+        }
+
+        _closeButton->X = Width - _closeButton->Width - 2;
+        _closeButton->Y = 2;
+
         _closeButton->ButtonFlags |= BUTTON_FLAGS::STYLE_LIGHT;
     }
 
@@ -102,7 +108,13 @@ void WindowShell::Arrange()
     if (_tabPanel != nullptr)
     {
         _tabPanel->X = 0;
+
         _tabPanel->Y = 17;
+        if (_titleBar != nullptr)
+        {
+            _tabPanel->Y = _titleBar->Bounds.GetBottom() + 2;
+        }
+
         _tabPanel->Width = Width;
         _tabPanel->Height = Height - _tabPanel->Y;
         _tabPanel->Style = 1;

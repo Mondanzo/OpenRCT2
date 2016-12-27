@@ -18,6 +18,7 @@
 #include "../../localisation/string_ids.h"
 #include "../MouseEventArgs.h"
 #include "../Window.h"
+#include "../WindowManager.h"
 #include "TitleBar.h"
 
 extern "C"
@@ -42,7 +43,10 @@ void TitleBar::Measure()
 {
     if (Flags & WIDGET_FLAGS::AUTO_SIZE)
     {
-        Height = 14;
+        IWindowManager * wm = GetWindowManager();
+        sint32 lineHeight = wm->GetLineHeight(FONT_SIZE_MEDIUM);
+
+        Height = lineHeight + 4;
     }
 }
 
