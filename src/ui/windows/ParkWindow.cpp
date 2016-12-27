@@ -481,9 +481,11 @@ namespace OpenRCT2::Ui
             Flags |= WINDOW_FLAGS::HAS_TAB_PANEL;
             SetTabPanelAdapter(this);
 
-            Style.Colours[0] = COLOUR_GREY;
-            Style.Colours[1] = COLOUR_DARK_YELLOW;
-            Style.Colours[2] = COLOUR_DARK_YELLOW;
+            WindowStyle style;
+            style.Colours[0] = COLOUR_GREY;
+            style.Colours[1] = COLOUR_DARK_YELLOW;
+            style.Colours[2] = COLOUR_DARK_YELLOW;
+            SetStyle(&style);
         }
 
         void Update() override

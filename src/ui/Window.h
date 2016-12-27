@@ -71,9 +71,10 @@ namespace OpenRCT2::Ui
         size32 _minimumSize = { 0 };
         size32 _maximumSize = { 0 };
 
+        WindowStyle _style;
+
     public:
         uint32 Flags;
-        WindowStyle Style;
 
     public:
         Window();
@@ -97,6 +98,9 @@ namespace OpenRCT2::Ui
         void SetSize(size32 size);
         void SetMinimumSize(size32 size);
         void SetMaximumSize(size32 size);
+
+        const WindowStyle * GetStyle() const;
+        void SetStyle(const WindowStyle * style);
 
         std::string GetTitle();
         void SetTitle(const std::string &title);

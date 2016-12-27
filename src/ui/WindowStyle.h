@@ -36,7 +36,7 @@ namespace OpenRCT2::Ui
         uint8       Flags = 0;
         colour_t    Colours[MAX_COLOURS] = { 0 };
 
-        bool     HasFlag(uint8 flag);
-        colour_t GetColour(uint8 style);
+        bool     HasFlag(uint8 flag) const;
+        colour_t GetColour(uint8 style) const;
     };
 }

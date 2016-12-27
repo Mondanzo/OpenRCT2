@@ -36,7 +36,8 @@ void Chart::Draw(IDrawingContext * dc)
     uintptr_t dpip = ((uintptr_t *)dc)[2];
     rct_drawpixelinfo * dpi = (rct_drawpixelinfo *)dpip;
 
-    colour_t colour = ParentWindow->Style.GetColour(Style);
+    const WindowStyle * style = ParentWindow->GetStyle();
+    colour_t colour = style->GetColour(Style);
     dc->FillRect3D(0, 0, Width - 1, Height - 1, colour, INSET_RECT_F_30);
 
     if (_values != nullptr && _valuesCount > 0)

@@ -173,6 +173,16 @@ void Window::SetMaximumSize(size32 size)
     _maximumSize = size;
 }
 
+const WindowStyle * Window::GetStyle() const
+{
+    return &_style;
+}
+
+void Window::SetStyle(const WindowStyle * style)
+{
+    _style = *style;
+}
+
 std::string Window::GetTitle()
 {
     return _title;
@@ -380,11 +390,11 @@ void Window::Draw(IDrawingContext * dc)
     // HACK Legacy code for dealing with strings that use {WINDOW_COLOUR_X}
     for (sint32 i = 0; i < 4; i++)
     {
-        gCurrentWindowColours[i] = NOT_TRANSLUCENT(Style.Colours[i]);
+        gCurrentWindowColours[i] = NOT_TRANSLUCENT(_style.Colours[i]);
     }
 
     // Draw background
-    uint32 bgColour = Style.Colours[0];
+    uint32 bgColour = _style.Colours[0];
     uint8 press = 0;
     // uint8 press = (w->flags & WF_10 ? INSET_RECT_FLAG_FILL_MID_LIGHT : 0);
     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;
@@ -430,10 +440,11 @@ void Window::Draw(IDrawingContext * dc, Widget * node)
 
 void Window::DrawSizeGrip(IDrawingContext * dc)
 {
-    uint32 colour = Style.Colours[0];
+    const WindowStyle * style = GetStyle();
+    uint32 colour = style->Colours[0];
     if (Flags & WINDOW_FLAGS::HAS_TAB_PANEL)
     {
-        colour = Style.Colours[1];
+        colour = style->Colours[1];
     }
 
     rect32 gripBounds = GetResizeGripBounds();

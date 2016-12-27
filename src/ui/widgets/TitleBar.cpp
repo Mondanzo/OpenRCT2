@@ -52,7 +52,8 @@ void TitleBar::Measure()
 
 void TitleBar::Draw(IDrawingContext * dc)
 {
-    colour_t colour = ParentWindow->Style.GetColour(Style);
+    const WindowStyle * style = ParentWindow->GetStyle();
+    colour_t colour = style->GetColour(Style);
 
     uint8 press = INSET_RECT_F_60;
     press |= INSET_RECT_FLAG_FILL_MID_LIGHT;

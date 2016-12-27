@@ -19,12 +19,12 @@
 
 using namespace OpenRCT2::Ui;
 
-bool WindowStyle::HasFlag(uint8 flag)
+bool WindowStyle::HasFlag(uint8 flag) const
 {
     return ((Flags & flag) != 0);
 }
 
-colour_t WindowStyle::GetColour(uint8 style)
+colour_t WindowStyle::GetColour(uint8 style) const
 {
     Guard::ArgumentInRange<uint8>(style, 0, MAX_COLOURS);
     return Colours[style];
