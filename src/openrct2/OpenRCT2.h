@@ -51,6 +51,8 @@ namespace OpenRCT2
 
 #endif
 
+typedef void (__stdcall * GameLoopHookFunc)();
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -90,6 +92,8 @@ extern "C"
 #ifdef __WINDOWS__
     int RunOpenRCT2(int argc, char * * argv);
 #endif
+
+    __declspec(dllexport) void SetGameLoopHook(GameLoopHookFunc callback);
 
 #ifdef __cplusplus
 }

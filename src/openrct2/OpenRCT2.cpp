@@ -85,12 +85,15 @@ namespace OpenRCT2
     /** If set, will end the OpenRCT2 game loop. Intentially private to this module so that the flag can not be set back to false. */
     static bool _finished;
 
+    static GameLoopHookFunc _gameLoopHook = nullptr;
+
     static void SetVersionInfoString();
     static bool ShouldRunVariableFrame();
     static void RunGameLoop();
     static void RunFixedFrame();
     static void RunVariableFrame();
 
+    static void RunGameLoopHook();
     static bool OpenParkAutoDetectFormat(const utf8 * path);
 }
 
@@ -325,6 +328,11 @@ extern "C"
     {
         OpenRCT2::_finished = true;
     }
+
+    void SetGameLoopHook(GameLoopHookFunc callback)
+    {
+        OpenRCT2::_gameLoopHook = callback;
+    }
 }
 
 namespace OpenRCT2
@@ -461,6 +469,7 @@ namespace OpenRCT2
         }
         platform_process_messages();
         rct2_update();
+        RunGameLoopHook();
         if (!_isWindowMinimised)
         {
             platform_draw();
@@ -491,6 +500,7 @@ namespace OpenRCT2
 
             // Update the game so the sprite positions update
             rct2_update();
+            RunGameLoopHook();
 
             // Get the next position of each sprite
             sprite_position_tween_store_b();
@@ -506,6 +516,14 @@ namespace OpenRCT2
         platform_draw();
 
         sprite_position_tween_restore();
+    }
+
+    static void RunGameLoopHook()
+    {
+        if (_gameLoopHook != nullptr)
+        {
+            _gameLoopHook();
+        }
     }
 
     static bool OpenParkAutoDetectFormat(const utf8 * path)
