@@ -47,6 +47,7 @@
     <Link>
       <AdditionalDependencies>libopenrct2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(OutDir)openrct2-dll.pdb</ProgramDatabaseFile>
+      <ModuleDefinitionFile>export.def</ModuleDefinitionFile>
     </Link>
     <Lib>
       <TargetMachine Condition="'$(Platform)'=='Win32'">MachineX86</TargetMachine>
@@ -58,6 +59,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="openrct2-dll.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="export.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
