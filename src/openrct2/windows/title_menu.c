@@ -22,6 +22,7 @@
 #include "../interface/widget.h"
 #include "../interface/window.h"
 #include "../localisation/localisation.h"
+#include "../scenario/Sandbox.h"
 #include "../sprites.h"
 #include "../title/TitleScreen.h"
 #include "dropdown.h"

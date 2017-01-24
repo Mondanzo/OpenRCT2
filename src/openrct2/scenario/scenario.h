@@ -394,6 +394,4 @@ void scenario_success();
 void scenario_success_submit_name(const char *name);
 void scenario_autosave_check();
 
-void sandbox_start();
-
 #endif

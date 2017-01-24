@@ -307,6 +307,7 @@
     <ClCompile Include="ride\water\splash_boats.c" />
     <ClCompile Include="ride\water\submarine_ride.c" />
     <ClCompile Include="ride\water\water_coaster.c" />
+    <ClCompile Include="scenario\Sandbox.cpp" />
     <ClCompile Include="scenario\scenario.c" />
     <ClCompile Include="scenario\ScenarioRepository.cpp" />
     <ClCompile Include="scenario\ScenarioSources.cpp" />
@@ -561,6 +562,7 @@
     <ClInclude Include="ride\vehicle.h" />
     <ClInclude Include="ride\vehicle_data.h" />
     <ClInclude Include="ride\vehicle_paint.h" />
+    <ClInclude Include="scenario\Sandbox.h" />
     <ClInclude Include="scenario\scenario.h" />
     <ClInclude Include="scenario\ScenarioRepository.h" />
     <ClInclude Include="scenario\ScenarioSources.h" />

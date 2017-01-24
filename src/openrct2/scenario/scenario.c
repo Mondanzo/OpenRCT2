@@ -1025,30 +1025,3 @@ static void scenario_objective_check()
 		break;
 	}
 }
-
-void sandbox_start()
-{
-	audio_pause_sounds();
-	audio_unpause_sounds();
-
-	object_manager_unload_all_objects();
-	object_list_load();
-
-	game_init_all(72);
-
-	gScreenAge = 0;
-	gScreenFlags = SCREEN_FLAGS_PLAYING;
-	gParkFlags |= PARK_FLAGS_SHOW_REAL_GUEST_NAMES;
-
-	viewport_init_all();
-	game_create_windows();
-	rct_window *mainWindow = window_get_main();
-	window_set_location(mainWindow, 69 * 32, 36 * 32, 112);
-	load_palette();
-	gfx_invalidate_screen();
-
-	safe_strcpy(gScenarioName, "sandbox", sizeof(gScenarioName));
-
-	gCurrentRotation = 0;
-	map_buy_land_rights(2 * 32, 2 * 32, 69 * 32, 69 * 32, 6, GAME_COMMAND_FLAG_APPLY | (OWNERSHIP_OWNED << 4));
-}
