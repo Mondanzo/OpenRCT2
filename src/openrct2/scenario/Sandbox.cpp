@@ -16,6 +16,7 @@
 
 #include "../core/String.hpp"
 #include "../object/ObjectManager.h"
+#include "../object/ObjectRepository.h"
 #include "Sandbox.h"
 
 extern "C"
@@ -24,21 +25,81 @@ extern "C"
     #include "../cheats.h"
     #include "../game.h"
     #include "../interface/viewport.h"
+    #include "../util/util.h"
+    #include "../world/mapgen.h"
     #include "../world/park.h"
     #include "scenario.h"
 }
+
+static const char * DefaultObjects[] = {
+    "TCF     ",
+    "TRF     ",
+    "TRF2    ",
+    "TSP     ",
+    "TMZP    ",
+    "TAP     ",
+    "TCRP    ",
+    "TBP     ",
+    "TCL     ",
+    "TEL     ",
+    "TWW     ",
+    "TMP     ",
+    "THL     ",
+    "TH1     ",
+    "TH2     ",
+    "TPM     ",
+    "TROPT1  ",
+    "TBC     ",
+    "TSC     ",
+    "TCFS    ",
+    "TNSS    ",
+    "TRF3    ",
+    "TRFS    ",
+};
 
 extern "C"
 {
     void sandbox_start()
     {
+        util_srand((uint32)time(0));
+
         audio_pause_sounds();
         audio_unpause_sounds();
 
         object_manager_unload_all_objects();
         object_list_load();
 
-        game_init_all(72);
+        IObjectRepository * objRepo = GetObjectRepository();
+        IObjectManager * objManager = GetObjectManager();
+        for (const char * objname : DefaultObjects)
+        {
+            auto ori = objRepo->FindObject(objname);
+            if (ori != nullptr)
+            {
+                objManager->LoadObject(&ori->ObjectEntry);
+            }
+        }
+
+        sint32 mapSize = 128;
+
+        game_init_all(mapSize);
+
+        mapgen_settings mapgenSettings = { 0 };
+        mapgenSettings.mapSize = mapSize;
+        mapgenSettings.height = 12;
+        mapgenSettings.waterLevel = 12;
+        mapgenSettings.floor = TERRAIN_GRASS;
+        mapgenSettings.wall = TERRAIN_EDGE_ROCK;
+        mapgenSettings.trees = 1;
+        // mapgenSettings.simplex_low = 6;
+        // mapgenSettings.simplex_high = 10;
+        // mapgenSettings.simplex_base_freq = 60;
+        // mapgenSettings.simplex_octaves = 4;
+        mapgenSettings.simplex_low = util_rand() % 4;
+        mapgenSettings.simplex_high = 12 + (util_rand() % 10);
+        mapgenSettings.simplex_base_freq = 1.75f;
+        mapgenSettings.simplex_octaves = 6;
+        mapgen_generate(&mapgenSettings);
 
         gScreenAge = 0;
         gScreenFlags = SCREEN_FLAGS_PLAYING;
@@ -53,7 +114,7 @@ extern "C"
 
         gCurrentRotation = 0;
         gCheatsSandboxMode = true;
-        map_buy_land_rights(2 * 32, 2 * 32, 69 * 32, 69 * 32, 6, GAME_COMMAND_FLAG_APPLY | (OWNERSHIP_OWNED << 4));
+        map_buy_land_rights(2 * 32, 2 * 32, (mapSize - 3) * 32, (mapSize - 3) * 32, 6, GAME_COMMAND_FLAG_APPLY | (OWNERSHIP_OWNED << 4));
         gCheatsSandboxMode = false;
 
         gScenarioObjectiveType = OBJECTIVE_HAVE_FUN;
