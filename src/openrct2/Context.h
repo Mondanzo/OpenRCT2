@@ -72,6 +72,7 @@ enum
 namespace OpenRCT2
 {
     interface IPlatformEnvironment;
+    interface IScriptEngine;
 
     namespace Audio
     {
@@ -92,6 +93,7 @@ namespace OpenRCT2
 
         virtual Audio::IAudioContext *  GetAudioContext() abstract;
         virtual Ui::IUiContext *        GetUiContext() abstract;
+        virtual IScriptEngine *         GetScriptEngine() abstract;
 
         virtual sint32 RunOpenRCT2(int argc, char * * argv) abstract;
 
