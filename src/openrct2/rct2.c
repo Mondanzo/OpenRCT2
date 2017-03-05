@@ -28,6 +28,7 @@
 #include "input.h"
 #include "interface/chat.h"
 #include "interface/console.h"
+#include "interface/Scripting.h"
 #include "interface/viewport.h"
 #include "intro.h"
 #include "localisation/date.h"

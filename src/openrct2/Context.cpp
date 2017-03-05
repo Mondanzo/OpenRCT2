@@ -273,6 +273,7 @@ namespace OpenRCT2
             input_reset_place_obj_modifier();
             viewport_init_all();
             game_init_all(150);
+            _scriptEngine = CreateScriptEngine(_env);
             return true;
         }
 
@@ -557,6 +558,7 @@ namespace OpenRCT2
             twitch_update();
             chat_update();
             console_update();
+            script_engine_update();
         }
 
         bool OpenParkAutoDetectFormat(IStream * stream, const std::string &path)
