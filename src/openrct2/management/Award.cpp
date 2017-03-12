@@ -16,37 +16,44 @@
 
 #include <initializer_list>
 #include "../config/Config.h"
-#include "../interface/window.h"
-#include "../localisation/localisation.h"
-#include "../peep/peep.h"
-#include "../ride/ride.h"
-#include "../scenario/scenario.h"
-#include "../world/sprite.h"
-#include "award.h"
-#include "news_item.h"
+#include "Award.h"
 
-#define NEGATIVE 0
-#define POSITIVE 1
-
-static const uint8 AwardPositiveMap[] =
+extern "C"
 {
-    NEGATIVE, // PARK_AWARD_MOST_UNTIDY
-    POSITIVE, // PARK_AWARD_MOST_TIDY
-    POSITIVE, // PARK_AWARD_BEST_ROLLERCOASTERS
-    POSITIVE, // PARK_AWARD_BEST_VALUE
-    POSITIVE, // PARK_AWARD_MOST_BEAUTIFUL
-    NEGATIVE, // PARK_AWARD_WORST_VALUE
-    POSITIVE, // PARK_AWARD_SAFEST
-    POSITIVE, // PARK_AWARD_BEST_STAFF
-    POSITIVE, // PARK_AWARD_BEST_FOOD
-    NEGATIVE, // PARK_AWARD_WORST_FOOD
-    POSITIVE, // PARK_AWARD_BEST_RESTROOMS
-    NEGATIVE, // PARK_AWARD_MOST_DISAPPOINTING
-    POSITIVE, // PARK_AWARD_BEST_WATER_RIDES
-    POSITIVE, // PARK_AWARD_BEST_CUSTOM_DESIGNED_RIDES
-    POSITIVE, // PARK_AWARD_MOST_DAZZLING_RIDE_COLOURS
-    NEGATIVE, // PARK_AWARD_MOST_CONFUSING_LAYOUT
-    POSITIVE, // PARK_AWARD_BEST_GENTLE_RIDES
+    #include "../interface/window.h"
+    #include "../localisation/localisation.h"
+    #include "../peep/peep.h"
+    #include "../ride/ride.h"
+    #include "../scenario/scenario.h"
+    #include "../world/sprite.h"
+    #include "news_item.h"
+}
+
+enum class AWARD_LEVEL
+{
+    NEGATIVE,
+    POSITIVE,
+};
+
+static const AWARD_LEVEL AwardPositiveMap[] =
+{
+    AWARD_LEVEL::NEGATIVE, // PARK_AWARD_MOST_UNTIDY
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_MOST_TIDY
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_BEST_ROLLERCOASTERS
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_BEST_VALUE
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_MOST_BEAUTIFUL
+    AWARD_LEVEL::NEGATIVE, // PARK_AWARD_WORST_VALUE
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_SAFEST
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_BEST_STAFF
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_BEST_FOOD
+    AWARD_LEVEL::NEGATIVE, // PARK_AWARD_WORST_FOOD
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_BEST_RESTROOMS
+    AWARD_LEVEL::NEGATIVE, // PARK_AWARD_MOST_DISAPPOINTING
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_BEST_WATER_RIDES
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_BEST_CUSTOM_DESIGNED_RIDES
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_MOST_DAZZLING_RIDE_COLOURS
+    AWARD_LEVEL::NEGATIVE, // PARK_AWARD_MOST_CONFUSING_LAYOUT
+    AWARD_LEVEL::POSITIVE, // PARK_AWARD_BEST_GENTLE_RIDES
 };
 
 static const rct_string_id AwardNewsStrings[] =
@@ -71,11 +78,6 @@ static const rct_string_id AwardNewsStrings[] =
 };
 
 Award gCurrentAwards[MAX_AWARDS];
-
-bool award_is_positive(sint32 type)
-{
-    return AwardPositiveMap[type];
-}
 
 #pragma region Award checks
 
@@ -706,5 +708,10 @@ extern "C"
     void award_update_all()
     {
         Awards::Update();
+    }
+
+    bool award_is_positive(sint32 type)
+    {
+        return AwardPositiveMap[type] == AWARD_LEVEL::POSITIVE;
     }
 }

@@ -23,7 +23,7 @@
 #include "../interface/viewport.h"
 #include "../interface/widget.h"
 #include "../interface/window.h"
-#include "../management/award.h"
+#include "../management/Award.h"
 #include "../peep/peep.h"
 #include "../rct2.h"
 #include "../ride/ride.h"

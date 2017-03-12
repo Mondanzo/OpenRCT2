@@ -20,7 +20,7 @@
 #include "../core/IStream.hpp"
 #include "../core/Path.hpp"
 #include "../core/String.hpp"
-#include "../management/award.h"
+#include "../management/Award.h"
 #include "../network/network.h"
 #include "../object/ObjectRepository.h"
 #include "../ParkImporter.h"

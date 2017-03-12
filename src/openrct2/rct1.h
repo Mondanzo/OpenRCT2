@@ -17,7 +17,7 @@
 #ifndef _RCT1_H_
 #define _RCT1_H_
 
-#include "management/award.h"
+#include "management/Award.h"
 #include "management/news_item.h"
 #include "management/research.h"
 #include "rct12.h"

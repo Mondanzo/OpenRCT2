@@ -21,7 +21,7 @@
 #include "../interface/viewport.h"
 #include "../localisation/date.h"
 #include "../localisation/localisation.h"
-#include "../management/award.h"
+#include "../management/Award.h"
 #include "../management/finance.h"
 #include "../management/marketing.h"
 #include "../management/news_item.h"

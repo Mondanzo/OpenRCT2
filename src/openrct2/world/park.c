@@ -20,7 +20,7 @@
 #include "../interface/colour.h"
 #include "../interface/window.h"
 #include "../localisation/localisation.h"
-#include "../management/award.h"
+#include "../management/Award.h"
 #include "../management/finance.h"
 #include "../management/marketing.h"
 #include "../management/news_item.h"
