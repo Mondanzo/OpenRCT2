@@ -530,31 +530,6 @@ static uint32 window_park_page_hold_down_widgets[] = {
 
 #pragma endregion
 
-typedef struct window_park_award {
-	rct_string_id text;
-	uint32 sprite;
-} window_park_award;
-
-static const window_park_award ParkAwards[] = {
-	{ STR_AWARD_MOST_UNTIDY,				SPR_AWARD_MOST_UNTIDY },
-	{ STR_AWARD_MOST_TIDY,					SPR_AWARD_MOST_TIDY },
-	{ STR_AWARD_BEST_ROLLERCOASTERS,		SPR_AWARD_BEST_ROLLERCOASTERS },
-	{ STR_AWARD_BEST_VALUE,					SPR_AWARD_BEST_VALUE },
-	{ STR_AWARD_MOST_BEAUTIFUL,				SPR_AWARD_MOST_BEAUTIFUL },
-	{ STR_AWARD_WORST_VALUE,				SPR_AWARD_WORST_VALUE },
-	{ STR_AWARD_SAFEST,						SPR_AWARD_SAFEST },
-	{ STR_AWARD_BEST_STAFF,					SPR_AWARD_BEST_STAFF },
-	{ STR_AWARD_BEST_FOOD,					SPR_AWARD_BEST_FOOD },
-	{ STR_AWARD_WORST_FOOD,					SPR_AWARD_WORST_FOOD },
-	{ STR_AWARD_BEST_RESTROOMS,				SPR_AWARD_BEST_RESTROOMS },
-	{ STR_AWARD_MOST_DISAPPOINTING,			SPR_AWARD_MOST_DISAPPOINTING },
-	{ STR_AWARD_BEST_WATER_RIDES,			SPR_AWARD_BEST_WATER_RIDES },
-	{ STR_AWARD_BEST_CUSTOM_DESIGNED_RIDES,	SPR_AWARD_BEST_CUSTOM_DESIGNED_RIDES },
-	{ STR_AWARD_MOST_DAZZLING_RIDE_COLOURS,	SPR_AWARD_MOST_DAZZLING_RIDE_COLOURS },
-	{ STR_AWARD_MOST_CONFUSING_LAYOUT,		SPR_AWARD_MOST_CONFUSING_LAYOUT },
-	{ STR_AWARD_BEST_GENTLE_RIDES,			SPR_AWARD_BEST_GENTLE_RIDES },
-};
-
 static void window_park_init_viewport(rct_window *w);
 static void window_park_set_page(rct_window *w, sint32 page);
 static void window_park_anchor_border_widgets(rct_window *w);
@@ -1923,8 +1898,9 @@ static void window_park_awards_paint(rct_window *w, rct_drawpixelinfo *dpi)
 		if (award->Time == 0)
 			continue;
 
-		gfx_draw_sprite(dpi, ParkAwards[award->Type].sprite, x, y, 0);
-		gfx_draw_string_left_wrapped(dpi, NULL, x + 34, y + 6, 180, ParkAwards[award->Type].text, COLOUR_BLACK);
+		const AwardDescriptor * awardDesc = award_get_descriptor(award->Type);
+		gfx_draw_sprite(dpi, awardDesc->Image, x, y, 0);
+		gfx_draw_string_left_wrapped(dpi, NULL, x + 34, y + 6, 180, awardDesc->Text, COLOUR_BLACK);
 
 		y += 32;
 		count++;

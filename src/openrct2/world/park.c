@@ -465,10 +465,10 @@ static sint32 park_calculate_guest_generation_probability()
 			continue;
 
 		// +/- 0.25% of the probability
-		if (award_is_positive(award->Type))
-			probability += probability / 4;
-		else
+		if (award_get_descriptor(award->Type)->IsNegative)
 			probability -= probability / 4;
+		else
+			probability += probability / 4;
 	}
 
 	return probability;

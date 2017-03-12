@@ -47,6 +47,17 @@ enum PARK_AWARD
     PARK_AWARD_UNDEFINED = -1,
 };
 
+typedef bool(*AwardDeservedCheckFunc)(sint32, sint32);
+
+typedef struct AwardDescriptor
+{
+    AwardDeservedCheckFunc  CheckFunc;
+    uint32                  Image;
+    rct_string_id           Text;
+    rct_string_id           NewsMessageText;
+    bool                    IsNegative;
+} AwardDescriptor;
+
 #define MAX_AWARDS 4
 
 #ifdef __cplusplus
@@ -55,9 +66,9 @@ extern "C"
 #endif
     extern Award gCurrentAwards[MAX_AWARDS];
 
-    bool award_is_positive(sint32 type);
     void award_reset();
     void award_update_all();
+    const AwardDescriptor * award_get_descriptor(sint32 type);
 #ifdef __cplusplus
 }
 #endif
