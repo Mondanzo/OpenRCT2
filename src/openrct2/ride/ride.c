@@ -7493,6 +7493,11 @@ uint64 ride_entry_get_supported_track_pieces(rct_ride_entry* rideEntry)
 	return supportedPieces;
 }
 
+bool ride_entry_is_in_category(const rct_ride_entry * rideEntry, uint8 category)
+{
+	return rideEntry->category[0] == category || rideEntry->category[1] == category;
+}
+
 static sint32 ride_get_smallest_station_length(rct_ride *ride)
 {
 	uint32 result = -1;
@@ -8806,4 +8811,24 @@ bool ride_has_adjacent_station(rct_ride *ride)
 bool ride_has_ratings(const rct_ride * ride)
 {
 	return ride->excitement != RIDE_RATING_UNDEFINED;
+}
+
+bool ride_is_running(const rct_ride * ride)
+{
+	return ride->status == RIDE_STATUS_OPEN && !(ride->lifecycle_flags & RIDE_LIFECYCLE_CRASHED);
+}
+
+sint32 get_open_toilets_count()
+{
+    sint32 count = 0;
+    uint32 i;
+    rct_ride * ride;
+    FOR_ALL_RIDES(i, ride)
+    {
+        if (ride->type == RIDE_TYPE_TOILETS && ride->status == RIDE_STATUS_OPEN)
+        {
+            count++;
+        }
+    }
+    return count;
 }

@@ -12758,3 +12758,24 @@ void peep_autoposition(rct_peep *newPeep)
     sprite_move(x, y, z + 16, (rct_sprite *)newPeep);
     invalidate_sprite_2((rct_sprite *)newPeep);
 }
+
+bool peep_is_thinking(rct_peep * peep, uint8 thoughtType)
+{
+    const rct_peep_thought * thought = &peep->thoughts[0];
+    return (thought->var_2 <= 5 && thought->type == thoughtType);
+}
+
+sint32 get_hungry_guests_count()
+{
+    sint32 count = 0;
+    uint16 spriteIndex;
+    rct_peep * peep;
+    FOR_ALL_GUESTS(spriteIndex, peep)
+    {
+        if (peep->outside_of_park == 0 && peep_is_thinking(peep, PEEP_THOUGHT_TYPE_HUNGRY))
+        {
+            count++;
+        }
+    }
+    return count;
+}

@@ -1117,6 +1117,7 @@ void ride_entry_get_train_layout(sint32 rideEntryIndex, sint32 numCarsPerTrain, 
 uint8 ride_entry_get_vehicle_at_position(sint32 rideEntryIndex, sint32 numCarsPerTrain, sint32 position);
 void ride_update_max_vehicles(sint32 rideIndex);
 uint64 ride_entry_get_supported_track_pieces(rct_ride_entry* rideEntry);
+bool ride_entry_is_in_category(const rct_ride_entry * rideEntry, uint8 category);
 
 void ride_set_ride_entry(sint32 rideIndex, sint32 rideEntry);
 void ride_set_num_vehicles(sint32 rideIndex, sint32 numVehicles);
@@ -1158,5 +1159,8 @@ money16 ride_get_price(rct_ride * ride);
 rct_map_element *get_station_platform(sint32 x, sint32 y, sint32 z, sint32 z_tolerance);
 bool ride_has_adjacent_station(rct_ride *ride);
 bool ride_has_ratings(const rct_ride * ride);
+bool ride_is_running(const rct_ride * ride);
+
+sint32 get_open_toilets_count();
 
 #endif

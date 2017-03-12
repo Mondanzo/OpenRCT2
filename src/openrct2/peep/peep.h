@@ -780,4 +780,7 @@ void pathfind_logging_disable();
 
 void peep_autoposition(rct_peep *newPeep);
 
+bool peep_is_thinking(rct_peep * peep, uint8 thoughtType);
+sint32 get_hungry_guests_count();
+
 #endif
