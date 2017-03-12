@@ -160,7 +160,7 @@
     <ClCompile Include="localisation\real_names.c" />
     <ClCompile Include="localisation\user.c" />
     <ClCompile Include="localisation\utf8.c" />
-    <ClCompile Include="management\award.c" />
+    <ClCompile Include="management\Award.cpp" />
     <ClCompile Include="management\finance.c" />
     <ClCompile Include="management\marketing.c" />
     <ClCompile Include="management\news_item.c" />
@@ -429,6 +429,7 @@
     <ClInclude Include="config\IniReader.hpp" />
     <ClInclude Include="config\IniWriter.hpp" />
     <ClInclude Include="FileClassifier.h" />
+    <ClInclude Include="management\Award.h" />
     <ClInclude Include="network\ServerList.h" />
     <ClInclude Include="rct12.h" />
     <ClInclude Include="ParkImporter.h" />
@@ -512,7 +513,6 @@
     <ClInclude Include="localisation\localisation.h" />
     <ClInclude Include="localisation\string_ids.h" />
     <ClInclude Include="localisation\user.h" />
-    <ClInclude Include="management\award.h" />
     <ClInclude Include="management\finance.h" />
     <ClInclude Include="management\marketing.h" />
     <ClInclude Include="management\news_item.h" />
