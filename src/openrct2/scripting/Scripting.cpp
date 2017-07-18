@@ -14,7 +14,9 @@
  *****************************************************************************/
 #pragma endregion
 
+#include <future>
 #include <memory>
+#include <queue>
 #include <duktape.h>
 
 #include "../Context.h"
@@ -84,7 +86,8 @@ private:
     duk_context *           _context        = nullptr;
     bool                    _initialised    = false;
 
-    std::vector<ScriptContext>  _scripts;
+    std::vector<ScriptContext> _scripts;
+    std::queue<std::tuple<std::promise<void>, std::string>> _evalQueue;
 
 public:
     ScriptEngine(IPlatformEnvironment * env) :
@@ -115,21 +118,17 @@ public:
         }
 
         CallHook("tick");
+        ProcessEvalQueue();
     }
 
-    void ConsoleEval(const std::string &s) override
+    std::future<void> ConsoleEval(const std::string &s) override
     {
-        if (duk_peval_string(_context, s.c_str()) != 0)
-        {
-            std::string result = std::string(duk_safe_to_string(_context, -1));
-            ConsoleWriteLineError(result);
-        }
-        else
-        {
-            std::string result = Stringify(_context, -1);
-            ConsoleWriteLine(result);
-        }
-        duk_pop(_context);
+        // Push on-demand evaluations onto a queue so that it can be processed deterministically
+        // on the main thead at the right time.
+        std::promise<void> barrier;
+        auto future = barrier.get_future();
+        _evalQueue.emplace(std::move(barrier), s);
+        return future;
     }
 
     void ConsoleWriteLine(const std::string &s) override
@@ -288,6 +287,33 @@ private:
     {
         Console::Error::WriteLine("%s", s.c_str());
         console_writeline_error(s.c_str());
+    }
+
+    void ProcessEvalQueue()
+    {
+        while (_evalQueue.size() > 0)
+        {
+            auto item = std::move(_evalQueue.front());
+            _evalQueue.pop();
+
+            auto promise = std::move(std::get<0>(item));
+            auto command = std::move(std::get<1>(item));
+
+            if (duk_peval_string(_context, command.c_str()) != 0)
+            {
+                std::string result = std::string(duk_safe_to_string(_context, -1));
+                ConsoleWriteLineError(result);
+            }
+            else
+            {
+                std::string result = Stringify(_context, -1);
+                ConsoleWriteLine(result);
+            }
+            duk_pop(_context);
+
+            // Signal the promise so caller can continue
+            promise.set_value();
+        }
     }
 
     static int ConsoleLog(duk_context * ctx)

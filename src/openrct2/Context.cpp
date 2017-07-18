@@ -455,7 +455,7 @@ namespace OpenRCT2
                     if (indent == 0)
                     {
                         linenoise::AddHistory(current.c_str());
-                        _scriptEngine->ConsoleEval(current);
+                        _scriptEngine->ConsoleEval(current).wait();
                         current = "";
                         more = false;
                     }

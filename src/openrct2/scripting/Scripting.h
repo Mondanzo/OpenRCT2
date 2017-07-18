@@ -18,6 +18,7 @@
 
 #ifdef __cplusplus
 
+#include <future>
 #include <string>
 #include "../common.h"
 
@@ -31,7 +32,7 @@ namespace OpenRCT2
         {
             virtual ~IScriptEngine() = default;
             virtual void Update() abstract;
-            virtual void ConsoleEval(const std::string &s) abstract;
+            virtual std::future<void> ConsoleEval(const std::string &s) abstract;
             virtual void ConsoleWriteLine(const std::string &s) abstract;
         };
 
