@@ -18,7 +18,19 @@ export interface Console {
     log(message?: any, ...optionalParams: any[]): void;
 }
 
+export interface Configuration {
+    getAll(pattern: string): { [name: string]: any };
+    get<T>(key: string): T | undefined;
+    get<T>(key: string, defaultValue: T): T;
+    set<T>(key: string, value: T): void;
+    has(key: string): boolean;
+}
+
 export interface Context {
+    /**
+     * The user's current configuration.
+     */
+    configuration: Configuration;
     /**
      * Subscribes to the given hook.
      */

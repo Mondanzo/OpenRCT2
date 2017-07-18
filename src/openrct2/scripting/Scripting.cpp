@@ -156,6 +156,8 @@ private:
         objIdx = duk_push_object(_context);
         duk_push_pointer(_context, this);
         duk_put_prop_string(_context, objIdx, PROP_NATIVE_REF);
+        Bindings::CreateConfiguration(_context);
+        duk_put_prop_string(_context, objIdx, "configuration");
         RegisterFunction(_context, objIdx, "subscribe", Subscribe);
         duk_put_global_string(_context, "context");
 

@@ -170,6 +170,7 @@ namespace OpenRCT2
 
         namespace Bindings
         {
+            void CreateConfiguration(duk_context * ctx);
             void CreateMap(duk_context * ctx);
             void CreateRide(duk_context * ctx, rct_ride * ride);
             void CreatePark(duk_context * ctx);
