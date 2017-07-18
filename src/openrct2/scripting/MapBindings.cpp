@@ -43,7 +43,14 @@ namespace OpenRCT2 { namespace Scripting { namespace Bindings
             }
         }
 
-        CreateRide(ctx, ride);
+        if (ride == nullptr)
+        {
+            duk_push_undefined(ctx);
+        }
+        else
+        {
+            CreateRide(ctx, (uint8)index, ride);
+        }
         return 1;
     }
 

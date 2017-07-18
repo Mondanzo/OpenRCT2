@@ -14,6 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "BindingObject.hpp"
 #include "Bindings.hpp"
 
 extern "C"
@@ -22,126 +23,66 @@ extern "C"
     #include "../ride/ride.h"
 }
 
-#define AddPropertyInt32(TWrapper, name, getter, setter)      \
-{                                                             \
-    duk_push_string(Context, name);                           \
-    duk_push_c_function(Context, [](duk_context * ctx) -> int \
-    {                                                         \
-        auto wrapper = GetNativeReference<TWrapper>(ctx);     \
-        if (wrapper != nullptr)                               \
-        {                                                     \
-            sint32 result = wrapper->getter();                \
-            duk_push_int(ctx, result);                        \
-        }                                                     \
-        else                                                  \
-        {                                                     \
-            duk_push_int(ctx, 0);                             \
-        }                                                     \
-        return 1;                                             \
-    }, 0);                                                    \
-    duk_push_c_function(Context, [](duk_context * ctx) -> int \
-    {                                                         \
-        auto wrapper = GetNativeReference<TWrapper>(ctx);     \
-        if (wrapper != nullptr)                               \
-        {                                                     \
-            sint32 numArgs = duk_get_top(ctx);                \
-            if (numArgs == 0) return DUK_RET_TYPE_ERROR;      \
-            wrapper->setter(duk_to_int32(ctx, 0));            \
-        }                                                     \
-        return 0;                                             \
-    }, 1);                                                    \
-    duk_def_prop(Context, -4, DUK_DEFPROP_HAVE_GETTER |       \
-                              DUK_DEFPROP_HAVE_SETTER |       \
-                              DUK_DEFPROP_SET_ENUMERABLE);    \
-}((void)(0))
-
 namespace OpenRCT2 { namespace Scripting { namespace Bindings
 {
-    template<typename TWrapper, typename TNative>
-    class BindingObject
+    class RideBindingObject final : public BindingObject<RideBindingObject>
     {
     public:
+        DefineProperty(std::string, "name", NameProperty);
+        DefineProperty(sint32, "excitement", ExcitementProperty);
+        DefineProperty(sint32, "intensity", IntensityProperty);
+        DefineProperty(sint32, "nausea", NauseaProperty);
+        DefineProperty(sint32, "totalCustomers", TotalCustomersProperty);
+
+    private:
+        uint8       _rideIndex;
+        rct_ride *  _ride;
 
     protected:
-        duk_context * const Context;
-        TNative *     const Native;
-
-        virtual void AddProperties() { }
-    };
-
-    class RideBindingObject : BindingObject<RideBindingObject, rct_ride>
-    {
         void AddProperties() override
         {
-            AddPropertyInt32(RideBindingObject, "totalCustomers", GetTotalCustomers, SetTotalCustomers);
+            AddPropertyString<NameProperty>();
+            AddPropertyInt32<ExcitementProperty>();
+            AddPropertyInt32<IntensityProperty>();
+            AddPropertyInt32<NauseaProperty>();
+            AddPropertyInt32<TotalCustomersProperty>();
         }
 
-        sint32 GetTotalCustomers() { return Native->total_customers; }
-        void SetTotalCustomers(sint32 value) { Native->total_customers = value; }
-    };
-
-    void CreateRide(duk_context * ctx, rct_ride * ride)
-    {
-        if (ride == nullptr)
+    public:
+        RideBindingObject(duk_context * ctx, uint8 rideIndex, rct_ride * ride)
+            : BindingObject(ctx),
+              _rideIndex(rideIndex),
+              _ride(ride)
         {
-            duk_push_null(ctx);
         }
-        else
+
+        std::string Get(NameProperty)
         {
             utf8 rideName[128];
-            format_string(rideName, sizeof(rideName), ride->name, &ride->name_arguments);
-
-            duk_idx_t objidx = duk_push_object(ctx);
-            duk_push_string(ctx, rideName);
-            duk_put_prop_string(ctx, objidx, "name");
-            duk_push_int(ctx, ride->excitement);
-            duk_put_prop_string(ctx, objidx, "excitement");
-            duk_push_int(ctx, ride->intensity);
-            duk_put_prop_string(ctx, objidx, "intensity");
-            duk_push_int(ctx, ride->nausea);
-            duk_put_prop_string(ctx, objidx, "nausea");
-
-            duk_push_pointer(ctx, ride);
-            duk_put_prop_string(ctx, objidx, PROP_NATIVE_REF);
-
-            duk_push_string(ctx, "totalCustomers");
-            duk_push_c_function(ctx, [](duk_context * ctx2) -> int
-            {
-                auto ride2 = GetNativeReference<rct_ride>(ctx2);
-                if (ride2 != nullptr)
-                {
-                    sint32 result = ride2->total_customers;
-                    duk_push_int(ctx2, result);
-                }
-                else
-                {
-                    duk_push_int(ctx2, 0);
-                }
-                return 1;
-            }, 0);
-            duk_push_c_function(ctx, [](duk_context * ctx2) -> int
-            {
-                auto ride2 = GetNativeReference<rct_ride>(ctx2);
-                if (ride2 != nullptr)
-                {
-                    sint32 numArgs2 = duk_get_top(ctx2);
-                    if (numArgs2 == 0)
-                    {
-                        return DUK_RET_TYPE_ERROR;
-                    }
-
-                    sint32 value = duk_to_int(ctx2, 0);
-                    ride2->total_customers = value;
-                }
-                else
-                {
-                    duk_push_int(ctx2, 0);
-                }
-                return 1;
-            }, 1);
-            duk_def_prop(ctx, objidx, DUK_DEFPROP_HAVE_GETTER |
-                                    DUK_DEFPROP_HAVE_SETTER |
-                                    DUK_DEFPROP_SET_ENUMERABLE);
+            format_string(rideName, sizeof(rideName), _ride->name, &_ride->name_arguments);
+            return rideName;
         }
+        void Set(NameProperty, std::string value)
+        {
+            ride_set_name(_rideIndex, value.c_str());
+        }
+
+        sint32 Get(ExcitementProperty) { return _ride->excitement; }
+        void Set(ExcitementProperty, sint32 value) { _ride->excitement = value; }
+
+        sint32 Get(IntensityProperty) { return _ride->intensity; }
+        void Set(IntensityProperty, sint32 value) { _ride->intensity = value; }
+
+        sint32 Get(NauseaProperty) { return _ride->nausea; }
+        void Set(NauseaProperty, sint32 value) { _ride->nausea = value; }
+
+        sint32 Get(TotalCustomersProperty) { return _ride->total_customers; }
+        void Set(TotalCustomersProperty, sint32 value) { _ride->total_customers = value; }
+    };
+
+    void CreateRide(duk_context * ctx, uint8 rideIndex, rct_ride * ride)
+    {
+        auto rbo = new RideBindingObject(ctx, rideIndex, ride);
+        rbo->PushNewESO();
     }
 } } }

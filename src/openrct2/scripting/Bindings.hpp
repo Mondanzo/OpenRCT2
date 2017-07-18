@@ -33,11 +33,22 @@ namespace OpenRCT2
         * Gets the native reference attached to a script object.
         */
         template<typename T>
+        T * GetNativeReference(duk_context * ctx, duk_idx_t idx)
+        {
+            duk_get_prop_string(ctx, idx, PROP_NATIVE_REF);
+            auto instance = static_cast<T *>(duk_get_pointer(ctx, -1));
+            duk_pop(ctx);
+            return instance;
+        }
+
+        /**
+        * Gets the native reference attached to a script object.
+        */
+        template<typename T>
         T * GetNativeReference(duk_context * ctx)
         {
             duk_push_this(ctx);
-            duk_get_prop_string(ctx, -1, PROP_NATIVE_REF);
-            auto instance = static_cast<T *>(duk_get_pointer(ctx, -1));
+            auto instance = GetNativeReference<T>(ctx, -1);
             duk_pop(ctx);
             return instance;
         }
@@ -172,7 +183,7 @@ namespace OpenRCT2
         {
             void CreateConfiguration(duk_context * ctx);
             void CreateMap(duk_context * ctx);
-            void CreateRide(duk_context * ctx, rct_ride * ride);
+            void CreateRide(duk_context * ctx, uint8 rideIndex, rct_ride * ride);
             void CreatePark(duk_context * ctx);
             void CreateUi(duk_context * ctx);
         }
