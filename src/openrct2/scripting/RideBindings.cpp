@@ -38,19 +38,28 @@ namespace OpenRCT2 { namespace Scripting { namespace Bindings
         uint8       _rideIndex;
         rct_ride *  _ride;
 
+        std::string GetRideName()
+        {
+            utf8 rideName[128];
+            format_string(rideName, sizeof(rideName), _ride->name, &_ride->name_arguments);
+            return std::string(rideName);
+        }
+
     protected:
-        void AddProperties() override
+        void SetupPrototype() override
         {
             AddPropertyString<NameProperty>();
             AddPropertyInt32<ExcitementProperty>();
             AddPropertyInt32<IntensityProperty>();
             AddPropertyInt32<NauseaProperty>();
             AddPropertyInt32<TotalCustomersProperty>();
+
+            AddFunction<&RideBindingObject::ToString>("toString");
         }
 
     public:
         RideBindingObject(duk_context * ctx, uint8 rideIndex, rct_ride * ride)
-            : BindingObject(ctx),
+            : BindingObject("Ride", ctx),
               _rideIndex(rideIndex),
               _ride(ride)
         {
@@ -58,9 +67,7 @@ namespace OpenRCT2 { namespace Scripting { namespace Bindings
 
         std::string Get(NameProperty)
         {
-            utf8 rideName[128];
-            format_string(rideName, sizeof(rideName), _ride->name, &_ride->name_arguments);
-            return rideName;
+            return GetRideName();
         }
         void Set(NameProperty, std::string value)
         {
@@ -78,11 +85,18 @@ namespace OpenRCT2 { namespace Scripting { namespace Bindings
 
         sint32 Get(TotalCustomersProperty) { return _ride->total_customers; }
         void Set(TotalCustomersProperty, sint32 value) { _ride->total_customers = value; }
+
+        duk_int_t ToString()
+        {
+            auto result = "Ride { name: " + GetRideName() + " }";
+            duk_push_string(Context, result.c_str());
+            return 1;
+        }
     };
 
     void CreateRide(duk_context * ctx, uint8 rideIndex, rct_ride * ride)
     {
         auto rbo = new RideBindingObject(ctx, rideIndex, ride);
-        rbo->PushNewESO();
+        rbo->GetOrCreate("map.rides[" + std::to_string(rideIndex) + "]");
     }
 } } }

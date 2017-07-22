@@ -25,10 +25,43 @@ namespace OpenRCT2 { namespace Scripting
     template<typename TWrapper>
     class BindingObject
     {
-    public:
-        void PushNewESO()
+    private:
+        std::string _stashTypeName;
+
+        void PushBaseFunction()
         {
-            PushBindingObject(Context, this);
+            auto ctx = Context;
+            PushObjectFromStash(ctx, _stashTypeName.c_str());
+            if (duk_is_undefined(ctx, -1))
+            {
+                duk_pop(ctx);
+
+                duk_push_c_function(ctx, [](duk_context *) -> int { return 0; }, 0);
+                duk_push_object(ctx);
+                {
+                    StackCheck sc(ctx);
+                    SetupPrototype();
+                    sc.ThrowIfUnbalanced();
+                }
+                duk_put_prop_string(ctx, -2, PROP_PROTOTYPE);
+                StashObject(ctx, -1, _stashTypeName.c_str());
+            }
+        }
+
+        void CreateInstance()
+        {
+            PushBaseFunction();
+            duk_new(Context, 0);
+        }
+
+        void SetNative()
+        {
+            duk_push_pointer(Context, this);
+            duk_put_prop_string(Context, -2, PROP_NATIVE_REF);
+        }
+
+        void SetFinaliser()
+        {
             duk_push_c_function(Context, [](duk_context * ctx) -> int
             {
                 auto wrapper = GetNativeReference<TWrapper>(ctx, 0);
@@ -39,18 +72,47 @@ namespace OpenRCT2 { namespace Scripting
                 return 0;
             }, 2);
             duk_set_finalizer(Context, -2);
-            AddProperties();
+        }
+
+    public:
+        void GetOrCreate(const std::string &stashName)
+        {
+            PushObjectFromStash(Context, stashName.c_str());
+            if (duk_is_undefined(Context, -1))
+            {
+                duk_pop(Context);
+                CreateInstance();
+                StashObject(Context, -1, stashName.c_str());
+            }
+            SetNative();
+            SetFinaliser();
         }
 
     protected:
         duk_context * const Context;
 
-        BindingObject(duk_context * context)
-            : Context(context)
+        BindingObject(std::string typeName, duk_context * context)
+            : _stashTypeName("type." + typeName),
+              Context(context)
         {
         }
 
-        virtual void AddProperties() abstract;
+        virtual void SetupPrototype() abstract;
+
+        template<duk_int_t(TWrapper::*func)()>
+        void AddFunction(const std::string &name)
+        {
+            duk_push_c_function(Context, [](duk_context * ctx) -> int
+            {
+                auto wrapper = GetNativeReference<TWrapper>(ctx);
+                if (wrapper != nullptr)
+                {
+                    return (wrapper->*func)();
+                }
+                return 0;
+            }, 0);
+            duk_put_prop_string(Context, -2, name.c_str());
+        }
 
         template<class TType>
         void AddPropertyInt32()

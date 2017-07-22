@@ -27,7 +27,36 @@ namespace OpenRCT2
     namespace Scripting
     {
         /** The name of the property in which the native reference is stored. */
+        constexpr const char * PROP_PROTOTYPE = "prototype";
         constexpr const char * PROP_NATIVE_REF = "@NATIVE";
+
+        class StackCheck final
+        {
+        private:
+            duk_context *   _ctx;
+            duk_idx_t       _entryIndex;
+
+        public:
+            StackCheck(duk_context * ctx)
+                : _ctx(ctx),
+                _entryIndex(duk_get_top_index(ctx))
+            {
+            }
+
+            bool IsUnbalanced()
+            {
+                auto exitIndex = duk_get_top_index(_ctx);
+                return _entryIndex != exitIndex;
+            }
+
+            void ThrowIfUnbalanced()
+            {
+                if (IsUnbalanced())
+                {
+                    throw std::runtime_error("duktape stack left unbalanced");
+                }
+            }
+        };
 
         /**
         * Gets the native reference attached to a script object.
@@ -164,12 +193,13 @@ namespace OpenRCT2
             duk_pop(ctx);
         }
 
-        inline void PushObjectFromStash(duk_context * ctx, const std::string &key)
+        inline duk_bool_t PushObjectFromStash(duk_context * ctx, const std::string &key)
         {
             duk_push_global_object(ctx);
-            duk_get_prop_string(ctx, -1, key.c_str());
+            auto result = duk_get_prop_string(ctx, -1, key.c_str());
             duk_swap(ctx, -1, -2);
             duk_pop(ctx);
+            return result;
         }
 
         inline void RemoveObjectFromStash(duk_context * ctx, const std::string &key)

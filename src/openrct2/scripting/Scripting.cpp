@@ -336,13 +336,13 @@ private:
     static std::string Stringify(duk_context * ctx, duk_idx_t idx)
     {
         auto type = duk_get_type(ctx, idx);
-        if (type == DUK_TYPE_OBJECT && !duk_is_function(ctx, -1))
+        if (type == DUK_TYPE_OBJECT && !duk_is_function(ctx, idx))
         {
-            return duk_json_encode(ctx, -1);
+            return duk_json_encode(ctx, idx);
         }
         else
         {
-            return duk_safe_to_string(ctx, -1);
+            return duk_safe_to_string(ctx, idx);
         }
     }
 };
