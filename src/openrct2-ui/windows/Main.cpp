@@ -21,7 +21,12 @@
 #include <openrct2/interface/widget.h>
 #include <openrct2/world/footpath.h>
 
+
 static rct_widget window_main_widgets[] = {
+    { WIDGETS_END },
+};
+
+static rct_widget window_main_viewport_widgets[] = {
     { WWT_VIEWPORT, 0, 0x0000, -1, 0x0000, -1, 0xFFFFFFFE, 0xFFFF },
     { WIDGETS_END },
 };
@@ -59,10 +64,6 @@ static rct_window_event_list window_main_events = {
     nullptr
 };
 
-/**
- * Creates the main window that holds the main viewport.
- *  rct2: 0x0066B3E8
- */
 rct_window * window_main_open()
 {
     window_main_widgets[0].right = context_get_width();
@@ -75,6 +76,25 @@ rct_window * window_main_open()
         WF_STICK_TO_BACK
     );
     window->widgets = window_main_widgets;
+    return window;
+}
+
+/**
+ * Creates the main window that holds the main viewport.
+ *  rct2: 0x0066B3E8
+ */
+rct_window * window_main_viewport_open()
+{
+    window_main_widgets[0].right = context_get_width();
+    window_main_widgets[0].bottom = context_get_height();
+    rct_window * window = window_create(
+        0, 0,
+        window_main_widgets[0].right, window_main_widgets[0].bottom,
+        &window_main_events,
+        WC_MAIN_WINDOW,
+        WF_STICK_TO_BACK
+    );
+    window->widgets = window_main_viewport_widgets;
 
     viewport_create(window, window->x, window->y, window->width, window->height, 0,0x0FFF,0x0FFF, 0, 0x1, -1);
     window->viewport->flags |= VIEWPORT_FLAG_SOUND_ON;
@@ -96,5 +116,12 @@ rct_window * window_main_open()
  */
 void window_main_paint(rct_window *w, rct_drawpixelinfo *dpi)
 {
-    viewport_render(dpi, w->viewport, dpi->x, dpi->y, dpi->x + dpi->width, dpi->y + dpi->height);
+    if (w->viewport == nullptr)
+    {
+        gfx_clear(dpi, PALETTE_INDEX_10);
+    }
+    else
+    {
+        viewport_render(dpi, w->viewport, dpi->x, dpi->y, dpi->x + dpi->width, dpi->y + dpi->height);
+    }
 }

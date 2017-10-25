@@ -404,31 +404,37 @@ private:
     void PrepareParkForPlayback()
     {
         rct_window * w = window_get_main();
-        w->viewport_target_sprite = SPRITE_INDEX_NULL;
-        w->saved_view_x = gSavedViewX;
-        w->saved_view_y = gSavedViewY;
-
-        char zoomDifference = gSavedViewZoom - w->viewport->zoom;
-        w->viewport->zoom = gSavedViewZoom;
-        gCurrentRotation = gSavedViewRotation;
-        if (zoomDifference != 0)
+        if (w != nullptr)
         {
-            if (zoomDifference < 0)
+            if (w->viewport != nullptr)
             {
-                zoomDifference = -zoomDifference;
-                w->viewport->view_width >>= zoomDifference;
-                w->viewport->view_height >>= zoomDifference;
-            }
-            else
-            {
-                w->viewport->view_width <<= zoomDifference;
-                w->viewport->view_height <<= zoomDifference;
-            }
-        }
-        w->saved_view_x -= w->viewport->view_width >> 1;
-        w->saved_view_y -= w->viewport->view_height >> 1;
+                w->viewport_target_sprite = SPRITE_INDEX_NULL;
+                w->saved_view_x = gSavedViewX;
+                w->saved_view_y = gSavedViewY;
 
-        window_invalidate(w);
+                char zoomDifference = gSavedViewZoom - w->viewport->zoom;
+                w->viewport->zoom = gSavedViewZoom;
+                gCurrentRotation = gSavedViewRotation;
+                if (zoomDifference != 0)
+                {
+                    if (zoomDifference < 0)
+                    {
+                        zoomDifference = -zoomDifference;
+                        w->viewport->view_width >>= zoomDifference;
+                        w->viewport->view_height >>= zoomDifference;
+                    }
+                    else
+                    {
+                        w->viewport->view_width <<= zoomDifference;
+                        w->viewport->view_height <<= zoomDifference;
+                    }
+                }
+                w->saved_view_x -= w->viewport->view_width >> 1;
+                w->saved_view_y -= w->viewport->view_height >> 1;
+            }
+            window_invalidate(w);
+        }
+
         reset_sprite_spatial_index();
         reset_all_sprite_quadrant_placements();
         auto intent = Intent(INTENT_ACTION_REFRESH_NEW_RIDES);

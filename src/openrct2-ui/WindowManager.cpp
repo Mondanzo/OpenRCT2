@@ -66,7 +66,7 @@ public:
         case WC_LAND_RIGHTS:
             return window_land_rights_open();
         case WC_MAIN_WINDOW:
-            return window_main_open();
+            return window_main_viewport_open();
         case WC_MAP:
             return window_map_open();
         case WC_MAPGEN:
@@ -125,6 +125,8 @@ public:
     {
         switch (view)
         {
+        case WV_MAIN:
+            return window_main_open();
         case WV_PARK_AWARDS:
             return window_park_awards_open();
         case WV_PARK_RATING:

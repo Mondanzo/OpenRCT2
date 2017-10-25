@@ -58,6 +58,7 @@
 #include "interface/themes.h"
 #include "intro.h"
 #include "localisation/date.h"
+#include "localisation/format_codes.h"
 #include "localisation/language.h"
 #include "network/http.h"
 #include "network/network.h"
@@ -68,12 +69,25 @@
 #include "rct2/interop.h"
 #include "util/util.h"
 
+#include "interface/widget.h"
+
 using namespace OpenRCT2;
 using namespace OpenRCT2::Audio;
 using namespace OpenRCT2::Ui;
 
 namespace OpenRCT2
 {
+    enum class CONTEXT_STATE
+    {
+        LOADING,
+        INTRO,
+        TITLE,
+        SCENARIO,
+        SCENARIO_EDITOR,
+        TRACK_DESIGNER,
+        TRACK_MANAGER,
+    };
+
     class Context : public IContext
     {
     private:
@@ -89,7 +103,8 @@ namespace OpenRCT2
         IScenarioRepository *       _scenarioRepository = nullptr;
 
         // Game states
-        TitleScreen * _titleScreen = nullptr;
+        CONTEXT_STATE   _contextState = CONTEXT_STATE::LOADING;
+        TitleScreen *   _titleScreen = nullptr;
 
         bool    _initialised = false;
         bool    _isWindowMinimised = false;
@@ -327,24 +342,6 @@ namespace OpenRCT2
                 _uiContext->CreateWindow();
             }
 
-
-
-
-
-
-            // TODO Ideally we want to delay this until we show the title so that we can
-            //      still open the game window and draw a progress screen for the creation
-            //      of the object cache.
-            _objectRepository->LoadOrConstruct();
-
-            // TODO Like objects, this can take a while if there are a lot of track designs
-            //      its also really something really we might want to do in the background
-            //      as its not required until the player wants to place a new ride.
-            _trackDesignRepository->Scan();
-
-            _scenarioRepository->Scan();
-            TitleSequenceManager::Scan();
-
             if (!gOpenRCT2Headless)
             {
                 audio_init();
@@ -374,6 +371,7 @@ namespace OpenRCT2
             game_init_all(150);
 
             _titleScreen = new TitleScreen();
+            _contextState = CONTEXT_STATE::LOADING;
             return true;
         }
 
@@ -429,6 +427,12 @@ namespace OpenRCT2
          * Launches the game, after command line arguments have been parsed and processed.
          */
         void Launch()
+        {
+            InitialiseLoading();
+            RunGameLoop();
+        }
+
+        void OldLaunch()
         {
             gIntroState = INTRO_STATE_NONE;
             if ((gOpenRCT2StartupAction == STARTUP_ACTION_TITLE) && gConfigGeneral.play_intro)
@@ -537,8 +541,6 @@ namespace OpenRCT2
                 network_begin_client(gNetworkStartHost, gNetworkStartPort);
             }
 #endif // DISABLE_NETWORK
-
-            RunGameLoop();
         }
 
         bool ShouldRunVariableFrame()
@@ -683,22 +685,84 @@ namespace OpenRCT2
 
             date_update_real_time_of_day();
 
-            if (gIntroState != INTRO_STATE_NONE)
+            switch (_contextState)
             {
+            case CONTEXT_STATE::LOADING:
+                UpdateLoading();
+                break;
+            case CONTEXT_STATE::INTRO:
                 intro_update();
-            }
-            else if ((gScreenFlags & SCREEN_FLAGS_TITLE_DEMO) && !gOpenRCT2Headless)
-            {
+                if (gIntroState == INTRO_STATE_NONE)
+                {
+                    _contextState = CONTEXT_STATE::TITLE;
+                }
+                break;
+            case CONTEXT_STATE::TITLE:
                 _titleScreen->Update();
-            }
-            else
-            {
+                if (!(gScreenFlags & SCREEN_FLAGS_TITLE_DEMO))
+                {
+                    _contextState = CONTEXT_STATE::SCENARIO;
+                }
+                break;
+            default:
                 game_update();
+                break;
             }
 
             twitch_update();
             chat_update();
             console_update();
+        }
+
+        void InitialiseLoading()
+        {
+            auto windowManager = _uiContext->GetWindowManager();
+            windowManager->OpenView(WV_MAIN);
+        }
+
+        std::future<void> loading;
+
+        void UpdateLoading()
+        {
+            auto windowManager = _uiContext->GetWindowManager();
+            // screenshot_check();
+            windowManager->HandleKeyboard(false);
+            window_dispatch_update_all();
+            game_handle_input();
+
+            if (!loading.valid())
+            {
+                loading = _objectRepository->LoadOrConstructAsync(
+                    [windowManager](FileIndexProgress progress)
+                    {
+                        char buffer[1024];
+                        sprintf(buffer, "%zu / %zu %c (%s)", progress.Index, progress.Total, FORMAT_NEWLINE, progress.Current.c_str());
+                        window_network_status_open(buffer, nullptr);
+                    });
+
+                _trackDesignRepository->Scan();
+                _scenarioRepository->Scan();
+                TitleSequenceManager::Scan();
+            }
+            else if (loading.wait_for(std::chrono::seconds::zero()) == std::future_status::ready)
+            {
+                window_close_all();
+                window_close(window_get_main());
+
+                OldLaunch();
+                if (gIntroState != INTRO_STATE_NONE)
+                {
+                    _contextState = CONTEXT_STATE::INTRO;
+                }
+                else if ((gScreenFlags & SCREEN_FLAGS_TITLE_DEMO) && !gOpenRCT2Headless)
+                {
+                    _contextState = CONTEXT_STATE::TITLE;
+                }
+                else
+                {
+                    _contextState = CONTEXT_STATE::SCENARIO;
+                }
+            }
         }
 
         bool LoadParkFromStream(IStream * stream, const std::string &path, bool loadTitleScreenFirstOnFail)

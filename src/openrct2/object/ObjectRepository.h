@@ -17,11 +17,13 @@
 #pragma once
 
 #ifdef __cplusplus
+    #include <future>
     #include <vector>
+
+    #include "../core/FileIndex.hpp"
 #endif
 
 #include "../common.h"
-
 #include "../object.h"
 #include "../ride/ride.h"
 
@@ -69,6 +71,7 @@ interface IObjectRepository
     virtual ~IObjectRepository() { }
 
     virtual void                            LoadOrConstruct() abstract;
+    virtual std::future<void>               LoadOrConstructAsync(Progress<FileIndexProgress> progress) abstract;
     virtual void                            Construct() abstract;
     virtual size_t                          GetNumObjects() const abstract;
     virtual const ObjectRepositoryItem *    GetObjects() const abstract;

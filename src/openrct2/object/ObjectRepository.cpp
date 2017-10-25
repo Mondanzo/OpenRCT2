@@ -214,6 +214,17 @@ public:
         SortItems();
     }
 
+    std::future<void> LoadOrConstructAsync(Progress<FileIndexProgress> progress) override
+    {
+        return std::async(std::launch::async, [this, progress]
+        {
+            ClearItems();
+            auto items = _fileIndex.LoadOrBuildAsync(progress);
+            AddItems(items.get());
+            SortItems();
+        });
+    }
+
     void Construct() override
     {
         auto items = _fileIndex.Rebuild();

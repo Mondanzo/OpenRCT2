@@ -501,6 +501,7 @@ enum {
 
 
 enum {
+    WV_MAIN,
     WV_PARK_AWARDS,
     WV_PARK_RATING,
     WV_PARK_OBJECTIVE,

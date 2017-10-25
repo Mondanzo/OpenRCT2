@@ -17,6 +17,8 @@
 #pragma once
 
 #include <chrono>
+#include <functional>
+#include <future>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -25,6 +27,23 @@
 #include "FileScanner.h"
 #include "FileStream.hpp"
 #include "Path.hpp"
+
+template<typename T>
+using Progress = std::function<void(T)>;
+
+struct FileIndexProgress
+{
+    const size_t        Index = 0;
+    const size_t        Total = 0;
+    const std::string   Current;
+
+    FileIndexProgress(size_t index, size_t total, std::string current)
+        : Index(index),
+          Total(total),
+          Current(current)
+    {
+    }
+};
 
 template<typename TItem>
 class FileIndex
@@ -117,16 +136,33 @@ public:
         else
         {
             // Index was not loaded
-            items = Build(scanResult);
+            items = Build(scanResult).get();
         }
         return items;
+    }
+
+    std::future<std::vector<TItem>> LoadOrBuildAsync(Progress<FileIndexProgress> progress) const
+    {
+        auto scanResult = Scan();
+        auto readIndexResult = ReadIndexFile(scanResult.Stats);
+        if (std::get<0>(readIndexResult))
+        {
+            // Index was loaded
+            auto result = std::get<1>(readIndexResult);
+            return std::async(std::launch::deferred, [result] { return result; });
+        }
+        else
+        {
+            // Index was not loaded
+            return Build(scanResult, progress);
+        }
     }
 
     std::vector<TItem> Rebuild() const
     {
         auto scanResult = Scan();
         auto items = Build(scanResult);
-        return items;
+        return items.get();
     }
 
 protected:
@@ -177,28 +213,37 @@ private:
         return ScanResult(stats, files);
     }
 
-    std::vector<TItem> Build(const ScanResult &scanResult) const
+    std::future<std::vector<TItem>> Build(const ScanResult &scanResult) const
     {
-        std::vector<TItem> items;
-        Console::WriteLine("Building %s (%zu items)", _name.c_str(), scanResult.Files.size());
+        return Build(scanResult, [](FileIndexProgress){ });
+    }
 
-        auto startTime = std::chrono::high_resolution_clock::now();
-        for (auto filePath : scanResult.Files)
+    std::future<std::vector<TItem>> Build(const ScanResult &scanResult, Progress<FileIndexProgress> progress) const
+    {
+        return std::async(std::launch::async, [this, scanResult, progress]
         {
-            log_verbose("FileIndex:Indexing '%s'", filePath.c_str());
-            auto item = Create(filePath);
-            if (std::get<0>(item))
+            std::vector<TItem> items;
+            size_t total = scanResult.Files.size();
+            Console::WriteLine("Building %s (%zu items)", _name.c_str(), total);
+            auto startTime = std::chrono::high_resolution_clock::now();
+            for (auto filePath : scanResult.Files)
             {
-                items.push_back(std::get<1>(item));
+                log_verbose("FileIndex:Indexing '%s'", filePath.c_str());
+                progress(FileIndexProgress(items.size(), total, filePath));
+                auto item = Create(filePath);
+                if (std::get<0>(item))
+                {
+                    items.push_back(std::get<1>(item));
+                }
             }
-        }
 
-        WriteIndexFile(scanResult.Stats, items);
+            WriteIndexFile(scanResult.Stats, items);
 
-        auto endTime = std::chrono::high_resolution_clock::now();
-        auto duration = (std::chrono::duration<float>)(endTime - startTime);
-        Console::WriteLine("Finished building %s in %.2f seconds.", _name.c_str(), duration.count());
-        return items;
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto duration = (std::chrono::duration<float>)(endTime - startTime);
+            Console::WriteLine("Finished building %s in %.2f seconds.", _name.c_str(), duration.count());
+            return items;
+        });
     }
 
     std::tuple<bool, std::vector<TItem>> ReadIndexFile(const DirectoryStats &stats) const
