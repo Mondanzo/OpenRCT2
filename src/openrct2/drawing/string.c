@@ -228,19 +228,22 @@ void gfx_draw_string_left_centred(rct_drawpixelinfo *dpi, rct_string_id format, 
  */
 static void colour_char(uint8 colour, uint16* current_font_flags, uint8* palette_pointer) {
 
-    sint32 eax;
+    sint32 colour32 = 0;
+    rct_g1_element * g1 = gfx_get_g1_element(SPR_TEXT_PALETTE);
+    if (g1 != NULL)
+    {
+        colour32 = ((uint32 *)g1->offset)[colour & 0xFF];
+    }
 
-    rct_g1_element g1_element = g1Elements[SPR_TEXT_PALETTE];
-    eax = ((uint32*)g1_element.offset)[colour & 0xFF];
-
-    if (!(*current_font_flags & 2)) {
-        eax = eax & 0x0FF0000FF;
+    if (!(*current_font_flags & 2))
+    {
+        colour32 = colour32 & 0x0FF0000FF;
     }
     // Adjust text palette. Store current colour?
-    palette_pointer[1] = eax & 0xFF;
-    palette_pointer[2] = (eax >> 8) & 0xFF;
-    palette_pointer[3] = (eax >> 16) & 0xFF;
-    palette_pointer[4] = (eax >> 24) & 0xFF;
+    palette_pointer[1] = colour32 & 0xFF;
+    palette_pointer[2] = (colour32 >> 8) & 0xFF;
+    palette_pointer[3] = (colour32 >> 16) & 0xFF;
+    palette_pointer[4] = (colour32 >> 24) & 0xFF;
 }
 
 /**

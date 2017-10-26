@@ -330,12 +330,12 @@ namespace OpenRCT2
                 }
             }
 
-            auto rct2InstallPath = GetOrPromptRCT2Path();
-            if (rct2InstallPath.empty())
-            {
-                return false;
-            }
-            _env->SetBasePath(DIRBASE::RCT2, rct2InstallPath);
+            // auto rct2InstallPath = GetOrPromptRCT2Path();
+            // if (rct2InstallPath.empty())
+            // {
+            //     return false;
+            // }
+            // _env->SetBasePath(DIRBASE::RCT2, rct2InstallPath);
 
             if (!gOpenRCT2Headless)
             {

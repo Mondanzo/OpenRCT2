@@ -797,7 +797,10 @@ sint32 cmdline_for_sprite(const char **argv, sint32 argc)
     }
 }
 
-
+void use_standard_palette(uint8 * palette)
+{
+    memcpy(palette, _standardPalette, 256 * 4);
+}
 
 static rct_sprite_file_palette_entry _standardPalette[256] = {
     // 0 (unused)

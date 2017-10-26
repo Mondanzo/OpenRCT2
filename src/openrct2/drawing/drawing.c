@@ -512,6 +512,7 @@ void gfx_transpose_palette(sint32 pal, uint8 product)
  *
  *  rct2: 0x006837E3
  */
+void use_standard_palette(uint8 * palette);
 void load_palette()
 {
     if (gOpenRCT2NoGraphics) {
@@ -527,18 +528,25 @@ void load_palette()
         palette = water_type->image_id;
     }
 
-    rct_g1_element g1 = g1Elements[palette];
-    sint32 width = g1.width;
-    sint32 x = g1.x_offset;
-    uint8* dest_pointer = &gGamePalette[x * 4];
-    uint8* source_pointer = g1.offset;
-
-    for (; width > 0; width--) {
-        dest_pointer[0] = source_pointer[0];
-        dest_pointer[1] = source_pointer[1];
-        dest_pointer[2] = source_pointer[2];
-        source_pointer += 3;
-        dest_pointer += 4;
+    const rct_g1_element * g1 = gfx_get_g1_element(palette);
+    if (g1 == NULL)
+    {
+        use_standard_palette(gGamePalette);
+    }
+    else
+    {
+        sint32 width = g1->width;
+        sint32 x = g1->x_offset;
+        uint8 * src = g1->offset;
+        uint8 * dst = &gGamePalette[x * 4];
+        for (; width > 0; width--)
+        {
+            dst[0] = src[0];
+            dst[1] = src[1];
+            dst[2] = src[2];
+            src += 3;
+            dst += 4;
+        }
     }
     platform_update_palette(gGamePalette, 10, 236);
     gfx_invalidate_screen();
