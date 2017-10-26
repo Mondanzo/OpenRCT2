@@ -301,13 +301,8 @@ void game_update()
 {
     gInUpdateCode = true;
 
-    sint32 numUpdates;
-
-    // 0x006E3AEC // screen_game_process_mouse_input();
-    screenshot_check();
-    game_handle_keyboard_input();
-
     // Determine how many times we need to update the game
+    sint32 numUpdates;
     if (gGameSpeed > 1) {
         numUpdates = 1 << (gGameSpeed - 1);
     } else {
@@ -379,8 +374,6 @@ void game_update()
 
         // Input
         gUnk141F568 = gUnk13CA740;
-
-        game_handle_input();
     }
 
     // Always perform autosave check, even when paused
@@ -390,8 +383,6 @@ void game_update()
     ) {
         scenario_autosave_check();
     }
-
-    window_dispatch_update_all();
 
     gGameCommandNestLevel = 0;
     gInUpdateCode = false;

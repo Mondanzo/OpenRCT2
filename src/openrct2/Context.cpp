@@ -55,6 +55,7 @@
 #include "input.h"
 #include "interface/chat.h"
 #include "interface/console.h"
+#include "interface/Screenshot.h"
 #include "interface/themes.h"
 #include "intro.h"
 #include "localisation/date.h"
@@ -685,6 +686,10 @@ namespace OpenRCT2
 
             date_update_real_time_of_day();
 
+            auto windowManager = _uiContext->GetWindowManager();
+            screenshot_check();
+            windowManager->HandleKeyboard(false);
+
             switch (_contextState)
             {
             case CONTEXT_STATE::LOADING:
@@ -709,6 +714,8 @@ namespace OpenRCT2
                 break;
             }
 
+            window_dispatch_update_all();
+            game_handle_input();
             twitch_update();
             chat_update();
             console_update();
@@ -724,12 +731,6 @@ namespace OpenRCT2
 
         void UpdateLoading()
         {
-            auto windowManager = _uiContext->GetWindowManager();
-            // screenshot_check();
-            windowManager->HandleKeyboard(false);
-            window_dispatch_update_all();
-            game_handle_input();
-
             if (!loading.valid())
             {
                 loading = std::async(std::launch::async,

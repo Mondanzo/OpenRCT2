@@ -118,9 +118,6 @@ void TitleScreen::Update()
 {
     gInUpdateCode = true;
 
-    screenshot_check();
-    title_handle_keyboard_input();
-
     if (game_is_not_paused())
     {
         TryLoadSequence();
@@ -139,13 +136,9 @@ void TitleScreen::Update()
     }
 
     input_set_flag(INPUT_FLAG_VIEWPORT_SCROLLING, false);
-
     window_map_tooltip_update_visibility();
-    window_dispatch_update_all();
 
     gSavedAge++;
-
-    game_handle_input();
 
     gInUpdateCode = false;
 }
