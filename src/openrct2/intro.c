@@ -18,6 +18,8 @@
 #include "audio/AudioMixer.h"
 #include "Context.h"
 #include "drawing/drawing.h"
+#include "interface/widget.h"
+#include "interface/window.h"
 #include "intro.h"
 #include "sprites.h"
 
@@ -28,9 +30,24 @@
 #define PALETTE_G1_IDX_DEVELOPER    23217
 #define PALETTE_G1_IDX_LOGO         23224
 
-uint8 gIntroState;
+enum INTRO_STATE {
+    INTRO_STATE_NONE,
+    INTRO_STATE_PUBLISHER_BEGIN,
+    INTRO_STATE_PUBLISHER_SCROLL,
+    INTRO_STATE_DEVELOPER_BEGIN,
+    INTRO_STATE_DEVELOPER_SCROLL,
+    INTRO_STATE_LOGO_FADE_IN,
+    INTRO_STATE_LOGO_WAIT,
+    INTRO_STATE_LOGO_FADE_OUT,
+    INTRO_STATE_DISCLAIMER_1,
+    INTRO_STATE_DISCLAIMER_2,
+    INTRO_STATE_CLEAR = 254,
+    INTRO_STATE_FINISH = 255,
+};
 
 // Used mainly for timing but also for Y coordinate and fading.
+static rct_window * _introWindow;
+static uint8 _introState;
 static sint32 _introStateCounter;
 
 static void *_soundChannel = NULL;
@@ -41,17 +58,69 @@ static void screen_intro_process_keyboard_input();
 static void screen_intro_skip_part();
 static void screen_intro_draw_logo(rct_drawpixelinfo *dpi);
 
+static void window_intro_paint(rct_window * w, rct_drawpixelinfo * dpi);
+
+static rct_window_event_list _introEvents =
+{
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    window_intro_paint,
+    NULL
+};
+
+static rct_widget _introWidgets[] =
+{
+    { WIDGETS_END }
+};
+
+bool intro_is_finished()
+{
+    return _introState == INTRO_STATE_FINISH;
+}
+
+void intro_begin()
+{
+    _introState = INTRO_STATE_PUBLISHER_BEGIN;
+
+    _introWindow = window_create(0, 0, context_get_width(), context_get_height(), &_introEvents, WC_MAIN_WINDOW, WF_STICK_TO_BACK);
+    _introWindow->widgets = _introWidgets;
+}
+
 // rct2: 0x0068E966
 void intro_update()
 {
     screen_intro_process_mouse_input();
     screen_intro_process_keyboard_input();
 
-    switch (gIntroState) {
+    switch (_introState) {
     case INTRO_STATE_DISCLAIMER_1:
     case INTRO_STATE_DISCLAIMER_2:
         // Originally used for the disclaimer text
-        gIntroState = INTRO_STATE_PUBLISHER_BEGIN;
+        _introState = INTRO_STATE_PUBLISHER_BEGIN;
     case INTRO_STATE_PUBLISHER_BEGIN:
         load_palette();
 
@@ -61,7 +130,7 @@ void intro_update()
         // Play the chain lift sound
         _soundChannel = Mixer_Play_Effect(SOUND_LIFT_7, MIXER_LOOP_INFINITE, MIXER_VOLUME_MAX, 0.5f, 1, true);
         _chainLiftFinished = false;
-        gIntroState++;
+        _introState++;
         break;
     case INTRO_STATE_PUBLISHER_SCROLL:
         // Move the Infogrames logo down
@@ -70,7 +139,7 @@ void intro_update()
         // Check if logo is off the screen...ish
         if (_introStateCounter > context_get_height() - 120) {
             _introStateCounter = -116;
-            gIntroState++;
+            _introState++;
         }
 
         break;
@@ -78,7 +147,7 @@ void intro_update()
         // Set the Y for the Chris Sawyer logo
         _introStateCounter = -116;
 
-        gIntroState++;
+        _introState++;
         break;
     case INTRO_STATE_DEVELOPER_SCROLL:
         _introStateCounter += 5;
@@ -108,7 +177,7 @@ void intro_update()
             // Play long peep scream sound
             _soundChannel = Mixer_Play_Effect(SOUND_SCREAM_1, MIXER_LOOP_NONE, MIXER_VOLUME_MAX, 0.5f, 1, false);
 
-            gIntroState++;
+            _introState++;
             _introStateCounter = 0;
         }
         break;
@@ -116,7 +185,7 @@ void intro_update()
         // Fade in, add 4 / 256 to fading
         _introStateCounter += 0x400;
         if (_introStateCounter > 0xFF00) {
-            gIntroState++;
+            _introState++;
             _introStateCounter = 0;
         }
         break;
@@ -127,14 +196,14 @@ void intro_update()
             // Set fading to 256
             _introStateCounter = 0xFF00;
 
-            gIntroState++;
+            _introState++;
         }
         break;
     case INTRO_STATE_LOGO_FADE_OUT:
         // Fade out, subtract 4 / 256 from fading
         _introStateCounter -= 0x400;
         if (_introStateCounter < 0) {
-            gIntroState = INTRO_STATE_CLEAR;
+            _introState = INTRO_STATE_CLEAR;
         }
         break;
     case INTRO_STATE_CLEAR:
@@ -145,22 +214,19 @@ void intro_update()
         }
 
         // Move to next part
-        gIntroState++;
+        _introState++;
         _introStateCounter = 0;
         break;
     case INTRO_STATE_FINISH:
-        gIntroState = INTRO_STATE_NONE;
-        load_palette();
-        audio_start_title_music();
         break;
     }
 }
 
-void intro_draw(rct_drawpixelinfo *dpi)
+static void window_intro_paint(rct_window * w, rct_drawpixelinfo * dpi)
 {
     sint32 screenWidth = context_get_width();
 
-    switch (gIntroState) {
+    switch (_introState) {
     case INTRO_STATE_DISCLAIMER_1:
     case INTRO_STATE_DISCLAIMER_2:
         break;
@@ -242,14 +308,14 @@ static void screen_intro_process_keyboard_input()
 
 static void screen_intro_skip_part()
 {
-    switch (gIntroState) {
+    switch (_introState) {
     case INTRO_STATE_NONE:
         break;
     case INTRO_STATE_DISCLAIMER_2:
-        gIntroState = INTRO_STATE_PUBLISHER_BEGIN;
+        _introState = INTRO_STATE_PUBLISHER_BEGIN;
         break;
     default:
-        gIntroState = INTRO_STATE_CLEAR;
+        _introState = INTRO_STATE_CLEAR;
         break;
     }
 }

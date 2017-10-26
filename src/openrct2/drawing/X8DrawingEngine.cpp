@@ -200,18 +200,15 @@ void X8DrawingEngine::Invalidate(sint32 left, sint32 top, sint32 right, sint32 b
 
 void X8DrawingEngine::BeginDraw()
 {
-    if (gIntroState == INTRO_STATE_NONE)
-    {
 #ifdef __ENABLE_LIGHTFX__
-        // HACK we need to re-configure the bits if light fx has been enabled / disabled
-        if (_lastLightFXenabled != (gConfigGeneral.enable_light_fx != 0))
-        {
-            Resize(_width, _height);
-        }
-#endif
-        _rainDrawer.SetDPI(&_bitsDPI);
-        _rainDrawer.Restore();
+    // HACK we need to re-configure the bits if light fx has been enabled / disabled
+    if (_lastLightFXenabled != (gConfigGeneral.enable_light_fx != 0))
+    {
+        Resize(_width, _height);
     }
+#endif
+    _rainDrawer.SetDPI(&_bitsDPI);
+    _rainDrawer.Restore();
 }
 
 void X8DrawingEngine::EndDraw()

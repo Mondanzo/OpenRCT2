@@ -435,7 +435,6 @@ namespace OpenRCT2
 
         void OldLaunch()
         {
-            gIntroState = INTRO_STATE_NONE;
             if ((gOpenRCT2StartupAction == STARTUP_ACTION_TITLE) && gConfigGeneral.play_intro)
             {
                 gOpenRCT2StartupAction = STARTUP_ACTION_INTRO;
@@ -443,8 +442,8 @@ namespace OpenRCT2
 
             switch (gOpenRCT2StartupAction) {
             case STARTUP_ACTION_INTRO:
-                gIntroState = INTRO_STATE_PUBLISHER_BEGIN;
-                title_load();
+                _contextState = CONTEXT_STATE::INTRO;
+                intro_begin();
                 break;
             case STARTUP_ACTION_TITLE:
                 title_load();
@@ -697,20 +696,23 @@ namespace OpenRCT2
                 break;
             case CONTEXT_STATE::INTRO:
                 intro_update();
-                if (gIntroState == INTRO_STATE_NONE)
+                if (intro_is_finished())
                 {
-                    _contextState = CONTEXT_STATE::TITLE;
+                    title_load();
                 }
                 break;
             case CONTEXT_STATE::TITLE:
-                _titleScreen->Update();
-                if (!(gScreenFlags & SCREEN_FLAGS_TITLE_DEMO))
+            default:
+                if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
+                {
+                    _contextState = CONTEXT_STATE::TITLE;
+                    _titleScreen->Update();
+                }
+                else
                 {
                     _contextState = CONTEXT_STATE::SCENARIO;
+                    game_update();
                 }
-                break;
-            default:
-                game_update();
                 break;
             }
 
@@ -755,18 +757,6 @@ namespace OpenRCT2
                 window_close(window_get_main());
 
                 OldLaunch();
-                if (gIntroState != INTRO_STATE_NONE)
-                {
-                    _contextState = CONTEXT_STATE::INTRO;
-                }
-                else if ((gScreenFlags & SCREEN_FLAGS_TITLE_DEMO) && !gOpenRCT2Headless)
-                {
-                    _contextState = CONTEXT_STATE::TITLE;
-                }
-                else
-                {
-                    _contextState = CONTEXT_STATE::SCENARIO;
-                }
             }
         }
 

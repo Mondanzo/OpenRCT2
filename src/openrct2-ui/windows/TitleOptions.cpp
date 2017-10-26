@@ -86,9 +86,6 @@ rct_window * window_title_options_open()
 
 static void window_title_options_mouseup(rct_window *w, rct_widgetindex widgetIndex)
 {
-    if (gIntroState != INTRO_STATE_NONE)
-        return;
-
     switch (widgetIndex) {
     case WIDX_OPTIONS:
         context_open_window(WC_OPTIONS);

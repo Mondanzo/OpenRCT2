@@ -270,7 +270,7 @@ sint32 audio_play_sound(sint32 soundId, sint32 volume, sint32 pan)
 
 void audio_start_title_music()
 {
-    if (gGameSoundsOff || !(gScreenFlags & SCREEN_FLAGS_TITLE_DEMO) || gIntroState != INTRO_STATE_NONE)
+    if (gGameSoundsOff || !(gScreenFlags & SCREEN_FLAGS_TITLE_DEMO))
     {
         audio_stop_title_music();
         return;

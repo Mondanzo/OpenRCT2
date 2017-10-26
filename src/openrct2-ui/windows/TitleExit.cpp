@@ -94,9 +94,6 @@ rct_window * window_title_exit_open()
 */
 static void window_title_exit_mouseup(rct_window *w, rct_widgetindex widgetIndex)
 {
-    if (gIntroState != INTRO_STATE_NONE)
-        return;
-
     switch (widgetIndex) {
     case WIDX_EXIT:
         context_quit();

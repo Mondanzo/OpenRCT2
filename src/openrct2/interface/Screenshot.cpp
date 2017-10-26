@@ -279,7 +279,6 @@ sint32 cmdline_for_gfxbench(const char **argv, sint32 argc)
         drawing_engine_init();
         context->LoadParkFromFile(inputPath);
 
-        gIntroState = INTRO_STATE_NONE;
         gScreenFlags = SCREEN_FLAGS_PLAYING;
 
         sint32 mapSize = gMapSize;
@@ -398,7 +397,6 @@ sint32 cmdline_for_screenshot(const char **argv, sint32 argc)
         drawing_engine_init();
         context->LoadParkFromFile(inputPath);
 
-        gIntroState = INTRO_STATE_NONE;
         gScreenFlags = SCREEN_FLAGS_PLAYING;
 
         sint32 mapSize = gMapSize;

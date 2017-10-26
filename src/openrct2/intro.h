@@ -19,29 +19,14 @@
 
 #include "drawing/drawing.h"
 
-enum INTRO_STATE {
-    INTRO_STATE_NONE,
-    INTRO_STATE_PUBLISHER_BEGIN,
-    INTRO_STATE_PUBLISHER_SCROLL,
-    INTRO_STATE_DEVELOPER_BEGIN,
-    INTRO_STATE_DEVELOPER_SCROLL,
-    INTRO_STATE_LOGO_FADE_IN,
-    INTRO_STATE_LOGO_WAIT,
-    INTRO_STATE_LOGO_FADE_OUT,
-    INTRO_STATE_DISCLAIMER_1,
-    INTRO_STATE_DISCLAIMER_2,
-    INTRO_STATE_CLEAR               = 254,
-    INTRO_STATE_FINISH              = 255,
-};
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern uint8 gIntroState;
+bool intro_is_finished();
 
+void intro_begin();
 void intro_update();
-void intro_draw(rct_drawpixelinfo *dpi);
 
 #ifdef __cplusplus
 }

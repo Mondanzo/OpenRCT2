@@ -42,28 +42,22 @@ Painter::Painter(IUiContext * uiContext)
 void Painter::Paint(IDrawingEngine * de)
 {
     auto dpi = de->GetDrawingPixelInfo();
-    if (gIntroState != INTRO_STATE_NONE)
+
+    de->PaintWindows();
+
+    update_palette_effects();
+    chat_draw(dpi);
+    console_draw(dpi);
+
+    if ((gScreenFlags & SCREEN_FLAGS_TITLE_DEMO) && !title_should_hide_version_info())
     {
-        intro_draw(dpi);
+        DrawOpenRCT2(dpi, 0, _uiContext->GetHeight() - 20);
     }
-    else
-    {
-        de->PaintWindows();
 
-        update_palette_effects();
-        chat_draw(dpi);
-        console_draw(dpi);
+    gfx_draw_pickedup_peep(dpi);
+    gfx_invalidate_pickedup_peep();
 
-        if ((gScreenFlags & SCREEN_FLAGS_TITLE_DEMO) && !title_should_hide_version_info())
-        {
-            DrawOpenRCT2(dpi, 0, _uiContext->GetHeight() - 20);
-        }
-
-        gfx_draw_pickedup_peep(dpi);
-        gfx_invalidate_pickedup_peep();
-
-        de->PaintRain();
-    }
+    de->PaintRain();
 
     if (gConfigGeneral.show_fps)
     {
