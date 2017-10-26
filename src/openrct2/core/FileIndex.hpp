@@ -31,6 +31,11 @@
 template<typename T>
 using Progress = std::function<void(T)>;
 
+template<typename T>
+void ProgressStub(T)
+{
+}
+
 struct FileIndexProgress
 {
     const size_t        Index = 0;
@@ -119,11 +124,16 @@ public:
 
     virtual ~FileIndex() = default;
 
+    std::vector<TItem> LoadOrBuild() const
+    {
+        return LoadOrBuild(ProgressStub<FileIndexProgress>);
+    }
+
     /**
      * Queries and directories and loads the index header. If the index is up to date,
      * the items are loaded from the index and returned, otherwise the index is rebuilt.
      */
-    std::vector<TItem> LoadOrBuild() const
+    std::vector<TItem> LoadOrBuild(Progress<FileIndexProgress> progress) const
     {
         std::vector<TItem> items;
         auto scanResult = Scan();
@@ -136,33 +146,16 @@ public:
         else
         {
             // Index was not loaded
-            items = Build(scanResult).get();
+            items = Build(scanResult, progress);
         }
         return items;
-    }
-
-    std::future<std::vector<TItem>> LoadOrBuildAsync(Progress<FileIndexProgress> progress) const
-    {
-        auto scanResult = Scan();
-        auto readIndexResult = ReadIndexFile(scanResult.Stats);
-        if (std::get<0>(readIndexResult))
-        {
-            // Index was loaded
-            auto result = std::get<1>(readIndexResult);
-            return std::async(std::launch::deferred, [result] { return result; });
-        }
-        else
-        {
-            // Index was not loaded
-            return Build(scanResult, progress);
-        }
     }
 
     std::vector<TItem> Rebuild() const
     {
         auto scanResult = Scan();
-        auto items = Build(scanResult);
-        return items.get();
+        auto items = Build(scanResult, ProgressStub<FileIndexProgress>);
+        return items;
     }
 
 protected:
@@ -213,37 +206,29 @@ private:
         return ScanResult(stats, files);
     }
 
-    std::future<std::vector<TItem>> Build(const ScanResult &scanResult) const
+    std::vector<TItem> Build(const ScanResult &scanResult, Progress<FileIndexProgress> progress) const
     {
-        return Build(scanResult, [](FileIndexProgress){ });
-    }
-
-    std::future<std::vector<TItem>> Build(const ScanResult &scanResult, Progress<FileIndexProgress> progress) const
-    {
-        return std::async(std::launch::async, [this, scanResult, progress]
+        std::vector<TItem> items;
+        size_t total = scanResult.Files.size();
+        Console::WriteLine("Building %s (%zu items)", _name.c_str(), total);
+        auto startTime = std::chrono::high_resolution_clock::now();
+        for (auto filePath : scanResult.Files)
         {
-            std::vector<TItem> items;
-            size_t total = scanResult.Files.size();
-            Console::WriteLine("Building %s (%zu items)", _name.c_str(), total);
-            auto startTime = std::chrono::high_resolution_clock::now();
-            for (auto filePath : scanResult.Files)
+            log_verbose("FileIndex:Indexing '%s'", filePath.c_str());
+            progress(FileIndexProgress(items.size(), total, filePath));
+            auto item = Create(filePath);
+            if (std::get<0>(item))
             {
-                log_verbose("FileIndex:Indexing '%s'", filePath.c_str());
-                progress(FileIndexProgress(items.size(), total, filePath));
-                auto item = Create(filePath);
-                if (std::get<0>(item))
-                {
-                    items.push_back(std::get<1>(item));
-                }
+                items.push_back(std::get<1>(item));
             }
+        }
 
-            WriteIndexFile(scanResult.Stats, items);
+        WriteIndexFile(scanResult.Stats, items);
 
-            auto endTime = std::chrono::high_resolution_clock::now();
-            auto duration = (std::chrono::duration<float>)(endTime - startTime);
-            Console::WriteLine("Finished building %s in %.2f seconds.", _name.c_str(), duration.count());
-            return items;
-        });
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto duration = (std::chrono::duration<float>)(endTime - startTime);
+        Console::WriteLine("Finished building %s in %.2f seconds.", _name.c_str(), duration.count());
+        return items;
     }
 
     std::tuple<bool, std::vector<TItem>> ReadIndexFile(const DirectoryStats &stats) const

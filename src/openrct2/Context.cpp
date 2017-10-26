@@ -732,12 +732,16 @@ namespace OpenRCT2
 
             if (!loading.valid())
             {
-                loading = _objectRepository->LoadOrConstructAsync(
-                    [windowManager](FileIndexProgress progress)
+                loading = std::async(std::launch::async,
+                    [this]
                     {
-                        char buffer[1024];
-                        sprintf(buffer, "%zu / %zu %c (%s)", progress.Index, progress.Total, FORMAT_NEWLINE, progress.Current.c_str());
-                        window_network_status_open(buffer, nullptr);
+                        return _objectRepository->LoadOrConstruct(
+                            [](FileIndexProgress progress)
+                            {
+                                char buffer[1024];
+                                sprintf(buffer, "%zu / %zu %c (%s)", progress.Index, progress.Total, FORMAT_NEWLINE, progress.Current.c_str());
+                                window_network_status_open(buffer, nullptr);
+                            });
                     });
 
                 _trackDesignRepository->Scan();

@@ -71,7 +71,7 @@ interface IObjectRepository
     virtual ~IObjectRepository() { }
 
     virtual void                            LoadOrConstruct() abstract;
-    virtual std::future<void>               LoadOrConstructAsync(Progress<FileIndexProgress> progress) abstract;
+    virtual void                            LoadOrConstruct(Progress<FileIndexProgress> progress) abstract;
     virtual void                            Construct() abstract;
     virtual size_t                          GetNumObjects() const abstract;
     virtual const ObjectRepositoryItem *    GetObjects() const abstract;

@@ -208,21 +208,15 @@ public:
 
     void LoadOrConstruct() override
     {
-        ClearItems();
-        auto items = _fileIndex.LoadOrBuild();
-        AddItems(items);
-        SortItems();
+        LoadOrConstruct(ProgressStub<FileIndexProgress>);
     }
 
-    std::future<void> LoadOrConstructAsync(Progress<FileIndexProgress> progress) override
+    void LoadOrConstruct(Progress<FileIndexProgress> progress) override
     {
-        return std::async(std::launch::async, [this, progress]
-        {
-            ClearItems();
-            auto items = _fileIndex.LoadOrBuildAsync(progress);
-            AddItems(items.get());
-            SortItems();
-        });
+        ClearItems();
+        auto items = _fileIndex.LoadOrBuild(progress);
+        AddItems(items);
+        SortItems();
     }
 
     void Construct() override
