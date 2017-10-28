@@ -78,7 +78,7 @@ static void toggle_view_flag(sint32 viewportFlag)
     rct_window * window;
 
     window = window_get_main();
-    if (window != NULL)
+    if (window != NULL && window->viewport != NULL)
     {
         window->viewport->flags ^= viewportFlag;
         window_invalidate(window);

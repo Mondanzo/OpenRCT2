@@ -46,7 +46,6 @@ enum INTRO_STATE {
 };
 
 // Used mainly for timing but also for Y coordinate and fading.
-static rct_window * _introWindow;
 static uint8 _introState;
 static sint32 _introStateCounter;
 
@@ -106,8 +105,8 @@ void intro_begin()
 {
     _introState = INTRO_STATE_PUBLISHER_BEGIN;
 
-    _introWindow = window_create(0, 0, context_get_width(), context_get_height(), &_introEvents, WC_MAIN_WINDOW, WF_STICK_TO_BACK);
-    _introWindow->widgets = _introWidgets;
+    rct_window * w = window_create(0, 0, context_get_width(), context_get_height(), &_introEvents, WC_INTRO, WF_STICK_TO_BACK);
+    w->widgets = _introWidgets;
 }
 
 // rct2: 0x0068E966
@@ -219,6 +218,14 @@ void intro_update()
         break;
     case INTRO_STATE_FINISH:
         break;
+    }
+
+    rct_window * w = window_find_by_class(WC_INTRO);
+    if (w != NULL)
+    {
+        w->width = context_get_width();
+        w->height = context_get_height();
+        window_invalidate(w);
     }
 }
 

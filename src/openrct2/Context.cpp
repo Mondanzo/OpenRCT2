@@ -435,6 +435,7 @@ namespace OpenRCT2
 
         void OldLaunch()
         {
+            _contextState = CONTEXT_STATE::SCENARIO;
             if ((gOpenRCT2StartupAction == STARTUP_ACTION_TITLE) && gConfigGeneral.play_intro)
             {
                 gOpenRCT2StartupAction = STARTUP_ACTION_INTRO;
@@ -698,6 +699,7 @@ namespace OpenRCT2
                 intro_update();
                 if (intro_is_finished())
                 {
+                    _contextState = CONTEXT_STATE::TITLE;
                     title_load();
                 }
                 break;
