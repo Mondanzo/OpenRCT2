@@ -294,10 +294,17 @@ sint32 tile_element_get_direction_with_offset(const rct_tile_element *element, u
 
 sint32 tile_element_get_terrain(const rct_tile_element *element)
 {
-    sint32 terrain = (element->properties.surface.terrain >> 5) & 7;
-    if (element->type & 1)
-        terrain |= (1 << 3);
-    return terrain;
+    if (element->pad_8[1] == 1)
+    {
+        return element->pad_8[0];
+    }
+    else
+    {
+        sint32 terrain = (element->properties.surface.terrain >> 5) & 7;
+        if (element->type & 1)
+            terrain |= (1 << 3);
+        return terrain;
+    }
 }
 
 sint32 tile_element_get_terrain_edge(const rct_tile_element *element)
@@ -310,15 +317,17 @@ sint32 tile_element_get_terrain_edge(const rct_tile_element *element)
 
 void tile_element_set_terrain(rct_tile_element *element, sint32 terrain)
 {
-    // Bit 3 for terrain is stored in element.type bit 0
-    if (terrain & 8)
-        element->type |= 1;
-    else
-        element->type &= ~1;
-
-    // Bits 0, 1, 2 for terrain are stored in element.terrain bit 5, 6, 7
-    element->properties.surface.terrain &= ~0xE0;
-    element->properties.surface.terrain |= (terrain & 7) << 5;
+    element->pad_8[0] = (uint8)terrain;
+    element->pad_8[1] = 1;
+    // // Bit 3 for terrain is stored in element.type bit 0
+    // if (terrain & 8)
+    //     element->type |= 1;
+    // else
+    //     element->type &= ~1;
+    // 
+    // // Bits 0, 1, 2 for terrain are stored in element.terrain bit 5, 6, 7
+    // element->properties.surface.terrain &= ~0xE0;
+    // element->properties.surface.terrain |= (terrain & 7) << 5;
 }
 
 void tile_element_set_terrain_edge(rct_tile_element *element, sint32 terrain)

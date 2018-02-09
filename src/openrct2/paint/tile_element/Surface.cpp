@@ -258,21 +258,27 @@ static constexpr const uint8 byte_97B740[] =
 
 static constexpr const uint32 dword_97B750[][2] =
 {
-    { SPR_TERRAIN_GRASS,                                          SPR_TERRAIN_GRASS_GRID },
-    { SPR_TERRAIN_SAND_YELLOW,                                    SPR_TERRAIN_SAND_YELLOW_GRID },
-    { SPR_TERRAIN_DIRT,                                           SPR_TERRAIN_DIRT_GRID },
-    { SPR_TERRAIN_ROCK,                                           SPR_TERRAIN_ROCK_GRID },
-    { SPR_TERRAIN_MARTIAN,                                        SPR_TERRAIN_MARTIAN_GRID },
-    { SPR_TERRAIN_CHECKERBOARD,                                   SPR_TERRAIN_CHECKERBOARD_GRID },
-    { SPR_TERRAIN_GRASS_CLUMPS,                                   SPR_TERRAIN_GRASS_CLUMPS_GRID },
-    { SPR_TERRAIN_ICE,                                            SPR_TERRAIN_ICE_GRID },
+    { SPR_TERRAIN_GRASS,                                                SPR_TERRAIN_GRASS_GRID },
+    { SPR_TERRAIN_SAND_YELLOW,                                          SPR_TERRAIN_SAND_YELLOW_GRID },
+    { SPR_TERRAIN_DIRT,                                                 SPR_TERRAIN_DIRT_GRID },
+    { SPR_TERRAIN_ROCK,                                                 SPR_TERRAIN_ROCK_GRID },
+    { SPR_TERRAIN_MARTIAN,                                              SPR_TERRAIN_MARTIAN_GRID },
+    { SPR_TERRAIN_CHECKERBOARD,                                         SPR_TERRAIN_CHECKERBOARD_GRID },
+    { SPR_TERRAIN_GRASS_CLUMPS,                                         SPR_TERRAIN_GRASS_CLUMPS_GRID },
+    { SPR_TERRAIN_ICE,                                                  SPR_TERRAIN_ICE_GRID },
     { SPR_TERRAIN_GRID | COLOUR_BRIGHT_RED << 19 | IMAGE_TYPE_REMAP,    SPR_TERRAIN_GRID_GRID | COLOUR_BRIGHT_RED << 19 | IMAGE_TYPE_REMAP },
     { SPR_TERRAIN_GRID | COLOUR_YELLOW << 19 | IMAGE_TYPE_REMAP,        SPR_TERRAIN_GRID_GRID | COLOUR_YELLOW << 19 | IMAGE_TYPE_REMAP },
     { SPR_TERRAIN_GRID | COLOUR_BRIGHT_PURPLE << 19 | IMAGE_TYPE_REMAP, SPR_TERRAIN_GRID_GRID | COLOUR_BRIGHT_PURPLE << 19 | IMAGE_TYPE_REMAP },
     { SPR_TERRAIN_GRID | COLOUR_BRIGHT_GREEN << 19 | IMAGE_TYPE_REMAP,  SPR_TERRAIN_GRID_GRID | COLOUR_BRIGHT_GREEN << 19 | IMAGE_TYPE_REMAP },
-    { SPR_TERRAIN_SAND_RED,                                       SPR_TERRAIN_SAND_RED_GRID },
-    { SPR_TERRAIN_SAND,                                           SPR_TERRAIN_SAND_GRID },
-    { SPR_TERRAIN_CHECKERBOARD_INVERTED,                          SPR_TERRAIN_CHECKERBOARD_INVERTED_GRID },
+    { SPR_TERRAIN_SAND_RED,                                             SPR_TERRAIN_SAND_RED_GRID },
+    { SPR_TERRAIN_SAND,                                                 SPR_TERRAIN_SAND_GRID },
+
+    { SPR_CSG_TERRAIN_ROOF_TILES_RED,                                   SPR_TERRAIN_CHECKERBOARD_INVERTED_GRID },
+    { SPR_CSG_TERRAIN_WOOD,                                             SPR_TERRAIN_CHECKERBOARD_INVERTED_GRID },
+    { SPR_CSG_TERRAIN_RUST,                                             SPR_TERRAIN_CHECKERBOARD_INVERTED_GRID },
+    { SPR_CSG_TERRAIN_ROOF_TILES_GREY,                                  SPR_TERRAIN_CHECKERBOARD_INVERTED_GRID },
+
+    { SPR_TERRAIN_CHECKERBOARD_INVERTED,                                SPR_TERRAIN_CHECKERBOARD_INVERTED_GRID },
 };
 
 static constexpr const uint32 dword_97B7C8[] =
@@ -291,6 +297,10 @@ static constexpr const uint32 dword_97B7C8[] =
     SPR_TERRAIN_GRID_UNDERGROUND | COLOUR_BRIGHT_GREEN << 19 | IMAGE_TYPE_REMAP,
     SPR_TERRAIN_SAND_RED_UNDERGROUND,
     SPR_TERRAIN_SAND_UNDERGROUND,
+    SPR_TERRAIN_ICE_UNDERGROUND,
+    SPR_TERRAIN_ICE_UNDERGROUND,
+    SPR_TERRAIN_ICE_UNDERGROUND,
+    SPR_TERRAIN_ICE_UNDERGROUND,
     SPR_TERRAIN_CHECKERBOARD_INVERTED_UNDERGROUND,
 };
 
@@ -309,7 +319,14 @@ static constexpr const uint32 dword_97B804[] =
     SPR_TERRAIN_PATTERN_GRASS,
     SPR_TERRAIN_PATTERN_GRASS,
     SPR_TERRAIN_PATTERN_SAND_RED,
-    SPR_TERRAIN_PATTERN_SAND
+    SPR_TERRAIN_PATTERN_SAND,
+
+    SPR_TERRAIN_PATTERN_ICE,
+    SPR_TERRAIN_PATTERN_ICE,
+    SPR_TERRAIN_PATTERN_ICE,
+    SPR_TERRAIN_PATTERN_ICE,
+    SPR_TERRAIN_PATTERN_ICE,
+    SPR_TERRAIN_PATTERN_ICE,
 };
 
 enum
@@ -320,26 +337,46 @@ enum
 
 static constexpr const uint8 byte_97B83C[] =
 {
-    0,
-    0,
-    0,
-    FLAG_DONT_SMOOTHEN_SELF,
-    FLAG_DONT_SMOOTHEN_SELF,
-    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,
-    0,
-    0,
-    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,
-    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,
-    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,
-    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,
-    0,
-    0
+    0,                                              // TERRAIN_GRASS
+    0,                                              // TERRAIN_SAND
+    0,                                              // TERRAIN_DIRT
+    FLAG_DONT_SMOOTHEN_SELF,                        // TERRAIN_ROCK
+    FLAG_DONT_SMOOTHEN_SELF,                        // TERRAIN_MARTIAN
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_CHECKERBOARD
+    0,                                              // TERRAIN_GRASS_CLUMPS
+    0,                                              // TERRAIN_ICE
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_GRID_RED
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_GRID_YELLOW
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_GRID_BLUE
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_GRID_GREEN
+    0,                                              // TERRAIN_SAND_DARK
+    0,                                              // TERRAIN_SAND_LIGHT
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_ROOF_BROWN
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_ROOF_LOG
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_ROOF_IRON
+    FLAG_DONT_SMOOTHEN_SELF | FLAG_DONT_SMOOTHEN,   // TERRAIN_ROOF_GREY
 };
 
 static constexpr const uint8 byte_97B84A[] =
 {
-    0, 1, 2, 3, 4, 14, 6, 7, 8, 9,
-    10, 11, 12, 13
+    0,      // TERRAIN_GRASS
+    1,      // TERRAIN_SAND
+    2,      // TERRAIN_DIRT
+    3,      // TERRAIN_ROCK
+    4,      // TERRAIN_MARTIAN
+    18,     // TERRAIN_CHECKERBOARD
+    6,      // TERRAIN_GRASS_CLUMPS
+    7,      // TERRAIN_ICE
+    8,      // TERRAIN_GRID_RED
+    9,      // TERRAIN_GRID_YELLOW
+    10,     // TERRAIN_GRID_BLUE
+    11,     // TERRAIN_GRID_GREEN
+    12,     // TERRAIN_SAND_DARK
+    13,     // TERRAIN_SAND_LIGHT
+    14,     // TERRAIN_ROOF_BROWN
+    15,     // TERRAIN_ROOF_LOG
+    16,     // TERRAIN_ROOF_IRON
+    17,     // TERRAIN_ROOF_GREY
 };
 
 static constexpr const uint32 dword_97B858[][2] =

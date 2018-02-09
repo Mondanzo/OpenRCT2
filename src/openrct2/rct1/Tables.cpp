@@ -130,15 +130,15 @@ namespace RCT1
             TERRAIN_MARTIAN,
             TERRAIN_CHECKERBOARD,
             TERRAIN_GRASS_CLUMPS,
-            TERRAIN_DIRT,                 // Originally TERRAIN_ROOF_BROWN
+            TERRAIN_ROOF_BROWN,
             TERRAIN_ICE,
-            TERRAIN_DIRT,                 // Originally TERRAIN_ROOF_LOG
-            TERRAIN_DIRT,                 // Originally TERRAIN_ROOF_IRON
-            TERRAIN_ROCK,                 // Originally TERRAIN_ROOF_GREY
+            TERRAIN_ROOF_LOG,
+            TERRAIN_ROOF_IRON,
+            TERRAIN_ROOF_GREY,
             TERRAIN_GRID_RED,
             TERRAIN_GRID_YELLOW,
             TERRAIN_GRID_BLUE,
-            TERRAIN_GRID_GREEN
+            TERRAIN_GRID_GREEN,
         };
         Guard::ArgumentInRange<size_t>(terrain, 0, Util::CountOf(map), "Unsupported RCT1 terrain type.");
         return map[terrain];
