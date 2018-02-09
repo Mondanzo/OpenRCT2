@@ -472,10 +472,10 @@ private:
     {
         size_t maxTiles = 128 * 128;
         size_t tileIndex = 0;
-        rct_tile_element * tileElement = _s4.tile_elements;
-
+        auto s4TileElement = _s4.tile_elements;
         while (tileIndex < maxTiles)
         {
+            auto tileElement = (rct_tile_element *)s4TileElement;
             switch (tile_element_get_type(tileElement)) {
             case TILE_ELEMENT_TYPE_PATH:
             {
@@ -515,10 +515,11 @@ private:
             }
             }
 
-            if (tile_element_is_last_for_tile(tileElement++))
+            if (tile_element_is_last_for_tile(tileElement))
             {
                 tileIndex++;
             }
+            s4TileElement++;
         }
     }
 
@@ -1927,10 +1928,16 @@ private:
 
     void ImportTileElements()
     {
-        std::copy(
+        std::transform(
             std::begin(_s4.tile_elements),
             std::end(_s4.tile_elements),
-            gTileElements);
+            gTileElements,
+            [](const rct12_tile_element &el)
+            {
+                rct_tile_element tileElement{};
+                std::memcpy(&tileElement, &el, 8);
+                return tileElement;
+            });
         ClearExtraTileEntries();
         FixSceneryColours();
         FixTileElementZ();

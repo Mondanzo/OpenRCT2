@@ -587,7 +587,7 @@ typedef struct rct1_s4 {
     uint32 ticks;
     uint32 random_a;
     uint32 random_b;
-    rct_tile_element tile_elements[RCT1_MAX_TILE_ELEMENTS];
+    rct12_tile_element tile_elements[RCT1_MAX_TILE_ELEMENTS];
     uint32 unk_counter;
     rct1_sprite sprites[RCT1_MAX_SPRITES];
     uint16 next_sprite_index;

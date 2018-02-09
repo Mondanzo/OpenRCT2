@@ -128,8 +128,20 @@ typedef struct rct_tile_element {
     uint8 base_height; //2
     uint8 clearance_height; //3
     rct_tile_element_properties properties;
+    uint8 pad_8[8];
 } rct_tile_element;
-assert_struct_size(rct_tile_element, 8);
+assert_struct_size(rct_tile_element, 16);
+
+struct rct12_tile_element
+{
+    uint8 type; //0
+    uint8 flags; //1
+    uint8 base_height; //2
+    uint8 clearance_height; //3
+    rct_tile_element_properties properties;
+};
+assert_struct_size(rct12_tile_element, 8);
+
 #pragma pack(pop)
 
 enum {

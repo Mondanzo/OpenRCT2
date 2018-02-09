@@ -205,7 +205,16 @@ public:
         gScenarioSrand0    = _s6.scenario_srand_0;
         gScenarioSrand1    = _s6.scenario_srand_1;
 
-        memcpy(gTileElements, _s6.tile_elements, sizeof(_s6.tile_elements));
+        std::transform(
+            std::begin(_s6.tile_elements),
+            std::end(_s6.tile_elements),
+            gTileElements,
+            [](const rct12_tile_element &el)
+            {
+                rct_tile_element tileElement{};
+                std::memcpy(&tileElement, &el, 8);
+                return tileElement;
+            });
 
         gNextFreeTileElementPointerIndex = _s6.next_free_tile_element_pointer_index;
         for (sint32 i = 0; i < RCT2_MAX_SPRITES; i++)

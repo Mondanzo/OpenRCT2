@@ -681,7 +681,7 @@ bool scenario_prepare_for_save()
 void scenario_fix_ghosts(rct_s6_data *s6)
 {
     // Remove all ghost elements
-    rct_tile_element *destinationElement = s6->tile_elements;
+    rct12_tile_element *destinationElement = s6->tile_elements;
 
     for (sint32 y = 0; y < 256; y++) {
         for (sint32 x = 0; x < 256; x++) {
@@ -699,7 +699,7 @@ void scenario_fix_ghosts(rct_s6_data *s6)
                         }
                     }
                 } else {
-                    *destinationElement++ = *originalElement;
+                    std::memcpy(destinationElement++, originalElement, 8);
                 }
             } while (!tile_element_is_last_for_tile(originalElement++));
 

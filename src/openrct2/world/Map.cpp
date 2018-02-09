@@ -4394,11 +4394,11 @@ void game_command_modify_tile(sint32* eax, sint32* ebx, sint32* ecx, sint32* edx
     }
     case TILE_INSPECTOR_ANY_PASTE:
     {
-        rct_tile_element elementToPaste;
-        const sint32 data[] = { *edx, *edi };
-        assert_struct_size(data, sizeof(elementToPaste));
-        memcpy(&elementToPaste, data, 8);
-        *ebx = tile_inspector_paste_element_at(x, y, elementToPaste, flags);
+        // rct_tile_element elementToPaste;
+        // const sint32 data[] = { *edx, *edi };
+        // assert_struct_size(data, sizeof(elementToPaste));
+        // memcpy(&elementToPaste, data, 8);
+        // *ebx = tile_inspector_paste_element_at(x, y, elementToPaste, flags);
         break;
     }
     case TILE_INSPECTOR_ANY_SORT:

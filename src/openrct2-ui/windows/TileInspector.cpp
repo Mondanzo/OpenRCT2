@@ -720,19 +720,19 @@ static void window_tile_inspector_copy_element(rct_window *w)
 static void window_tile_inspector_paste_element(rct_window *w)
 {
     // Construct the data to send using the surface's properties
-    sint32 data[2];
-    memcpy(&data[0], &tileInspectorCopiedElement, 8);
-    assert_struct_size(data, sizeof(tileInspectorCopiedElement));
-
-    game_do_command(
-        TILE_INSPECTOR_ANY_PASTE,
-        GAME_COMMAND_FLAG_APPLY,
-        windowTileInspectorTileX | (windowTileInspectorTileY << 8),
-        data[0],
-        GAME_COMMAND_MODIFY_TILE,
-        data[1],
-        0
-    );
+    // sint32 data[2];
+    // memcpy(&data[0], &tileInspectorCopiedElement, 8);
+    // assert_struct_size(data, sizeof(tileInspectorCopiedElement));
+    // 
+    // game_do_command(
+    //     TILE_INSPECTOR_ANY_PASTE,
+    //     GAME_COMMAND_FLAG_APPLY,
+    //     windowTileInspectorTileX | (windowTileInspectorTileY << 8),
+    //     data[0],
+    //     GAME_COMMAND_MODIFY_TILE,
+    //     data[1],
+    //     0
+    // );
 }
 
 static void window_tile_inspector_base_height_offset(sint16 elementIndex, sint8 heightOffset)
