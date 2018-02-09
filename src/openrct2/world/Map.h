@@ -499,6 +499,7 @@ void rotate_map_coordinates(sint16 *x, sint16 *y, sint32 rotation);
 LocationXY16 coordinate_3d_to_2d(const LocationXYZ16* coordinate_3d, sint32 rotation);
 money32 map_clear_scenery(sint32 x0, sint32 y0, sint32 x1, sint32 y1, sint32 clear, sint32 flags);
 sint32 map_get_water_height(const rct_tile_element * tileElement);
+void map_set_water_height(rct_tile_element * tileElement, sint32 value);
 money32 lower_water(sint16 x0, sint16 y0, sint16 x1, sint16 y1, uint8 flags);
 money32 raise_water(sint16 x0, sint16 y0, sint16 x1, sint16 y1, uint8 flags);
 money32 wall_place(sint32 type, sint32 x, sint32 y, sint32 z, sint32 edge, sint32 primaryColour, sint32 secondaryColour, sint32 tertiaryColour, sint32 flags);

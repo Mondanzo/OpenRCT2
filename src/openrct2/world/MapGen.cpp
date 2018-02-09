@@ -404,7 +404,9 @@ static void mapgen_set_water_level(sint32 waterLevel)
         {
             tileElement = map_get_surface_element_at(x, y);
             if (tileElement->base_height < waterLevel)
-                tileElement->properties.surface.terrain |= (waterLevel / 2);
+            {
+                map_set_water_height(tileElement, waterLevel / 2);
+            }
         }
     }
 }
@@ -843,7 +845,7 @@ void mapgen_generate_from_heightmap(mapgen_settings * settings)
             // Set water level
             if (surfaceElement->base_height < settings->water_level)
             {
-                surfaceElement->properties.surface.terrain |= settings->water_level / 2;
+                map_set_water_height(surfaceElement, settings->water_level / 2);
             }
         }
     }

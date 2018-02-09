@@ -272,7 +272,7 @@ sint32 tile_smooth(sint32 x, sint32 y)
         uint8 waterHeight = map_get_water_height(surfaceElement) * 2;
         if (waterHeight <= surfaceElement->base_height)
         {
-            surfaceElement->properties.surface.terrain &= ~TILE_ELEMENT_SURFACE_WATER_HEIGHT_MASK;
+            map_set_water_height(surfaceElement, 0);
         }
     }
     else

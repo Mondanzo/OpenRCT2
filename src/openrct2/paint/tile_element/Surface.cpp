@@ -1024,7 +1024,7 @@ void surface_paint(paint_session * session, uint8 direction, uint16 height, rct_
         const bool showGridlines = (gCurrentViewportFlags & VIEWPORT_FLAG_GRIDLINES);
 
         sint32 branch = -1;
-        if ((tileElement->properties.surface.terrain & 0xE0) == 0)
+        if (tile_element_get_terrain(tileElement) == TERRAIN_GRASS)
         {
             if (tile_element_get_direction(tileElement) == 0)
             {

@@ -1345,9 +1345,7 @@ static money32 map_change_surface_style(sint32 x0, sint32 y0, sint32 x1, sint32 
             rct_tile_element* tileElement = map_get_surface_element_at(x / 32, y / 32);
 
             if (surfaceStyle != 0xFF){
-                uint8 cur_terrain = (
-                    tile_element_get_direction(tileElement) << 3) |
-                    (tileElement->properties.surface.terrain >> 5);
+                uint8 cur_terrain = tile_element_get_terrain(tileElement);
 
                 if (surfaceStyle != cur_terrain) {
                     // Prevent network-originated value of surfaceStyle from causing
@@ -1360,15 +1358,7 @@ static money32 map_change_surface_style(sint32 x0, sint32 y0, sint32 x1, sint32 
 
                     if (flags & GAME_COMMAND_FLAG_APPLY)
                     {
-                        tileElement->properties.surface.terrain &= TILE_ELEMENT_SURFACE_WATER_HEIGHT_MASK;
-                        tileElement->type &= TILE_ELEMENT_QUADRANT_MASK | TILE_ELEMENT_TYPE_MASK;
-
-                        //Save the new terrain
-                        tileElement->properties.surface.terrain |= surfaceStyle << 5;
-
-                        //Save the new direction mask
-                        tileElement->type |= (surfaceStyle >> 3) & TILE_ELEMENT_DIRECTION_MASK;
-
+                        tile_element_set_terrain(tileElement, surfaceStyle);
                         map_invalidate_tile_full(x, y);
                         footpath_remove_litter(x, y, tile_element_height(x, y));
                     }
@@ -1399,7 +1389,7 @@ static money32 map_change_surface_style(sint32 x0, sint32 y0, sint32 x1, sint32 
 
             if (flags & 1)
             {
-                if (!(tileElement->properties.surface.terrain & TILE_ELEMENT_SURFACE_TERRAIN_MASK))
+                if (tile_element_get_terrain(tileElement) == TERRAIN_GRASS)
                 {
                     if (!(tile_element_get_direction(tileElement)))
                     {
@@ -1719,9 +1709,11 @@ static money32 map_set_land_height(sint32 flags, sint32 x, sint32 y, sint32 heig
         surfaceElement->clearance_height = height;
         surfaceElement->properties.surface.slope &= TILE_ELEMENT_SURFACE_EDGE_STYLE_MASK;
         surfaceElement->properties.surface.slope |= style;
-        sint32 slope = surfaceElement->properties.surface.terrain & TILE_ELEMENT_SURFACE_SLOPE_MASK;
-        if(slope != TILE_ELEMENT_SLOPE_FLAT && slope <= height / 2)
-            surfaceElement->properties.surface.terrain &= TILE_ELEMENT_SURFACE_TERRAIN_MASK;
+        sint32 waterHeight = map_get_water_height(surfaceElement);
+        if (waterHeight != 0 && waterHeight <= height / 2)
+        {
+            map_set_water_height(surfaceElement, 0);
+        }
         map_invalidate_tile_full(x, y);
     }
     if(gParkFlags & PARK_FLAGS_NO_MONEY)
@@ -1937,6 +1929,12 @@ static money32 lower_land(sint32 flags, sint32 x, sint32 y, sint32 z, sint32 ax,
 sint32 map_get_water_height(const rct_tile_element * tileElement)
 {
     return tileElement->properties.surface.terrain & TILE_ELEMENT_SURFACE_WATER_HEIGHT_MASK;
+}
+
+void map_set_water_height(rct_tile_element * tileElement, sint32 value)
+{
+    tileElement->properties.surface.terrain &= ~TILE_ELEMENT_SURFACE_WATER_HEIGHT_MASK;
+    tileElement->properties.surface.terrain |= value & TILE_ELEMENT_SURFACE_WATER_HEIGHT_MASK;
 }
 
 money32 raise_water(sint16 x0, sint16 y0, sint16 x1, sint16 y1, uint8 flags)
@@ -2655,11 +2653,12 @@ void game_command_set_water_height(sint32* eax, sint32* ebx, sint32* ecx, sint32
             return;
         }
         if(*ebx & GAME_COMMAND_FLAG_APPLY){
-            sint32 new_terrain = tile_element->properties.surface.terrain & 0xE0;
-            if(base_height > tile_element->base_height){
-                new_terrain |= (base_height / 2);
+            sint32 newWaterHeight = 0;
+            if (base_height > tile_element->base_height)
+            {
+                newWaterHeight = (base_height / 2);
             }
-            tile_element->properties.surface.terrain = new_terrain;
+            map_set_water_height(tile_element, newWaterHeight);
             map_invalidate_tile_full(x, y);
         }
         *ebx = 250;
@@ -3445,7 +3444,7 @@ void map_update_tiles()
 static void map_update_grass_length(sint32 x, sint32 y, rct_tile_element *tileElement)
 {
     // Check if tile is grass
-    if ((tileElement->properties.surface.terrain & 0xE0) && !(tileElement->type & 3))
+    if (tile_element_get_terrain(tileElement) != TERRAIN_GRASS)
         return;
 
     sint32 grassLength = tileElement->properties.surface.grass_length & 7;

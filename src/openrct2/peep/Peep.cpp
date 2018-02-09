@@ -5478,7 +5478,7 @@ static void peep_update_mowing(rct_peep * peep)
         for (; (tile_element_get_type(tile_element) != TILE_ELEMENT_TYPE_SURFACE); tile_element++)
             ;
 
-        if ((tile_element->properties.surface.terrain & TILE_ELEMENT_SURFACE_TERRAIN_MASK) == (TERRAIN_GRASS << 5))
+        if (tile_element_get_terrain(tile_element) == TERRAIN_GRASS)
         {
             tile_element->properties.surface.grass_length = GRASS_LENGTH_MOWED;
             map_invalidate_tile_zoom0(peep->next_x, peep->next_y, tile_element->base_height * 8,
@@ -6920,7 +6920,7 @@ static sint32 peep_update_patrolling_find_grass(rct_peep * peep)
 
     rct_tile_element * tile_element = map_get_surface_element_at(peep->next_x / 32, peep->next_y / 32);
 
-    if ((tile_element->properties.surface.terrain & TILE_ELEMENT_SURFACE_TERRAIN_MASK) != TERRAIN_GRASS)
+    if (tile_element_get_terrain(tile_element) != TERRAIN_GRASS)
         return 0;
 
     if ((tile_element->properties.surface.grass_length & 0x7) < GRASS_LENGTH_CLEAR_1)
