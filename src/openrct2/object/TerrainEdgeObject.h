@@ -1,4 +1,4 @@
-#pragma region Copyright (c) 2014-2018 OpenRCT2 Developers
+#pragma region Copyright (c) 2014-2017 OpenRCT2 Developers
 /*****************************************************************************
  * OpenRCT2, an open source clone of Roller Coaster Tycoon 2.
  *
@@ -16,17 +16,25 @@
 
 #pragma once
 
-#define MAX_RIDE_OBJECTS          128
-#define MAX_SMALL_SCENERY_OBJECTS 252
-#define MAX_LARGE_SCENERY_OBJECTS 128
-#define MAX_WALL_SCENERY_OBJECTS  128
-#define MAX_BANNER_OBJECTS         32
-#define MAX_PATH_OBJECTS           16
-#define MAX_PATH_ADDITION_OBJECTS  15
-#define MAX_SCENERY_GROUP_OBJECTS  19
-#define MAX_PARK_ENTRANCE_OBJECTS   1
-#define MAX_WATER_OBJECTS           1
-#define MAX_SCENARIO_TEXT_OBJECTS   1
-#define MAX_TERRAIN_EDGE_OBJECTS    8
+#include <stdexcept>
+#include "Object.h"
 
-#define DAT_NAME_LENGTH             8
+class TerrainEdgeObject final : public Object
+{
+private:
+
+public:
+    rct_string_id NameStringId{};
+    uint32 BaseImageId{};
+
+    explicit TerrainEdgeObject(const rct_object_entry &entry) : Object(entry) { }
+
+    void * GetLegacyData() override { return nullptr; }
+    void ReadLegacy(IReadObjectContext * context, IStream * stream) override { throw std::runtime_error("Not supported."); }
+
+    void ReadJson(IReadObjectContext * context, const json_t * root) override;
+    void Load() override;
+    void Unload() override;
+
+    void DrawPreview(rct_drawpixelinfo * dpi, sint32 width, sint32 height) const override;
+};

@@ -3910,6 +3910,8 @@ enum {
     STR_VIEW_CLIPPING_SELECT_AREA = 6241,
     STR_VIEW_CLIPPING_CLEAR_SELECTION = 6242,
 
+    STR_OBJECT_SELECTION_TERRAIN_EDGES = 6243,
+
     // Have to include resource strings (from scenarios and objects) for the time being now that language is partially working
     STR_COUNT = 32768
 };

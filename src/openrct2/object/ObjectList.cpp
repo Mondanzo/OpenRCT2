@@ -21,6 +21,7 @@
 #include "../core/Util.hpp"
 #include "../Game.h"
 #include "../object/Object.h"
+#include "../object/TerrainEdgeObject.h"
 #include "ObjectList.h"
 #include "ObjectRepository.h"
 #include "ObjectManager.h"
@@ -40,7 +41,8 @@ sint32 object_entry_group_counts[] = {
     MAX_SCENERY_GROUP_OBJECTS, // scenery sets
     MAX_PARK_ENTRANCE_OBJECTS, // park entrance
     MAX_WATER_OBJECTS,         // water
-    MAX_SCENARIO_TEXT_OBJECTS  // scenario text
+    MAX_SCENARIO_TEXT_OBJECTS, // scenario text
+    MAX_TERRAIN_EDGE_OBJECTS   // terrain edges
 };
 
 // 98DA2C
