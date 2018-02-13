@@ -42,7 +42,10 @@ sint32 object_entry_group_counts[] = {
     MAX_PARK_ENTRANCE_OBJECTS, // park entrance
     MAX_WATER_OBJECTS,         // water
     MAX_SCENARIO_TEXT_OBJECTS, // scenario text
-    MAX_TERRAIN_EDGE_OBJECTS   // terrain edges
+    0,
+    MAX_TERRAIN_EDGE_OBJECTS,  // terrain edges
+    0,
+    0,
 };
 
 // 98DA2C
