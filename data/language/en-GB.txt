@@ -4549,7 +4549,10 @@ STR_6239    :Vertical Clipping
 STR_6240    :Horizontal Clipping
 STR_6241    :Select area
 STR_6242    :Clear selection
-STR_6243    :Terrain Edges
+STR_6243    :Terrain Surfaces
+STR_6244    :Terrain Edges
+STR_6245    :Ride Entrances / Exits
+STR_6246    :Music
 
 #############
 # Scenarios #
