@@ -40,11 +40,14 @@ void RideEntranceExitObject::Unload()
 void RideEntranceExitObject::DrawPreview(rct_drawpixelinfo * dpi, sint32 width, sint32 height) const
 {
     sint32 x = width / 2;
-    sint32 y = height / 2;
+    sint32 y = (height / 2) + 16;
 
-    uint32 imageId = BaseImageId;
-    gfx_draw_sprite(dpi, imageId + 5, x + 8, y - 8, 0);
-    gfx_draw_sprite(dpi, imageId + 5, x + 8, y + 8, 0);
+    auto colour1 = COLOUR_LIGHT_BLUE;
+    auto colour2 = COLOUR_BORDEAUX_RED;
+    uint32 imageId = BaseImageId | (colour1 << 19) | (colour2 << 24) | IMAGE_TYPE_REMAP | IMAGE_TYPE_REMAP_2_PLUS;
+
+    gfx_draw_sprite(dpi, imageId + 4, x, y, 0);
+    gfx_draw_sprite(dpi, imageId + 0, x, y, 0);
 }
 
 void RideEntranceExitObject::ReadJson(IReadObjectContext * context, const json_t * root)

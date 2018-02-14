@@ -272,11 +272,11 @@ namespace ObjectFactory
         case OBJECT_TYPE_SCENARIO_TEXT:
             result = new StexObject(entry);
             break;
-        case OBJECT_TYPE_TERRAIN_EDGE:
-            result = new TerrainEdgeObject(entry);
-            break;
         case OBJECT_TYPE_TERRAIN_SURFACE:
             result = new TerrainSurfaceObject(entry);
+            break;
+        case OBJECT_TYPE_TERRAIN_EDGE:
+            result = new TerrainEdgeObject(entry);
             break;
         case OBJECT_TYPE_RIDE_ENTRANCE_EXIT:
             result = new RideEntranceExitObject(entry);
@@ -301,7 +301,7 @@ namespace ObjectFactory
         if (s == "water") return OBJECT_TYPE_WATER;
         if (s == "terrain_surface") return OBJECT_TYPE_TERRAIN_SURFACE;
         if (s == "terrain_edge") return OBJECT_TYPE_TERRAIN_EDGE;
-        if (s == "ride_entrance_exit") return OBJECT_TYPE_RIDE_ENTRANCE_EXIT;
+        if (s == "station") return OBJECT_TYPE_RIDE_ENTRANCE_EXIT;
         return 0xFF;
     }
 
