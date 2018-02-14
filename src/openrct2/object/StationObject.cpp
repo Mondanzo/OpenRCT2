@@ -18,17 +18,17 @@
 #include "../core/String.hpp"
 #include "../drawing/Drawing.h"
 #include "../localisation/Localisation.h"
-#include "RideEntranceExitObject.h"
+#include "StationObject.h"
 #include "ObjectJsonHelpers.h"
 
-void RideEntranceExitObject::Load()
+void StationObject::Load()
 {
     GetStringTable().Sort();
     NameStringId = language_allocate_object_string(GetName());
     BaseImageId = gfx_object_allocate_images(GetImageTable().GetImages(), GetImageTable().GetCount());
 }
 
-void RideEntranceExitObject::Unload()
+void StationObject::Unload()
 {
     language_free_object_string(NameStringId);
     gfx_object_free_images(BaseImageId, GetImageTable().GetCount());
@@ -37,7 +37,7 @@ void RideEntranceExitObject::Unload()
     BaseImageId = 0;
 }
 
-void RideEntranceExitObject::DrawPreview(rct_drawpixelinfo * dpi, sint32 width, sint32 height) const
+void StationObject::DrawPreview(rct_drawpixelinfo * dpi, sint32 width, sint32 height) const
 {
     sint32 x = width / 2;
     sint32 y = (height / 2) + 16;
@@ -50,7 +50,7 @@ void RideEntranceExitObject::DrawPreview(rct_drawpixelinfo * dpi, sint32 width, 
     gfx_draw_sprite(dpi, imageId + 0, x, y, 0);
 }
 
-void RideEntranceExitObject::ReadJson(IReadObjectContext * context, const json_t * root)
+void StationObject::ReadJson(IReadObjectContext * context, const json_t * root)
 {
     // auto properties = json_object_get(root, "properties");
 

@@ -19,7 +19,7 @@
 #include <stdexcept>
 #include "Object.h"
 
-class RideEntranceExitObject final : public Object
+class StationObject final : public Object
 {
 private:
 
@@ -27,7 +27,7 @@ public:
     rct_string_id NameStringId{};
     uint32 BaseImageId{};
 
-    explicit RideEntranceExitObject(const rct_object_entry &entry) : Object(entry) { }
+    explicit StationObject(const rct_object_entry &entry) : Object(entry) { }
 
     void * GetLegacyData() override { return nullptr; }
     void ReadLegacy(IReadObjectContext * context, IStream * stream) override { throw std::runtime_error("Not supported."); }

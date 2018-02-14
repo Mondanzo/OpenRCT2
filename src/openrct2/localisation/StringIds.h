@@ -3912,7 +3912,7 @@ enum {
 
     STR_OBJECT_SELECTION_TERRAIN_SURFACES = 6243,
     STR_OBJECT_SELECTION_TERRAIN_EDGES = 6244,
-    STR_OBJECT_SELECTION_RIDE_ENTRANCES_EXITS = 6245,
+    STR_OBJECT_SELECTION_STATIONS = 6245,
     STR_OBJECT_SELECTION_MUSIC = 6246,
 
     // Have to include resource strings (from scenarios and objects) for the time being now that language is partially working

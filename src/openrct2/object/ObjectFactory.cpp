@@ -40,7 +40,7 @@
 #include "StexObject.h"
 #include "TerrainEdgeObject.h"
 #include "TerrainSurfaceObject.h"
-#include "RideEntranceExitObject.h"
+#include "StationObject.h"
 #include "WallObject.h"
 #include "WaterObject.h"
 
@@ -278,8 +278,8 @@ namespace ObjectFactory
         case OBJECT_TYPE_TERRAIN_EDGE:
             result = new TerrainEdgeObject(entry);
             break;
-        case OBJECT_TYPE_RIDE_ENTRANCE_EXIT:
-            result = new RideEntranceExitObject(entry);
+        case OBJECT_TYPE_STATION:
+            result = new StationObject(entry);
             break;
         default:
             throw std::runtime_error("Invalid object type");
@@ -301,7 +301,7 @@ namespace ObjectFactory
         if (s == "water") return OBJECT_TYPE_WATER;
         if (s == "terrain_surface") return OBJECT_TYPE_TERRAIN_SURFACE;
         if (s == "terrain_edge") return OBJECT_TYPE_TERRAIN_EDGE;
-        if (s == "station") return OBJECT_TYPE_RIDE_ENTRANCE_EXIT;
+        if (s == "station") return OBJECT_TYPE_STATION;
         return 0xFF;
     }
 
