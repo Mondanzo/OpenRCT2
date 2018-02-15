@@ -19,6 +19,7 @@
 #include "../../OpenRCT2.h"
 #include "../../Cheats.h"
 #include "../../config/Config.h"
+#include "../../Context.h"
 #include "../../core/Guard.hpp"
 #include "../../core/Math.hpp"
 #include "../../core/Util.hpp"
@@ -26,6 +27,8 @@
 #include "../../interface/Colour.h"
 #include "../../interface/Viewport.h"
 #include "../../paint/Paint.h"
+#include "../../object/ObjectManager.h"
+#include "../../object/TerrainEdgeObject.h"
 #include "../../peep/Staff.h"
 #include "../../ride/TrackDesign.h"
 #include "../../sprites.h"
@@ -207,104 +210,6 @@ static constexpr const uint8 byte_97B5B0[TUNNEL_TYPE_COUNT] = {
     0, 0, 0, 3, 3, 3, 6, 6, 6, 6,
     10, 11, 12, 13, 14, 14,
     16, 17, 18, 19, 20, 21, 22
-};
-
-#define EDGE_SPRITE_TYPE_COUNT 4
-
-#define DEFINE_EDGE_SPRITES(base) { \
-    (base) +  0, \
-    (base) + 20, \
-    (base) + 10, \
-    (base) + 30, \
-}
-#define DEFINE_EDGE_TUNNEL_SPRITES(base) { \
-    (base) + 36, \
-    (base) + 40, \
-    (base) + 44, \
-    (base) + 48, \
-    (base) + 52, \
-    (base) + 56, \
-    (base) + 60, \
-    (base) + 64, \
-    (base) + 68, \
-    (base) + 72, \
-    (base) + 76, \
-    (base) + 80, \
-    (base) + 36, \
-    (base) + 48, \
-    (base) + 60, \
-    (base) + 72, \
-    (base) + 36, \
-    (base) + 36, \
-    (base) + 36, \
-    (base) + 36, \
-    (base) + 36, \
-    (base) + 36, \
-    (base) + 36, \
-}
-
-#define DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(base) { \
-    (base) + 36, \
-    (base) + 40, \
-    (base) + 44, \
-    (base) + 48, \
-    (base) + 52, \
-    (base) + 56, \
-    (base) + 60, \
-    (base) + 64, \
-    (base) + 68, \
-    (base) + 72, \
-    (base) + 76, \
-    (base) + 80, \
-    (base) + 36, \
-    (base) + 48, \
-    (base) + 60, \
-    (base) + 72, \
-    (base) + 76, \
-    (base) + 80, \
-    (base) + 84, \
-    (base) + 88, \
-    (base) + 92, \
-    (base) + 96, \
-    (base) + 100, \
-}
-
-static constexpr const uint32 _terrainEdgeSpriteIds[][EDGE_SPRITE_TYPE_COUNT] =
-{
-    DEFINE_EDGE_SPRITES(SPR_EDGE_ROCK_BASE),
-    DEFINE_EDGE_SPRITES(SPR_EDGE_WOOD_RED_BASE),
-    DEFINE_EDGE_SPRITES(SPR_EDGE_WOOD_BLACK_BASE),
-    DEFINE_EDGE_SPRITES(SPR_EDGE_ICE_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_BRICK_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_IRON_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_GREY_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_YELLOW_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_RED_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_PURPLE_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_GREEN_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_STONE_BROWN_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_STONE_GREY_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_SKYSCRAPER_A_BASE),
-    DEFINE_EDGE_SPRITES(SPR_CSG_EDGE_SKYSCRAPER_B_BASE),
-};
-
-static constexpr const uint32 _terrainEdgeTunnelSpriteIds[][TUNNEL_TYPE_COUNT] =
-{
-    DEFINE_EDGE_TUNNEL_SPRITES(SPR_EDGE_ROCK_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES(SPR_EDGE_WOOD_RED_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES(SPR_EDGE_WOOD_BLACK_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES(SPR_EDGE_ICE_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES(SPR_CSG_EDGE_BRICK_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES(SPR_CSG_EDGE_IRON_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_GREY_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_YELLOW_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_RED_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_PURPLE_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_GREEN_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_STONE_BROWN_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_STONE_GREY_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_SKYSCRAPER_A_BASE),
-    DEFINE_EDGE_TUNNEL_SPRITES_WITH_DOORS(SPR_CSG_EDGE_SKYSCRAPER_B_BASE),
 };
 
 static constexpr const uint8 byte_97B740[] =
@@ -501,14 +406,51 @@ static constexpr const tile_surface_boundary_data _tileSurfaceBoundaries[4] =
 };
 // clang-format on
 
+static uint32 get_edge_image_with_offset(uint8 index, uint32 offset)
+{
+    uint32 result = 0;
+    auto objMgr = OpenRCT2::GetContext()->GetObjectManager();
+    if (objMgr != nullptr)
+    {
+        auto obj = objMgr->GetLoadedObject(OBJECT_TYPE_TERRAIN_EDGE, index);
+        if (obj != nullptr)
+        {
+            auto tobj = static_cast<TerrainEdgeObject *>(obj);
+            return tobj->BaseImageId + offset;
+        }
+    }
+    return result;
+}
+
 static uint32 get_edge_image(uint8 index, uint8 type)
 {
-    return _terrainEdgeSpriteIds[index][type];
+    static constexpr uint32 offsets[] = {
+        0, 20, 10, 30,
+    };
+
+    uint32 result = 0;
+    if (type < std::size(offsets))
+    {
+        result = get_edge_image_with_offset(index, offsets[type]);
+    }
+    return result;
 }
 
 static uint32 get_tunnel_image(uint8 index, uint8 type)
 {
-    return _terrainEdgeTunnelSpriteIds[index][type];
+    static constexpr uint32 offsets[] = {
+        36, 40, 44, 48,
+        52, 56, 60, 64,
+        68, 72, 76, 80,
+        36, 48, 60, 72,
+    };
+
+    uint32 result = 0;
+    if (type < std::size(offsets))
+    {
+        result = get_edge_image_with_offset(index, offsets[type]);
+    }
+    return result;
 }
 
 static uint8 viewport_surface_paint_setup_get_relative_slope(const rct_tile_element * tileElement, sint32 rotation)

@@ -235,6 +235,21 @@ public:
     {
         // We currently will load new object types here that apply to all
         // loaded RCT1 and RCT2 save files.
+        LoadObject("#RCT2ERO");
+        LoadObject("#RCT2EWR");
+        LoadObject("#RCT2EWB");
+        LoadObject("#RCT2EIC");
+        LoadObject("#RCT1EBR");
+        LoadObject("#RCT1EIR");
+        LoadObject("#RCT1EGY");
+        LoadObject("#RCT1EYE");
+        LoadObject("#RCT1ERE");
+        LoadObject("#RCT1EPU");
+        LoadObject("#RCT1EGR");
+        LoadObject("#RCT1ESN");
+        LoadObject("#RCT1ESG");
+        LoadObject("#RCT1ESA");
+        LoadObject("#RCT1ESB");
     }
 
     static rct_string_id GetObjectSourceGameString(const rct_object_entry * entry)
