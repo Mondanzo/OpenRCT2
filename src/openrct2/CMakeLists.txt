@@ -85,6 +85,7 @@ endif ()
 
 # Third party libraries
 if (MSVC)
+    find_package(duktape REQUIRED)
     find_package(jansson 2.5 REQUIRED)
     find_package(png 1.6 REQUIRED)
     find_package(zlib REQUIRED)
@@ -92,6 +93,7 @@ if (MSVC)
     find_path(LIBZIP_INCLUDE_DIRS zip.h)
     find_library(LIBZIP_LIBRARIES zip)
 else ()
+    PKG_CHECK_MODULES(DUKTAPE REQUIRED duktape)
     PKG_CHECK_MODULES(JANSSON REQUIRED jansson>=2.5)
     PKG_CHECK_MODULES(LIBZIP REQUIRED libzip>=1.0)
     PKG_CHECK_MODULES(ZLIB REQUIRED zlib)
@@ -110,11 +112,13 @@ endif ()
 
 if (STATIC)
     target_link_libraries(${PROJECT_NAME} ${JANSSON_STATIC_LIBRARIES}
+                                     ${DUKTAPE_STATIC_LIBRARIES}
                                      ${PNG_STATIC_LIBRARIES}
                                      ${ZLIB_STATIC_LIBRARIES}
                                      ${LIBZIP_STATIC_LIBRARIES})
 else ()
     target_link_libraries(${PROJECT_NAME} ${JANSSON_LIBRARIES}
+                                     ${DUKTAPE_LIBRARIES}
                                      ${PNG_LIBRARIES}
                                      ${ZLIB_LIBRARIES}
                                      ${LIBZIP_LIBRARIES})
@@ -173,6 +177,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBZIP_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${JANSSON_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PNG_INCLUDE_DIRS}
+                                              ${DUKTAPE_INCLUDE_DIRS}
                                               ${ZLIB_INCLUDE_DIRS})
 
 # To avoid unnecessary rebuilds set the current branch and
