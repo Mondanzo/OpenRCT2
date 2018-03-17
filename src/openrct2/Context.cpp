@@ -56,6 +56,7 @@
 #include "ride/TrackDesignRepository.h"
 #include "scenario/Scenario.h"
 #include "scenario/ScenarioRepository.h"
+#include "scripting/ScriptEngine.h"
 #include "title/TitleScreen.h"
 #include "title/TitleSequenceManager.h"
 #include "ui/UiContext.h"
@@ -75,6 +76,7 @@ using namespace OpenRCT2::Audio;
 using namespace OpenRCT2::Drawing;
 using namespace OpenRCT2::Localisation;
 using namespace OpenRCT2::Paint;
+using namespace OpenRCT2::Scripting;
 using namespace OpenRCT2::Ui;
 
 namespace OpenRCT2
@@ -99,6 +101,7 @@ namespace OpenRCT2
         std::unique_ptr<DiscordService> _discordService;
 #endif
         StdInOutConsole _stdInOutConsole;
+        ScriptEngine _scriptEngine;
 #ifndef DISABLE_HTTP
         Networking::Http::Http _http;
 #endif
@@ -137,6 +140,7 @@ namespace OpenRCT2
             , _uiContext(uiContext)
             , _localisationService(std::make_unique<LocalisationService>(env))
             , _painter(std::make_unique<Painter>(uiContext))
+            , _scriptEngine(_stdInOutConsole, *env)
         {
             // Can't have more than one context currently.
             Guard::Assert(Instance == nullptr);
@@ -176,6 +180,11 @@ namespace OpenRCT2
         std::shared_ptr<IUiContext> GetUiContext() override
         {
             return _uiContext;
+        }
+
+        Scripting::ScriptEngine& GetScriptEngine() override
+        {
+            return _scriptEngine;
         }
 
         GameState* GetGameState() override
@@ -997,7 +1006,7 @@ namespace OpenRCT2
 
             Twitch::Update();
             chat_update();
-            _stdInOutConsole.ProcessEvalQueue();
+            _scriptEngine.Update();
             _uiContext->Update();
         }
 
