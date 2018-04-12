@@ -36,7 +36,6 @@
 #include "Sprite.h"
 #include "MapAnimation.h"
 
-void footpath_interrupt_peeps(sint32 x, sint32 y, sint32 z);
 void footpath_update_queue_entrance_banner(sint32 x, sint32 y, rct_tile_element *tileElement);
 
 uint8 gFootpathProvisionalFlags;

@@ -177,5 +177,6 @@ void footpath_queue_chain_reset();
 void footpath_queue_chain_push(uint8 rideIndex);
 
 uint8 footpath_get_edges(const rct_tile_element * element);
+void footpath_interrupt_peeps(sint32 x, sint32 y, sint32 z);
 
 #endif
