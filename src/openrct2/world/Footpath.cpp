@@ -141,7 +141,7 @@ rct_tile_element *map_get_footpath_element(sint32 x, sint32 y, sint32 z)
     return nullptr;
 }
 
-static rct_tile_element *map_get_footpath_element_slope(sint32 x, sint32 y, sint32 z, sint32 slope)
+rct_tile_element * map_get_footpath_element_slope(sint32 x, sint32 y, sint32 z, sint32 slope)
 {
     rct_tile_element *tileElement;
 

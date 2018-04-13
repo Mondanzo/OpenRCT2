@@ -439,6 +439,7 @@ rct_tile_element *map_get_small_scenery_element_at(sint32 x, sint32 y, sint32 z,
 rct_tile_element *map_get_park_entrance_element_at(sint32 x, sint32 y, sint32 z, bool ghost);
 rct_tile_element * map_get_ride_entrance_element_at(sint32 x, sint32 y, sint32 z, bool ghost);
 rct_tile_element * map_get_ride_exit_element_at(sint32 x, sint32 y, sint32 z, bool ghost);
+rct_tile_element * map_get_footpath_element_slope(sint32 x, sint32 y, sint32 z, sint32 slope);
 sint32 tile_element_height(sint32 x, sint32 y);
 void sub_68B089();
 bool map_coord_is_connected(sint32 x, sint32 y, sint32 z, uint8 faceDirection);

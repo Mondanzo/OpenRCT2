@@ -32,6 +32,7 @@ enum class FOOTPATH_ACTION_TYPE
 namespace FOOTPATH_ACTION_FLAGS
 {
     constexpr uint8 CLEAR_WALLS = 1 << 0;
+    constexpr uint8 IS_QUEUE = 1 << 1;
 };
 
 /**
@@ -128,7 +129,7 @@ public:
         auto tileElement = map_get_footpath_element_slope(_position.x / 32, _position.y / 32, _position.z / 8, _slope);
         if (tileElement == nullptr)
         {
-            return footpath_element_insert(_entryIndex, _position.x, _position.y, _position.z / 8, _slope, flags, _itemEntryIndex);
+            return InsertElement(true);
         }
         else
         {
@@ -137,6 +138,10 @@ public:
     }
 
 private:
+    static constexpr const uint8 byte_98D7EC[] = {
+        207, 159, 63, 111
+    };
+
     GameActionResult::Ptr CreateResult() const
     {
         auto result = MakeResult();
@@ -148,7 +153,7 @@ private:
         pos.y = _position.y + 16;
         pos.z = _position.z;
         result->Position = pos;
-        
+
         return result;
     }
 
@@ -168,5 +173,218 @@ private:
             _position.z / 8,
             (_position.z / 8) + 4,
             direction);
+    }
+
+    GameActionResult::Ptr InsertElement(bool isExecuting) const
+    {
+        money32 price = 0;
+        sint32 groundFlags = 0;
+
+        sint32 bl, zHigh;
+
+        if (!map_check_free_elements_and_reorganise(1))
+        {
+            auto result = CreateResult();
+            result->Error = GA_ERROR::NO_FREE_ELEMENTS;
+            result->ErrorMessage = STR_ERR_LANDSCAPE_DATA_AREA_FULL;
+            return result;
+        }
+
+        auto flags = GetFlags();
+        if (isExecuting && !(flags & (GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED | GAME_COMMAND_FLAG_GHOST)))
+        {
+            footpath_remove_litter(_position.x, _position.y, _position.z);
+        }
+
+        price += MONEY(12, 00);
+
+        bl = 15;
+        zHigh = (_position.z / 8) + 4;
+        if (_slope & FOOTPATH_PROPERTIES_FLAG_IS_SLOPED)
+        {
+            bl = byte_98D7EC[_slope & TILE_ELEMENT_DIRECTION_MASK];
+            zHigh += 2;
+        }
+
+        auto entrancePath = false;
+        auto entranceIsSamePath = false;
+        auto entranceElement = map_get_park_entrance_element_at(_position.x, _position.y, _position.z / 8, false);
+        // Make sure the entrance part is the middle
+        if (entranceElement != nullptr && (entranceElement->properties.entrance.index & 0x0F) == 0)
+        {
+            entrancePath = true;
+            // Make the price the same as replacing a path
+            if (entranceElement->properties.entrance.path_type == _entryIndex)
+            {
+                entranceIsSamePath = true;
+            }
+            else
+            {
+                price -= MONEY(6, 00);
+            }
+        }
+
+        // Clear anything that is in the way
+        if (!entrancePath && !gCheatsDisableClearanceChecks)
+        {
+            // Allow building through a track unless building a queue or the footpath is sloped.
+            uint8 crossingMode = CREATE_CROSSING_MODE_NONE;
+            if (!(_flags & FOOTPATH_ACTION_FLAGS::IS_QUEUE) && (_slope == TILE_ELEMENT_SLOPE_FLAT))
+            {
+                crossingMode = CREATE_CROSSING_MODE_PATH_OVER_TRACK;
+            }
+            bool clearResult = map_can_construct_with_clear_at(
+                _position.x,
+                _position.y,
+                _position.z / 8,
+                zHigh,
+                &map_place_non_scenery_clear_func,
+                bl,
+                flags,
+                &price,
+                crossingMode);
+            if (!clearResult)
+            {
+                auto result = CreateResult();
+                result->Error = GA_ERROR::NO_CLEARANCE;
+                result->ErrorMessage = gGameCommandErrorText;
+                return result;
+            }
+
+            // Do not allow building footpath underwater
+            groundFlags = gMapGroundFlags;
+            if (gMapGroundFlags & ELEMENT_IS_UNDERWATER)
+            {
+                auto result = CreateResult();
+                result->Error = GA_ERROR::NO_CLEARANCE;
+                result->ErrorMessage = STR_CANT_BUILD_THIS_UNDERWATER;
+                return result;
+            }
+        }
+
+        // Add price of supports
+        auto tileElement = map_get_surface_element_at(_position.xy());
+        sint32 supportHeight = (_position.z / 8) - tileElement->base_height;
+        if (supportHeight < 0)
+        {
+            price += MONEY(20, 00);
+        }
+        else
+        {
+            price += MONEY(5, 00) *  (supportHeight / 2);
+        }
+
+        if (isExecuting)
+        {
+            if (entrancePath)
+            {
+                if (!(flags & GAME_COMMAND_FLAG_GHOST) && !entranceIsSamePath)
+                {
+                    // Set the path type but make sure it's not a queue as that will not show up
+                    entranceElement->properties.entrance.path_type = type & 0x7F;
+                    map_invalidate_tile_full(x, y);
+                }
+            }
+            else
+            {
+                tileElement = tile_element_insert(_position.x / 32, _position.y / 32, _position.z / 8, 0x0F);
+                if (tileElement == nullptr)
+                {
+                    auto result = CreateResult();
+                    result->Error = GA_ERROR::NO_FREE_ELEMENTS;
+                    result->ErrorMessage = STR_ERR_LANDSCAPE_DATA_AREA_FULL;
+                    return result;
+                }
+
+                tileElement->type = TILE_ELEMENT_TYPE_PATH;
+                tileElement->clearance_height = z + 4 + ((_slope & TILE_ELEMENT_SLOPE_NE_SIDE_UP) ? 2 : 0);
+                footpath_element_set_type(tileElement, _entryIndex);
+                tileElement->properties.path.type |= (_slope & TILE_ELEMENT_SLOPE_W_CORNER_DN);
+                if (_flags & FOOTPATH_ACTION_FLAGS::IS_QUEUE)
+                {
+                    footpath_element_set_queue(tileElement);
+                }
+                tileElement->properties.path.additions = _itemEntryIndex;
+                tileElement->properties.path.addition_status = 255;
+                tileElement->flags &= ~TILE_ELEMENT_FLAG_BROKEN;
+                if (flags & GAME_COMMAND_FLAG_GHOST)
+                {
+                    tileElement->flags |= TILE_ELEMENT_FLAG_GHOST;
+                }
+
+                footpath_queue_chain_reset();
+
+                if (!(flags & GAME_COMMAND_FLAG_PATH_SCENERY))
+                {
+                    footpath_remove_edges_at(x, y, tileElement);
+                }
+
+                if ((gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !(flags & GAME_COMMAND_FLAG_GHOST))
+                {
+                    MakeGuestSpawnTile({ _position.x, _position.y, tileElement->base_height * 8 });
+                }
+
+                FinaliseFootpathElement(_position.xy(), tileElement);
+            }
+        }
+
+        // Prevent the place sound from being spammed
+        if (entranceIsSamePath)
+        {
+            price = 0;
+        }
+
+        auto result = CreateResult();
+        result->Cost = price;
+        return result;
+    }
+
+    void FinaliseFootpathElement(CoordsXY position, rct_tile_element * tileElement) const
+    {
+        auto flags = GetFlags();
+        if (footpath_element_is_sloped(tileElement) && !(flags & GAME_COMMAND_FLAG_GHOST))
+        {
+            auto direction = footpath_element_get_slope_direction(tileElement);
+            auto z = tileElement->base_height;
+            wall_remove_intersecting_walls(position.x, position.y, z, z + 6, direction ^ 2);
+            wall_remove_intersecting_walls(position.x, position.y, z, z + 6, direction);
+            // Removing walls may have made the pointer invalid, so find it again
+            tileElement = map_get_footpath_element(position.x / 32, position.y / 32, z);
+        }
+
+        if (!(flags & GAME_COMMAND_FLAG_PATH_SCENERY))
+        {
+            footpath_connect_edges(position.x, position.y, tileElement, flags);
+        }
+
+        footpath_update_queue_chains();
+        map_invalidate_tile_full(position.x, position.y);
+    }
+
+    void MakeGuestSpawnTile(CoordsXYZ location) const
+    {
+        uint8 direction = 0;
+        if (location.x != 32)
+        {
+            direction++;
+            if (location.y != gMapSizeUnits - 32)
+            {
+                direction++;
+                if (location.x != gMapSizeUnits - 32)
+                {
+                    direction++;
+                    if (location.y != 32)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        auto peepSpawn = &gPeepSpawns[0];
+        peepSpawn->x = location.x + (word_981D6C[direction].x * 15) + 16;
+        peepSpawn->y = location.y + (word_981D6C[direction].y * 15) + 16;
+        peepSpawn->direction = direction;
+        peepSpawn->z = location.z;
     }
 };

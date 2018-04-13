@@ -96,6 +96,7 @@ struct CoordsXYZD
     sint32 x, y, z;
     uint8 direction;
 
+    CoordsXY xy() const { return { x, y }; }
     bool isNull() const { return x == COORDS_NULL; };
 };
 
