@@ -16,8 +16,8 @@ else (SYSTEM_GTEST)
         # Use googletest with https://github.com/google/googletest/pull/1045 applied
         ExternalProject_Add(
                 googletest-distribution
-                URL https://github.com/google/googletest/archive/ad49eaa0466b98f21449efaaaae817683daa8b99.tar.gz
-                URL_HASH SHA1=e468bfdffe7c46c14ce06bfb48a29b6201908504
+                URL https://github.com/google/googletest/archive/master.tar.gz
+                URL_HASH SHA1=e8d7c1ff02755779264f043639f49d0bd66dce61
                 TIMEOUT 10
                 CONFIGURE_COMMAND ""
                 BUILD_COMMAND ""
@@ -61,7 +61,15 @@ else (SYSTEM_GTEST)
         add_dependencies(${GTEST_LIBRARY} googletest)
         add_dependencies(${GTEST_MAIN_LIBRARY} ${GTEST_LIBRARY})
 
-        set(GTEST_LIBRARIES gtest gtest_main pthread)
+        if (MSVC)
+            if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+                set(GTEST_LIBRARIES gtestd gtest_maind)
+            else ()
+                set(GTEST_LIBRARIES gtest gtest_main)
+            endif ()
+        else ()
+            set(GTEST_LIBRARIES gtest gtest_main pthread)
+        endif ()
 
 endif (SYSTEM_GTEST)
 
@@ -86,7 +94,11 @@ set(COMMON_TEST_SOURCES
 add_library(test-common STATIC ${COMMON_TEST_SOURCES})
 
 # Setup testdata. It should be fine here, as the only way to reach here is by explicitly requesting tests.
-execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_CURRENT_LIST_DIR}/testdata" "${CMAKE_CURRENT_BINARY_DIR}/testdata")
+if (WIN32)
+    file(COPY "${CMAKE_CURRENT_LIST_DIR}/testdata" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/testdata")
+else ()
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_CURRENT_LIST_DIR}/testdata" "${CMAKE_CURRENT_BINARY_DIR}/testdata")
+endif()
 install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/openrct2\" \"${CMAKE_CURRENT_BINARY_DIR}/data\")")
 
 # Start of our tests
