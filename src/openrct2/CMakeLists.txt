@@ -96,10 +96,12 @@ if (NOT DISABLE_NETWORK)
         target_link_libraries(${PROJECT} ws2_32)
     endif ()
 
-    # our HTTP implementation requires use of threads
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads REQUIRED)
-    target_link_libraries(${PROJECT} Threads::Threads)
+    if (NOT MSVC)
+        # our HTTP implementation requires use of threads
+        set(THREADS_PREFER_PTHREAD_FLAG ON)
+        find_package(Threads REQUIRED)
+        target_link_libraries(${PROJECT} Threads::Threads)
+    endif ()
 
     if (STATIC)
         target_link_libraries(${PROJECT} ${LIBCURL_STATIC_LIBRARIES}
