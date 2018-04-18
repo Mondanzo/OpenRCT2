@@ -14,6 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "../actions/FootpathAction.hpp"
 #include "../common.h"
 #include "../Context.h"
 #include "../Cheats.h"
@@ -230,14 +231,40 @@ void scenery_remove_ghost_tool_placement(){
             if (tile_element->base_height != z)
                 continue;
 
-            game_do_command(
-                x,
-                233 | (gSceneryPlacePathSlope << 8),
-                y,
-                z | (gSceneryPlacePathType << 8),
-                GAME_COMMAND_PLACE_PATH,
-                gSceneryGhostPathObjectType & 0xFFFF0000,
-                0);
+            CoordsXYZD pos;
+            pos.x = x;
+            pos.y = y;
+            pos.z = z * 8;
+            pos.direction = gSceneryPlacePathSlope;
+
+            auto flags = 0;
+            if (gSceneryPlacePathType & 0x80)
+            {
+                flags |= FOOTPATH_ACTION_FLAGS::IS_QUEUE;
+            }
+
+            auto action = FootpathAction(
+                FOOTPATH_ACTION_TYPE::CONSTRUCT,
+                gSceneryPlacePathType & 0x7F,
+                0,
+                pos,
+                gSceneryPlacePathSlope,
+                flags);
+            action.SetFlags(
+                GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED |
+                GAME_COMMAND_FLAG_5 |
+                GAME_COMMAND_FLAG_GHOST |
+                GAME_COMMAND_FLAG_PATH_SCENERY);
+            GameActions::Execute(&action);
+
+            // game_do_command(
+            //     x,
+            //     233 | (gSceneryPlacePathSlope << 8),
+            //     y,
+            //     z | (gSceneryPlacePathType << 8),
+            //     GAME_COMMAND_PLACE_PATH,
+            //     gSceneryGhostPathObjectType & 0xFFFF0000,
+            //     0);
             break;
         } while (!tile_element_is_last_for_tile(tile_element++));
     }

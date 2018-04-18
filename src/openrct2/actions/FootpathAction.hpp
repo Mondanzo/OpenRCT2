@@ -16,10 +16,14 @@
 
 #pragma once
 
+#include "../Cheats.h"
 #include "../Context.h"
 #include "../core/MemoryStream.h"
 #include "../localisation/StringIds.h"
+#include "../management/Finance.h"
+#include "../OpenRCT2.h"
 #include "../world/Footpath.h"
+#include "../world/Scenery.h"
 #include "GameAction.h"
 
 enum class FOOTPATH_ACTION_TYPE
@@ -41,7 +45,7 @@ namespace FOOTPATH_ACTION_FLAGS
 struct FootpathAction : public GameActionBase<GAME_COMMAND_PLACE_PATH, GameActionResult>
 {
 private:
-    FOOTPATH_ACTION_TYPE _type;
+    uint8 _type;
     uint8 _entryIndex;
     uint8 _itemEntryIndex;
     CoordsXYZD _position;
@@ -51,7 +55,7 @@ private:
 public:
     FootpathAction() {}
     FootpathAction(FOOTPATH_ACTION_TYPE type, uint8 entryIndex, uint8 itemEntryIndex, CoordsXYZD position, sint32 slope, uint8 flags)
-        : _type(type),
+        : _type((uint8)type),
           _entryIndex(entryIndex),
           _itemEntryIndex(itemEntryIndex),
           _position(position),
@@ -110,8 +114,7 @@ public:
     {
         auto result = CreateResult();
 
-        auto flags = GetFlags();
-        if (!(flags & GAME_COMMAND_FLAG_GHOST))
+        if (!IsPlacingGhost())
         {
             footpath_interrupt_peeps(_position.x, _position.y, _position.z);
             if ((_flags & FOOTPATH_ACTION_FLAGS::CLEAR_WALLS) && !gCheatsDisableClearanceChecks)
@@ -133,7 +136,7 @@ public:
         }
         else
         {
-            return footpath_element_update(_position.x, _position.y, tileElement, _entryIndex, flags, _itemEntryIndex);
+            return UpdateElement(tileElement, true);
         }
     }
 
@@ -191,7 +194,7 @@ private:
         }
 
         auto flags = GetFlags();
-        if (isExecuting && !(flags & (GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED | GAME_COMMAND_FLAG_GHOST)))
+        if (isExecuting && !IsPlacingGhost() && !(flags & GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED))
         {
             footpath_remove_litter(_position.x, _position.y, _position.z);
         }
@@ -229,7 +232,7 @@ private:
         {
             // Allow building through a track unless building a queue or the footpath is sloped.
             uint8 crossingMode = CREATE_CROSSING_MODE_NONE;
-            if (!(_flags & FOOTPATH_ACTION_FLAGS::IS_QUEUE) && (_slope == TILE_ELEMENT_SLOPE_FLAT))
+            if (!IsPlacingQueue() && (_slope == TILE_ELEMENT_SLOPE_FLAT))
             {
                 crossingMode = CREATE_CROSSING_MODE_PATH_OVER_TRACK;
             }
@@ -278,11 +281,11 @@ private:
         {
             if (entrancePath)
             {
-                if (!(flags & GAME_COMMAND_FLAG_GHOST) && !entranceIsSamePath)
+                if (!IsPlacingGhost() && !entranceIsSamePath)
                 {
                     // Set the path type but make sure it's not a queue as that will not show up
-                    entranceElement->properties.entrance.path_type = type & 0x7F;
-                    map_invalidate_tile_full(x, y);
+                    entranceElement->properties.entrance.path_type = _entryIndex;
+                    map_invalidate_tile_full(_position.x, _position.y);
                 }
             }
             else
@@ -297,17 +300,14 @@ private:
                 }
 
                 tileElement->type = TILE_ELEMENT_TYPE_PATH;
-                tileElement->clearance_height = z + 4 + ((_slope & TILE_ELEMENT_SLOPE_NE_SIDE_UP) ? 2 : 0);
+                tileElement->clearance_height = (_position.z / 8) + 4 + ((_slope & TILE_ELEMENT_SLOPE_NE_SIDE_UP) ? 2 : 0);
                 footpath_element_set_type(tileElement, _entryIndex);
                 tileElement->properties.path.type |= (_slope & TILE_ELEMENT_SLOPE_W_CORNER_DN);
-                if (_flags & FOOTPATH_ACTION_FLAGS::IS_QUEUE)
-                {
-                    footpath_element_set_queue(tileElement);
-                }
+                footpath_element_set_queue(tileElement, IsPlacingQueue());
                 tileElement->properties.path.additions = _itemEntryIndex;
                 tileElement->properties.path.addition_status = 255;
                 tileElement->flags &= ~TILE_ELEMENT_FLAG_BROKEN;
-                if (flags & GAME_COMMAND_FLAG_GHOST)
+                if (IsPlacingGhost())
                 {
                     tileElement->flags |= TILE_ELEMENT_FLAG_GHOST;
                 }
@@ -316,10 +316,10 @@ private:
 
                 if (!(flags & GAME_COMMAND_FLAG_PATH_SCENERY))
                 {
-                    footpath_remove_edges_at(x, y, tileElement);
+                    footpath_remove_edges_at(_position.x, _position.y, tileElement);
                 }
 
-                if ((gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !(flags & GAME_COMMAND_FLAG_GHOST))
+                if ((gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !IsPlacingGhost())
                 {
                     MakeGuestSpawnTile({ _position.x, _position.y, tileElement->base_height * 8 });
                 }
@@ -339,10 +339,142 @@ private:
         return result;
     }
 
+    GameActionResult::Ptr UpdateElement(rct_tile_element * tileElement, bool isExecuting) const
+    {
+        auto result = CreateResult();
+        money32 price = 0;
+        if (footpath_element_get_type(tileElement) != _entryIndex ||
+            footpath_element_is_queue(tileElement) != IsPlacingQueue())
+        {
+            price += MONEY(6, 00);
+        }
+        else if (_itemEntryIndex != 0)
+        {
+            auto flags = GetFlags();
+            if (!IsPlacingGhost() &&
+                footpath_element_get_path_scenery(tileElement) == _itemEntryIndex &&
+                !(tileElement->flags & TILE_ELEMENT_FLAG_BROKEN))
+            {
+                if (flags & GAME_COMMAND_FLAG_4)
+                {
+                    result->Error = GA_ERROR::DISALLOWED;
+                }
+                else
+                {
+                    result->Cost = price;
+                }
+                return result;
+            }
+
+            auto pathItemEntry = get_footpath_item_entry(_itemEntryIndex - 1);
+            auto pathItemEntryFlags = pathItemEntry->path_bit.flags;
+
+            price += pathItemEntry->path_bit.price;
+
+            if ((pathItemEntryFlags & PATH_BIT_FLAG_DONT_ALLOW_ON_SLOPE) && footpath_element_is_sloped(tileElement))
+            {
+                result->Error = GA_ERROR::DISALLOWED;
+                result->ErrorMessage = STR_CANT_BUILD_THIS_ON_SLOPED_FOOTPATH;
+                return result;
+            }
+
+            if ((pathItemEntryFlags & PATH_BIT_FLAG_DONT_ALLOW_ON_QUEUE) && footpath_element_is_queue(tileElement))
+            {
+                result->Error = GA_ERROR::DISALLOWED;
+                result->ErrorMessage = STR_CANNOT_PLACE_THESE_ON_QUEUE_LINE_AREA;
+                return result;
+            }
+
+            if (!(pathItemEntryFlags & (PATH_BIT_FLAG_JUMPING_FOUNTAIN_WATER | PATH_BIT_FLAG_JUMPING_FOUNTAIN_SNOW)) &&
+                (tileElement->properties.path.edges & FOOTPATH_PROPERTIES_EDGES_EDGES_MASK) == 0x0F)
+            {
+                result->Error = GA_ERROR::DISALLOWED;
+                return result;
+            }
+
+            if ((pathItemEntryFlags & PATH_BIT_FLAG_IS_QUEUE_SCREEN) && !footpath_element_is_queue(tileElement))
+            {
+                result->Error = GA_ERROR::DISALLOWED;
+                result->ErrorMessage = STR_CAN_ONLY_PLACE_THESE_ON_QUEUE_AREA;
+                return result;
+            }
+
+            if (flags & GAME_COMMAND_FLAG_4)
+            {
+                result->Error = GA_ERROR::DISALLOWED;
+                return result;
+            }
+
+            if (IsPlacingGhost())
+            {
+                if (footpath_element_has_path_scenery(tileElement))
+                {
+                    // There is already an item on the footpath, therefore we can't set it to the ghost of
+                    // our new item.
+                    result->Error = GA_ERROR::DISALLOWED;
+                    return result;
+                }
+
+                // There is nothing yet - check if we should place a ghost
+                if (isExecuting)
+                {
+                    footpath_scenery_set_is_ghost(tileElement, true);
+                }
+            }
+            else
+            {
+                if (isExecuting)
+                {
+                    footpath_scenery_set_is_ghost(tileElement, false);
+                }
+            }
+
+            if (isExecuting)
+            {
+                footpath_element_set_path_scenery(tileElement, _itemEntryIndex);
+                tileElement->flags &= ~TILE_ELEMENT_FLAG_BROKEN;
+                if (_itemEntryIndex != 0)
+                {
+                    if (pathItemEntryFlags & PATH_BIT_FLAG_IS_BIN)
+                    {
+                        tileElement->properties.path.addition_status = 255;
+                    }
+                }
+                map_invalidate_tile_full(_position.x, _position.y);
+            }
+
+            result->Cost = price;
+            return result;
+        }
+
+        if (GetFlags() & GAME_COMMAND_FLAG_4)
+        {
+            result->Error = GA_ERROR::DISALLOWED;
+            return result;
+        }
+
+        if (isExecuting)
+        {
+            footpath_queue_chain_reset();
+            if (!(GetFlags() & GAME_COMMAND_FLAG_PATH_SCENERY))
+            {
+                footpath_remove_edges_at(_position.x, _position.y, tileElement);
+            }
+            footpath_element_set_type(tileElement, _entryIndex);
+            footpath_element_set_queue(tileElement, IsPlacingQueue());
+            footpath_element_set_path_scenery(tileElement, _itemEntryIndex);
+            tileElement->flags &= ~TILE_ELEMENT_FLAG_BROKEN;
+
+            FinaliseFootpathElement(_position.xy(), tileElement);
+        }
+
+        result->Cost = price;
+        return result;
+    }
+
     void FinaliseFootpathElement(CoordsXY position, rct_tile_element * tileElement) const
     {
-        auto flags = GetFlags();
-        if (footpath_element_is_sloped(tileElement) && !(flags & GAME_COMMAND_FLAG_GHOST))
+        if (footpath_element_is_sloped(tileElement) && !IsPlacingGhost())
         {
             auto direction = footpath_element_get_slope_direction(tileElement);
             auto z = tileElement->base_height;
@@ -352,6 +484,7 @@ private:
             tileElement = map_get_footpath_element(position.x / 32, position.y / 32, z);
         }
 
+        auto flags = GetFlags();
         if (!(flags & GAME_COMMAND_FLAG_PATH_SCENERY))
         {
             footpath_connect_edges(position.x, position.y, tileElement, flags);
@@ -386,5 +519,15 @@ private:
         peepSpawn->y = location.y + (word_981D6C[direction].y * 15) + 16;
         peepSpawn->direction = direction;
         peepSpawn->z = location.z;
+    }
+
+    bool IsPlacingGhost() const
+    {
+        return GetFlags() & GAME_COMMAND_FLAG_GHOST;
+    }
+
+    bool IsPlacingQueue() const
+    {
+        return _flags & FOOTPATH_ACTION_FLAGS::IS_QUEUE;
     }
 };

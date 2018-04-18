@@ -18,6 +18,7 @@
 
 #include <string>
 
+#include <openrct2/actions/FootpathAction.hpp>
 #include <openrct2/audio/audio.h>
 #include <openrct2/Cheats.h>
 #include <openrct2/config/Config.h>
@@ -1680,13 +1681,33 @@ static void window_top_toolbar_scenery_tool_down(sint16 x, sint16 y, rct_window 
     }
     case SCENERY_TYPE_PATH_ITEM:
     {
-        sint32 flags = GAME_COMMAND_FLAG_APPLY | GAME_COMMAND_FLAG_PATH_SCENERY | (parameter_1 & 0xFF00);
-
-        gGameCommandErrorTitle = STR_CANT_POSITION_THIS_HERE;
-        sint32 cost = game_do_command(gridX, flags, gridY, parameter_2, GAME_COMMAND_PLACE_PATH, parameter_3, 0);
-        if (cost != MONEY32_UNDEFINED) {
-            audio_play_sound_at_location(SOUND_PLACE_ITEM, gCommandPosition.x, gCommandPosition.y, gCommandPosition.z);
+        // Path Bits
+        CoordsXYZD position;
+        position.x = gridX;
+        position.y = gridY;
+        position.z = (parameter_2 & 0xFF) * 3;
+        position.direction = (parameter_1 >> 8) & 3;
+        auto entryIndex = (parameter_2 >> 8) & 0x7F;
+        auto itemEntryIndex = parameter_3;
+        auto flags = 0;
+        if (parameter_2 & 0x8000)
+        {
+            flags |= FOOTPATH_ACTION_FLAGS::IS_QUEUE;
         }
+        auto action = FootpathAction(FOOTPATH_ACTION_TYPE::CONSTRUCT, entryIndex, itemEntryIndex, position, position.direction, flags);
+        action.SetFlags(GAME_COMMAND_FLAG_PATH_SCENERY);
+        auto result = GameActions::Execute(&action);
+        if (result->Error == GA_ERROR::OK)
+        {
+            audio_play_sound_at_location(SOUND_PLACE_ITEM, result->Position.x, result->Position.y, result->Position.z);
+        }
+
+        // sint32 flags = GAME_COMMAND_FLAG_APPLY | GAME_COMMAND_FLAG_PATH_SCENERY | (parameter_1 & 0xFF00);
+        // gGameCommandErrorTitle = STR_CANT_POSITION_THIS_HERE;
+        // sint32 cost = game_do_command(gridX, flags, gridY, parameter_2, GAME_COMMAND_PLACE_PATH, parameter_3, 0);
+        // if (cost != MONEY32_UNDEFINED) {
+        //     audio_play_sound_at_location(SOUND_PLACE_ITEM, gCommandPosition.x, gCommandPosition.y, gCommandPosition.z);
+        // }
         break;
     }
     case SCENERY_TYPE_WALL:
@@ -2267,35 +2288,60 @@ static money32 try_place_ghost_scenery(LocationXY16 map_tile, uint32 parameter_1
         gSceneryGhostType |= (1 << 0);
         break;
     case 1:
-        // Path Bits
-        //6e265b
-        cost = game_do_command(
-            map_tile.x,
-            (parameter_1 & 0xFF00) | (
-                GAME_COMMAND_FLAG_APPLY |
+        {
+            // Path Bits
+            CoordsXYZD position;
+            position.x = map_tile.x;
+            position.y = map_tile.y;
+            position.z = (parameter_2 & 0xFF) * 3;
+            position.direction = (parameter_1 >> 8) & 3;
+            auto entryIndex = (parameter_2 >> 8) & 0x7F;
+            auto itemEntryIndex = parameter_3;
+            auto flags = 0;
+            if (parameter_2 & 0x8000)
+            {
+                flags |= FOOTPATH_ACTION_FLAGS::IS_QUEUE;
+            }
+            auto action = FootpathAction(FOOTPATH_ACTION_TYPE::CONSTRUCT, entryIndex, itemEntryIndex, position, position.direction, flags);
+            action.SetFlags(
                 GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED |
                 GAME_COMMAND_FLAG_5 |
                 GAME_COMMAND_FLAG_GHOST |
-                GAME_COMMAND_FLAG_PATH_SCENERY
-            ),
-            map_tile.y,
-            parameter_2,
-            GAME_COMMAND_PLACE_PATH,
-            parameter_3,
-            0);
+                GAME_COMMAND_FLAG_PATH_SCENERY);
+            auto result = GameActions::Execute(&action);
 
-        if (cost == MONEY32_UNDEFINED)
-            return cost;
+            // cost = game_do_command(
+            //     map_tile.x,
+            //     (parameter_1 & 0xFF00) | (
+            //         GAME_COMMAND_FLAG_APPLY |
+            //         GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED |
+            //         GAME_COMMAND_FLAG_5 |
+            //         GAME_COMMAND_FLAG_GHOST |
+            //         GAME_COMMAND_FLAG_PATH_SCENERY
+            //     ),
+            //     map_tile.y,
+            //     parameter_2,
+            //     GAME_COMMAND_PLACE_PATH,
+            //     parameter_3,
+            //     0);
 
-        gSceneryGhostPosition.x = map_tile.x;
-        gSceneryGhostPosition.y = map_tile.y;
-        gSceneryGhostPosition.z = (parameter_2 & 0xFF);
-        gSceneryPlacePathSlope = ((parameter_1 >> 8) & 0xFF);
-        gSceneryPlacePathType = ((parameter_2 >> 8) & 0xFF);
-        gSceneryGhostPathObjectType = parameter_3;
-
-        gSceneryGhostType |= (1 << 1);
-        break;
+            if (result->Error == GA_ERROR::OK)
+            {
+                gSceneryGhostPosition.x = map_tile.x;
+                gSceneryGhostPosition.y = map_tile.y;
+                gSceneryGhostPosition.z = (parameter_2 & 0xFF);
+                gSceneryPlacePathSlope = ((parameter_1 >> 8) & 0xFF);
+                gSceneryPlacePathType = ((parameter_2 >> 8) & 0xFF);
+                gSceneryGhostPathObjectType = parameter_3;
+                gSceneryGhostType |= (1 << 1);
+                cost = result->Cost;
+            }
+            else
+            {
+                cost = MONEY32_UNDEFINED;
+            }
+            break;
+        }
     case 2:
         // Walls
         //6e26b0

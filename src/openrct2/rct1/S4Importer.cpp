@@ -2497,11 +2497,7 @@ private:
                 tileElement->flags &= ~(TILE_ELEMENT_FLAG_BROKEN | TILE_ELEMENT_FLAG_INDESTRUCTIBLE_TRACK_PIECE);
 
                 footpath_element_set_type(tileElement, entryIndex);
-                if (RCT1::PathIsQueue(pathType))
-                {
-                    footpath_element_set_queue(tileElement);
-                }
-
+                footpath_element_set_queue(tileElement, RCT1::PathIsQueue(pathType));
                 footpath_scenery_set_is_ghost(tileElement, false);
 
                 // Additions

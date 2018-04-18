@@ -1704,7 +1704,7 @@ GAME_COMMAND_POINTER * new_game_command_table[GAME_COMMAND_COUNT] = {
     game_command_remove_scenery,
     game_command_place_scenery,
     game_command_set_water_height,
-    game_command_place_footpath,
+    nullptr,
     game_command_place_footpath_from_track,
     game_command_remove_footpath,
     game_command_change_surface_style,

@@ -14,6 +14,7 @@
  *****************************************************************************/
 #pragma endregion
 
+#include "../actions/FootpathAction.hpp"
 #include "../Cheats.h"
 #include "../Context.h"
 #include "../core/Guard.hpp"
@@ -251,8 +252,7 @@ static money32 footpath_element_insert(sint32 type, sint32 x, sint32 y, sint32 z
             tileElement->clearance_height = z + 4 + ((slope & TILE_ELEMENT_SLOPE_NE_SIDE_UP) ? 2 : 0);
             footpath_element_set_type(tileElement, type);
             tileElement->properties.path.type |= (slope & TILE_ELEMENT_SLOPE_W_CORNER_DN);
-            if (type & FOOTPATH_ELEMENT_INSERT_QUEUE)
-                footpath_element_set_queue(tileElement);
+            footpath_element_set_queue(tileElement, type & FOOTPATH_ELEMENT_INSERT_QUEUE);
             tileElement->properties.path.additions = pathItemType;
             tileElement->properties.path.addition_status = 255;
             tileElement->flags &= ~TILE_ELEMENT_FLAG_BROKEN;
@@ -714,7 +714,28 @@ void game_command_remove_footpath(sint32 *eax, sint32 *ebx, sint32 *ecx, sint32 
 
 money32 footpath_place(sint32 type, sint32 x, sint32 y, sint32 z, sint32 slope, sint32 flags)
 {
-    return game_do_command(x, (slope << 8) | flags, y, (type << 8) | z, GAME_COMMAND_PLACE_PATH, 0, 0);
+    CoordsXYZD pos;
+    pos.x = x;
+    pos.y = y;
+    pos.z = z * 8;
+    pos.direction = 0;
+
+    auto footpathFlags = 0;
+    if (type & 0x80)
+    {
+        footpathFlags |= FOOTPATH_ACTION_FLAGS::IS_QUEUE;
+    }
+
+    auto action = FootpathAction(
+        FOOTPATH_ACTION_TYPE::CONSTRUCT,
+        type & 0x7F,
+        0,
+        pos,
+        slope,
+        footpathFlags);
+    action.SetFlags(flags);
+    auto result = GameActions::Execute(&action);
+    return result->Cost;
 }
 
 money32 footpath_place_remove_intersecting(sint32 type, sint32 x, sint32 y, sint32 z, sint32 slope, sint32 flags, sint32 direction)
@@ -1828,14 +1849,16 @@ bool footpath_element_is_queue(const rct_tile_element * tileElement)
     return (tileElement->type & FOOTPATH_ELEMENT_TYPE_FLAG_IS_QUEUE) != 0;
 }
 
-void footpath_element_set_queue(rct_tile_element * tileElement)
+void footpath_element_set_queue(rct_tile_element * tileElement, bool value)
 {
-    tileElement->type |= FOOTPATH_ELEMENT_TYPE_FLAG_IS_QUEUE;
-}
-
-void footpath_element_clear_queue(rct_tile_element * tileElement)
-{
-    tileElement->type &= ~FOOTPATH_ELEMENT_TYPE_FLAG_IS_QUEUE;
+    if (value)
+    {
+        tileElement->type |= FOOTPATH_ELEMENT_TYPE_FLAG_IS_QUEUE;
+    }
+    else
+    {
+        tileElement->type &= ~FOOTPATH_ELEMENT_TYPE_FLAG_IS_QUEUE;
+    }
 }
 
 bool footpath_element_has_queue_banner(const rct_tile_element * tileElement)
