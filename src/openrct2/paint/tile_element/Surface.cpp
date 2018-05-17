@@ -406,6 +406,35 @@ static constexpr const tile_surface_boundary_data _tileSurfaceBoundaries[4] =
 };
 // clang-format on
 
+static uint32 get_surface_image(uint8 index, sint32 offset, bool withGridlines)
+{
+    if (index >= Util::CountOf(dword_97B750))
+    {
+        return (uint32)SPR_NONE;
+    }
+    return dword_97B750[index][withGridlines ? 1 : 0] + offset;
+}
+
+static uint32 get_surface_underground_image(uint8 index, sint32 offset)
+{
+    return dword_97B7C8[index] + offset;
+}
+
+static uint32 get_surface_pattern(uint8 index, sint32 offset)
+{
+    return dword_97B804[index] + offset;
+}
+
+static bool surface_should_smooth_self(uint8 index)
+{
+    return !(byte_97B83C[index] & FLAG_DONT_SMOOTHEN_SELF);
+}
+
+static bool surface_should_smooth(uint8 index)
+{
+    return !(byte_97B83C[index] & FLAG_DONT_SMOOTHEN);
+}
+
 static uint32 get_edge_image_with_offset(uint8 index, uint32 offset)
 {
     uint32 result = 0;
@@ -543,15 +572,15 @@ static void viewport_surface_smoothen_edge(paint_session * session, enum edge_t 
         if (cl == dh)
             return;
 
-        if (byte_97B83C[self.terrain] & FLAG_DONT_SMOOTHEN_SELF)
+        if (!surface_should_smooth_self(self.terrain))
             return;
     }
     else
     {
-        if (byte_97B83C[self.terrain] & FLAG_DONT_SMOOTHEN)
+        if (!surface_should_smooth(self.terrain))
             return;
 
-        if (byte_97B83C[neighbour.terrain] & FLAG_DONT_SMOOTHEN)
+        if (!surface_should_smooth(neighbour.terrain))
             return;
     }
 
@@ -561,7 +590,7 @@ static void viewport_surface_smoothen_edge(paint_session * session, enum edge_t 
     {
         attached_paint_struct * out = session->UnkF1AD2C;
         // set content and enable masking
-        out->colour_image_id = dword_97B804[neighbour.terrain] + cl;
+        out->colour_image_id = get_surface_pattern(neighbour.terrain, cl);
         out->flags |= PAINT_STRUCT_FLAG_IS_MASKED;
     }
 }
@@ -1080,8 +1109,7 @@ void surface_paint(paint_session * session, uint8 direction, uint16 height, cons
                 assert(ebp < Util::CountOf(byte_97B84A));
                 ebp = byte_97B84A[ebp];
             }
-            assert(ebp < Util::CountOf(dword_97B750));
-            image_id = dword_97B750[ebp][showGridlines ? 1 : 0] + image_offset;
+            image_id = get_surface_image(ebp, image_offset, showGridlines);
 
             if (gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER))
             {
@@ -1333,7 +1361,7 @@ void surface_paint(paint_session * session, uint8 direction, uint16 height, cons
         if (rotation & 1) {
             base_image = byte_97B84A[terrain_type];
         }
-        const uint32 image_id = dword_97B7C8[base_image] + image_offset;
+        const uint32 image_id = get_surface_underground_image(base_image, image_offset);
         paint_attach_to_previous_ps(session, image_id, 0, 0);
     }
 

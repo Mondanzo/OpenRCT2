@@ -235,6 +235,24 @@ public:
     {
         // We currently will load new object types here that apply to all
         // loaded RCT1 and RCT2 save files.
+
+        // Surfaces
+        LoadObject("#RCT2SGR");
+        LoadObject("#RCT2SSY");
+        LoadObject("#RCT2SDI");
+        LoadObject("#RCT2SRO");
+        LoadObject("#RCT2SMA");
+        LoadObject("#RCT2SCH");
+        LoadObject("#RCT2SGC");
+        LoadObject("#RCT2SIC");
+        LoadObject("#RCT2SIR");
+        LoadObject("#RCT2SIY");
+        LoadObject("#RCT2SIP");
+        LoadObject("#RCT2SIG");
+        LoadObject("#RCT2SSR");
+        LoadObject("#RCT2SSA");
+
+        // Edges
         LoadObject("#RCT2ERO");
         LoadObject("#RCT2EWR");
         LoadObject("#RCT2EWB");

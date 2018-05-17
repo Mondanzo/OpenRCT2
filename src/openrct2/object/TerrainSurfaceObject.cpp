@@ -25,15 +25,19 @@ void TerrainSurfaceObject::Load()
 {
     GetStringTable().Sort();
     NameStringId = language_allocate_object_string(GetName());
-    BaseImageId = gfx_object_allocate_images(GetImageTable().GetImages(), GetImageTable().GetCount());
+    IconImageId = gfx_object_allocate_images(GetImageTable().GetImages(), GetImageTable().GetCount());
+
+    // First image is icon followed by edge images
+    BaseImageId = IconImageId + 1;
 }
 
 void TerrainSurfaceObject::Unload()
 {
     language_free_object_string(NameStringId);
-    gfx_object_free_images(BaseImageId, GetImageTable().GetCount());
+    gfx_object_free_images(IconImageId, GetImageTable().GetCount());
 
     NameStringId = 0;
+    IconImageId = 0;
     BaseImageId = 0;
 }
 
@@ -61,7 +65,8 @@ void TerrainSurfaceObject::DrawPreview(rct_drawpixelinfo * dpi, sint32 width, si
 
 void TerrainSurfaceObject::ReadJson(IReadObjectContext * context, const json_t * root)
 {
-    // auto properties = json_object_get(root, "properties");
+    auto properties = json_object_get(root, "properties");
+    Price = ObjectJsonHelpers::GetInteger(properties, "price", 0);
 
     ObjectJsonHelpers::LoadStrings(root, GetStringTable());
     ObjectJsonHelpers::LoadImages(context, root, GetImageTable());

@@ -18,6 +18,7 @@
 #include <openrct2/core/Math.hpp>
 #include <openrct2/object/ObjectManager.h>
 #include <openrct2/object/TerrainEdgeObject.h>
+#include <openrct2/object/TerrainSurfaceObject.h>
 #include <openrct2-ui/windows/Window.h>
 
 #include <openrct2-ui/interface/Widget.h>
@@ -232,9 +233,7 @@ static void window_land_dropdown(rct_window *w, rct_widgetindex widgetIndex, sin
         if (dropdownIndex == -1)
             dropdownIndex = gDropdownHighlightedIndex;
 
-        type = (dropdownIndex == -1) ?
-            _selectedFloorTexture :
-            (uint32)gDropdownItemsArgs[dropdownIndex] - SPR_FLOOR_TEXTURE_GRASS;
+        type = (dropdownIndex == -1) ? _selectedFloorTexture : dropdownIndex;
 
         if (gLandToolTerrainSurface == type) {
             gLandToolTerrainSurface = 255;
@@ -302,9 +301,15 @@ static void window_land_update(rct_window *w)
  */
 static void window_land_invalidate(rct_window *w)
 {
+    auto surfaceImage = (uint32)SPR_NONE;
     auto edgeImage = (uint32)SPR_NONE;
 
     auto objManager = GetContext()->GetObjectManager();
+    const auto surfaceObj = static_cast<TerrainSurfaceObject *>(objManager->GetLoadedObject(OBJECT_TYPE_TERRAIN_SURFACE, _selectedFloorTexture));
+    if (surfaceObj != nullptr)
+    {
+        surfaceImage = surfaceObj->IconImageId;
+    }
     const auto edgeObj = static_cast<TerrainEdgeObject *>(objManager->GetLoadedObject(OBJECT_TYPE_TERRAIN_EDGE, _selectedWallTexture));
     if (edgeObj != nullptr)
     {
@@ -321,7 +326,7 @@ static void window_land_invalidate(rct_window *w)
     if (gLandPaintMode)
         w->pressed_widgets |= (1 << WIDX_PAINTMODE);
 
-    window_land_widgets[WIDX_FLOOR].image = SPR_FLOOR_TEXTURE_GRASS + _selectedFloorTexture;
+    window_land_widgets[WIDX_FLOOR].image = surfaceImage;
     window_land_widgets[WIDX_WALL].image = edgeImage;
     // Update the preview image (for tool sizes up to 7)
     window_land_widgets[WIDX_PREVIEW].image = land_tool_size_to_sprite_index(gLandToolSize);
@@ -367,7 +372,14 @@ static void window_land_paint(rct_window *w, rct_drawpixelinfo *dpi)
     numTiles = gLandToolSize * gLandToolSize;
     price = 0;
     if (gLandToolTerrainSurface != 255)
-        price += numTiles * TerrainPricing[gLandToolTerrainSurface];
+    {
+        auto objManager = GetContext()->GetObjectManager();
+        const auto surfaceObj = static_cast<TerrainSurfaceObject *>(objManager->GetLoadedObject(OBJECT_TYPE_TERRAIN_SURFACE, gLandToolTerrainSurface));
+        if (surfaceObj != nullptr)
+        {
+            price += numTiles * surfaceObj->Price;
+        }
+    }
     if (gLandToolTerrainEdge != 255)
         price += numTiles * 100;
 

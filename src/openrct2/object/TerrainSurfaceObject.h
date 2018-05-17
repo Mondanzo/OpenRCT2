@@ -25,7 +25,9 @@ private:
 
 public:
     rct_string_id NameStringId{};
+    uint32 IconImageId{};
     uint32 BaseImageId{};
+    money32 Price{};
 
     explicit TerrainSurfaceObject(const rct_object_entry &entry) : Object(entry) { }
 
