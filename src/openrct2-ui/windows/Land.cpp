@@ -16,6 +16,8 @@
 
 #include <openrct2/Context.h>
 #include <openrct2/core/Math.hpp>
+#include <openrct2/object/ObjectManager.h>
+#include <openrct2/object/TerrainEdgeObject.h>
 #include <openrct2-ui/windows/Window.h>
 
 #include <openrct2-ui/interface/Widget.h>
@@ -25,6 +27,8 @@
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/world/Park.h>
 #include <openrct2/world/Surface.h>
+
+using namespace OpenRCT2;
 
 // clang-format off
 enum WINDOW_LAND_WIDGET_IDX {
@@ -244,7 +248,7 @@ static void window_land_dropdown(rct_window *w, rct_widgetindex widgetIndex, sin
         if (dropdownIndex == -1)
             dropdownIndex = gDropdownHighlightedIndex;
 
-        type = (dropdownIndex == -1) ?_selectedWallTexture : WallTextureOrder[dropdownIndex];
+        type = (dropdownIndex == -1) ?_selectedWallTexture : dropdownIndex;
 
         if (gLandToolTerrainEdge == type) {
             gLandToolTerrainEdge = 255;
@@ -298,6 +302,15 @@ static void window_land_update(rct_window *w)
  */
 static void window_land_invalidate(rct_window *w)
 {
+    auto edgeImage = (uint32)SPR_NONE;
+
+    auto objManager = GetContext()->GetObjectManager();
+    const auto edgeObj = static_cast<TerrainEdgeObject *>(objManager->GetLoadedObject(OBJECT_TYPE_TERRAIN_EDGE, _selectedWallTexture));
+    if (edgeObj != nullptr)
+    {
+        edgeImage = edgeObj->IconImageId;
+    }
+
     w->pressed_widgets = (1 << WIDX_PREVIEW);
     if (gLandToolTerrainSurface != 255)
         w->pressed_widgets |= (1 << WIDX_FLOOR);
@@ -309,7 +322,7 @@ static void window_land_invalidate(rct_window *w)
         w->pressed_widgets |= (1 << WIDX_PAINTMODE);
 
     window_land_widgets[WIDX_FLOOR].image = SPR_FLOOR_TEXTURE_GRASS + _selectedFloorTexture;
-    window_land_widgets[WIDX_WALL].image = WallTexturePreviews[_selectedWallTexture];
+    window_land_widgets[WIDX_WALL].image = edgeImage;
     // Update the preview image (for tool sizes up to 7)
     window_land_widgets[WIDX_PREVIEW].image = land_tool_size_to_sprite_index(gLandToolSize);
 }

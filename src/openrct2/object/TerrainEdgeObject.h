@@ -25,6 +25,7 @@ private:
 
 public:
     rct_string_id NameStringId{};
+    uint32 IconImageId{};
     uint32 BaseImageId{};
 
     explicit TerrainEdgeObject(const rct_object_entry &entry) : Object(entry) { }
