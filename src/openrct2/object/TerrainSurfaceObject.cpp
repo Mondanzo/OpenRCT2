@@ -14,6 +14,8 @@
  *****************************************************************************/
 #pragma endregion
 
+#pragma warning(disable : 4706) // assignment within conditional expression
+
 #include "../core/IStream.hpp"
 #include "../core/String.hpp"
 #include "../drawing/Drawing.h"
@@ -26,20 +28,16 @@ void TerrainSurfaceObject::Load()
     GetStringTable().Sort();
     NameStringId = language_allocate_object_string(GetName());
     IconImageId = gfx_object_allocate_images(GetImageTable().GetImages(), GetImageTable().GetCount());
-
-    // First image is icon followed by edge images
-    BaseImageId = IconImageId + 1;
-    GridBaseImageId = BaseImageId + 19;
-    UndergroundBaseImageId = BaseImageId + 38;
-    PatternBaseImageId = BaseImageId + 57;
-    if (Rotations == 2)
+    if ((Flags & SMOOTH_WITH_SELF) || (Flags & SMOOTH_WITH_OTHER))
     {
-        PatternBaseImageId += 57;
+        PatternBaseImageId = IconImageId + 1;
+        EntryBaseImageId = PatternBaseImageId + 6;
     }
-    else if (Rotations == 4)
+    else
     {
-        PatternBaseImageId += 57 * 3;
+        EntryBaseImageId = IconImageId + 1;
     }
+    NumEntries = (GetImageTable().GetCount() - EntryBaseImageId) / NUM_IMAGES_IN_ENTRY;
 }
 
 void TerrainSurfaceObject::Unload()
@@ -49,12 +47,14 @@ void TerrainSurfaceObject::Unload()
 
     NameStringId = 0;
     IconImageId = 0;
-    BaseImageId = 0;
+    PatternBaseImageId = 0;
+    EntryBaseImageId = 0;
+    NumEntries = 0;
 }
 
 void TerrainSurfaceObject::DrawPreview(rct_drawpixelinfo * dpi, sint32 width, sint32 height) const
 {
-    uint32 imageId = BaseImageId;
+    uint32 imageId = GetImageId({}, 1, 0, 0, false, false);
 
     sint32 x0 = 0;
     sint32 y = -16;
@@ -84,6 +84,59 @@ void TerrainSurfaceObject::ReadJson(IReadObjectContext * context, const json_t *
         { "smoothWithSelf", TERRAIN_SURFACE_FLAGS::SMOOTH_WITH_SELF },
         { "smoothWithOther", TERRAIN_SURFACE_FLAGS::SMOOTH_WITH_OTHER }});
 
+    auto jDefault = json_object_get(root, "default");
+    if (json_is_object(jDefault))
+    {
+        DefaultEntry = ObjectJsonHelpers::GetInteger(properties, "normal");
+        DefaultGridEntry = ObjectJsonHelpers::GetInteger(properties, "grid");
+        DefaultUndergroundEntry = ObjectJsonHelpers::GetInteger(properties, "underground");
+    }
+    else
+    {
+        DefaultEntry = 0;
+        DefaultGridEntry = 1;
+        DefaultUndergroundEntry = 2;
+    }
+
+    auto jSpecialArray = json_object_get(properties, "special");
+    if (json_is_array(jSpecialArray))
+    {
+        size_t i;
+        json_t * el;
+        json_array_foreach(jSpecialArray, i, el)
+        {
+            SpecialEntry entry;
+            entry.Index = ObjectJsonHelpers::GetInteger(el, "index");
+            entry.Length = ObjectJsonHelpers::GetInteger(el, "length", -1);
+            entry.Rotation = ObjectJsonHelpers::GetInteger(el, "rotation", -1);
+            entry.Variation = ObjectJsonHelpers::GetInteger(el, "variation", -1);
+            entry.Grid = ObjectJsonHelpers::GetBoolean(el, "grid");
+            entry.Underground = ObjectJsonHelpers::GetBoolean(el, "underground");
+            SpecialEntries.push_back(std::move(entry));
+        }
+    }
+
     ObjectJsonHelpers::LoadStrings(root, GetStringTable());
     ObjectJsonHelpers::LoadImages(context, root, GetImageTable());
+}
+
+uint32 TerrainSurfaceObject::GetImageId(const CoordsXY& position, sint32 length, sint32 rotation, sint32 offset, bool grid, bool underground) const
+{
+    uint32 result = (underground ? DefaultUndergroundEntry : (grid ? DefaultGridEntry : DefaultEntry));
+
+    // Look for a matching special
+    auto variation = ((position.x << 1) & 0b10) | (position.y & 0b01);
+    for (const auto& special : SpecialEntries)
+    {
+        if ((special.Length == -1 || special.Length == length) &&
+            (special.Rotation == -1 || special.Rotation == rotation) &&
+            (special.Variation == -1 || special.Variation == variation) &&
+            special.Grid == grid &&
+            special.Underground == underground)
+        {
+            result = special.Index;
+            break;
+        }
+    }
+    return EntryBaseImageId + (result * NUM_IMAGES_IN_ENTRY) + offset;
 }

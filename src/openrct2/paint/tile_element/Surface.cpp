@@ -219,30 +219,6 @@ static constexpr const uint8 byte_97B740[] =
     0, 3, 0, 1, 4, 0
 };
 
-static constexpr const uint32 dword_97B858[][2] =
-{
-    { SPR_TERRAIN_GRASS_LENGTH_4_VARIANT_1, SPR_TERRAIN_GRASS_LENGTH_4_VARIANT_1_GRID },
-    { SPR_TERRAIN_GRASS_LENGTH_4_VARIANT_2, SPR_TERRAIN_GRASS_LENGTH_4_VARIANT_2_GRID },
-    { SPR_TERRAIN_GRASS_LENGTH_4_VARIANT_3, SPR_TERRAIN_GRASS_LENGTH_4_VARIANT_3_GRID },
-    { SPR_TERRAIN_GRASS_LENGTH_4_VARIANT_4, SPR_TERRAIN_GRASS_LENGTH_4_VARIANT_4_GRID },
-};
-
-static constexpr const uint32 dword_97B878[][2] =
-{
-    { SPR_TERRAIN_GRASS_LENGTH_6_VARIANT_1, SPR_TERRAIN_GRASS_LENGTH_6_VARIANT_1_GRID },
-    { SPR_TERRAIN_GRASS_LENGTH_6_VARIANT_2, SPR_TERRAIN_GRASS_LENGTH_6_VARIANT_2_GRID },
-    { SPR_TERRAIN_GRASS_LENGTH_6_VARIANT_3, SPR_TERRAIN_GRASS_LENGTH_6_VARIANT_3_GRID },
-    { SPR_TERRAIN_GRASS_LENGTH_6_VARIANT_4, SPR_TERRAIN_GRASS_LENGTH_6_VARIANT_4_GRID },
-};
-
-static constexpr const uint32 dword_97B898[][2] =
-{
-    { SPR_TERRAIN_GRASS_MOWED_90, SPR_TERRAIN_GRASS_MOWED_90_GRID },
-    { SPR_TERRAIN_GRASS_MOWED,    SPR_TERRAIN_GRASS_MOWED_GRID },
-    { SPR_TERRAIN_GRASS_MOWED_90, SPR_TERRAIN_GRASS_MOWED_90_GRID },
-    { SPR_TERRAIN_GRASS_MOWED,    SPR_TERRAIN_GRASS_MOWED_GRID }
-};
-
 struct tile_descriptor
 {
     TileCoordsXY tile_coords;
@@ -336,40 +312,13 @@ static const TerrainSurfaceObject * get_surface_object(size_t index)
     return result;
 }
 
-static uint32 get_surface_image(uint8 index, sint32 offset, uint8 rotation, bool withGridlines)
+static uint32 get_surface_image(const paint_session * session, uint8 index, sint32 offset, uint8 rotation, sint32 grassLength, bool grid, bool underground)
 {
     auto image = (uint32)SPR_NONE;
     auto obj = get_surface_object(index);
     if (obj != nullptr)
     {
-        image = (withGridlines ? obj->GridBaseImageId : obj->BaseImageId) + offset;
-        if (obj->Rotations == 2 && (rotation & 1))
-        {
-            image += 57;
-        }
-        else if (obj->Rotations == 4)
-        {
-            image += 57 * (rotation & 3);
-        }
-        if (obj->Colour != 255)
-        {
-            image |= obj->Colour << 19 | IMAGE_TYPE_REMAP;
-        }
-    }
-    return image;
-}
-
-static uint32 get_surface_underground_image(uint8 index, sint32 offset, uint8 rotation)
-{
-    auto image = (uint32)SPR_NONE;
-    auto obj = get_surface_object(index);
-    if (obj != nullptr)
-    {
-        image = obj->UndergroundBaseImageId + offset;
-        if (obj->Rotations == 2 && (rotation & 1))
-        {
-            image += 57;
-        }
+        image = obj->GetImageId({ session->MapPosition.x >> 5, session->MapPosition.y >> 5 }, grassLength, rotation, offset, grid, underground);
         if (obj->Colour != 255)
         {
             image |= obj->Colour << 19 | IMAGE_TYPE_REMAP;
@@ -1050,7 +999,7 @@ void surface_paint(paint_session * session, uint8 direction, uint16 height, cons
     {
         const bool showGridlines = (gCurrentViewportFlags & VIEWPORT_FLAG_GRIDLINES);
 
-        sint32 branch = -1;
+        auto grassLength = -1;
         if ((tileElement->properties.surface.terrain & 0xE0) == 0)
         {
             if (tile_element_get_direction(tileElement) == 0)
@@ -1059,7 +1008,7 @@ void surface_paint(paint_session * session, uint8 direction, uint16 height, cons
                 {
                     if ((gCurrentViewportFlags & (VIEWPORT_FLAG_HIDE_BASE | VIEWPORT_FLAG_UNDERGROUND_INSIDE)) == 0)
                     {
-                        branch = tileElement->properties.surface.grass_length & 0x7;
+                        grassLength = tileElement->properties.surface.grass_length & 0x7;
                     }
                 }
             }
@@ -1067,57 +1016,19 @@ void surface_paint(paint_session * session, uint8 direction, uint16 height, cons
 
         assert(surfaceShape < Util::CountOf(byte_97B444));
         const uint8 image_offset = byte_97B444[surfaceShape];
-        sint32 image_id;
 
-        switch (branch)
+        auto imageId = get_surface_image(session, terrain_type, image_offset, rotation, grassLength, showGridlines, false);
+        if (gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER))
         {
-        case 0:
-            // loc_660C90
-            image_id = dword_97B898[rotation][showGridlines ? 1 : 0] + image_offset;
-            break;
-
-        case 1:
-        case 2:
-        case 3:
-        default:
-            // loc_660C9F
-            image_id = get_surface_image(terrain_type, image_offset, rotation, showGridlines);
-
-            if (gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER))
-            {
-                image_id = SPR_TERRAIN_TRACK_DESIGNER;
-            }
-
-            if (gCurrentViewportFlags & (VIEWPORT_FLAG_UNDERGROUND_INSIDE | VIEWPORT_FLAG_HIDE_BASE))
-            {
-                image_id &= 0xDC07FFFF; // remove colour
-                image_id |= 0x41880000;
-            }
-            break;
-
-        case 4:
-        case 5:
-            // loc_660C44
-        case 6:
-            // loc_660C6A
-            {
-                const sint16 x = session->MapPosition.x & 0x20;
-                const sint16 y = session->MapPosition.y & 0x20;
-                const sint32 index = (y | (x << 1)) >> 5;
-
-                if (branch == 6)
-                {
-                    image_id = dword_97B878[index][showGridlines ? 1 : 0] + image_offset;
-                }
-                else
-                {
-                    image_id = dword_97B858[index][showGridlines ? 1 : 0] + image_offset;
-                }
-            }
-            break;
+            imageId = SPR_TERRAIN_TRACK_DESIGNER;
+        }
+        if (gCurrentViewportFlags & (VIEWPORT_FLAG_UNDERGROUND_INSIDE | VIEWPORT_FLAG_HIDE_BASE))
+        {
+            imageId &= 0xDC07FFFF; // remove colour
+            imageId |= 0x41880000;
         }
 
-        sub_98196C(session, image_id, 0, 0, 32, 32, -1, height);
+        sub_98196C(session, imageId, 0, 0, 32, 32, -1, height);
         has_surface = true;
     }
 
@@ -1329,7 +1240,7 @@ void surface_paint(paint_session * session, uint8 direction, uint16 height, cons
         !(gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER)))
     {
         const uint8 image_offset = byte_97B444[surfaceShape];
-        const uint32 image_id = get_surface_underground_image(terrain_type, image_offset, rotation);
+        const uint32 image_id = get_surface_image(session, terrain_type, image_offset, rotation, 1, false, true);
         paint_attach_to_previous_ps(session, image_id, 0, 0);
     }
 

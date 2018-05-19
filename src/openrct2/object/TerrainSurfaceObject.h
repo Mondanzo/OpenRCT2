@@ -17,6 +17,7 @@
 #pragma once
 
 #include <stdexcept>
+#include "../world/Location.hpp"
 #include "Object.h"
 
 enum TERRAIN_SURFACE_FLAGS
@@ -29,14 +30,31 @@ enum TERRAIN_SURFACE_FLAGS
 class TerrainSurfaceObject final : public Object
 {
 private:
+    struct SpecialEntry
+    {
+        uint32 Index{};
+        sint32 Length{};
+        sint32 Rotation{};
+        sint32 Variation{};
+        bool Grid{};
+        bool Underground{};
+    };
+
+    static constexpr auto NUM_IMAGES_IN_ENTRY = 19;
 
 public:
     rct_string_id NameStringId{};
     uint32 IconImageId{};
-    uint32 BaseImageId{};
-    uint32 GridBaseImageId{};
-    uint32 UndergroundBaseImageId{};
     uint32 PatternBaseImageId{};
+    uint32 EntryBaseImageId{};
+
+    uint32 NumEntries{};
+    uint32 DefaultEntry{};
+    uint32 DefaultGridEntry{};
+    uint32 DefaultUndergroundEntry{};
+    std::vector<SpecialEntry> SpecialEntries;
+    std::vector<uint32> SpecialEntryMap;
+
     colour_t Colour{};
     uint8 Rotations{};
     money32 Price{};
@@ -52,4 +70,6 @@ public:
     void Unload() override;
 
     void DrawPreview(rct_drawpixelinfo * dpi, sint32 width, sint32 height) const override;
+
+    uint32 GetImageId(const CoordsXY& position, sint32 length, sint32 rotation, sint32 offset, bool grid, bool underground) const;
 };
