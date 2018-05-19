@@ -1000,17 +1000,11 @@ void surface_paint(paint_session * session, uint8 direction, uint16 height, cons
         const bool showGridlines = (gCurrentViewportFlags & VIEWPORT_FLAG_GRIDLINES);
 
         auto grassLength = -1;
-        if ((tileElement->properties.surface.terrain & 0xE0) == 0)
+        if (zoomLevel == 0)
         {
-            if (tile_element_get_direction(tileElement) == 0)
+            if ((gCurrentViewportFlags & (VIEWPORT_FLAG_HIDE_BASE | VIEWPORT_FLAG_UNDERGROUND_INSIDE)) == 0)
             {
-                if (zoomLevel == 0)
-                {
-                    if ((gCurrentViewportFlags & (VIEWPORT_FLAG_HIDE_BASE | VIEWPORT_FLAG_UNDERGROUND_INSIDE)) == 0)
-                    {
-                        grassLength = tileElement->properties.surface.grass_length & 0x7;
-                    }
-                }
+                grassLength = tileElement->properties.surface.grass_length & 0x7;
             }
         }
 
