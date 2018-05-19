@@ -76,6 +76,10 @@ void land_tool_show_surface_style_dropdown(rct_window * w, rct_widget * widget, 
         {
             gDropdownItemsFormat[itemIndex] = DROPDOWN_FORMAT_LAND_PICKER;
             gDropdownItemsArgs[itemIndex] = surfaceObj->IconImageId;
+            if (surfaceObj->Colour != 255)
+            {
+                gDropdownItemsArgs[itemIndex] |= surfaceObj->Colour << 19 | IMAGE_TYPE_REMAP;
+            }
             if (i == currentSurfaceType)
             {
                 defaultIndex = itemIndex;

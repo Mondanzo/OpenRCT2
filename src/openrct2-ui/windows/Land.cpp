@@ -309,6 +309,10 @@ static void window_land_invalidate(rct_window *w)
     if (surfaceObj != nullptr)
     {
         surfaceImage = surfaceObj->IconImageId;
+        if (surfaceObj->Colour != 255)
+        {
+            surfaceImage |= surfaceObj->Colour << 19 | IMAGE_TYPE_REMAP;
+        }
     }
     const auto edgeObj = static_cast<TerrainEdgeObject *>(objManager->GetLoadedObject(OBJECT_TYPE_TERRAIN_EDGE, _selectedWallTexture));
     if (edgeObj != nullptr)

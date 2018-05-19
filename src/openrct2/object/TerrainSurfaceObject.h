@@ -19,6 +19,13 @@
 #include <stdexcept>
 #include "Object.h"
 
+enum TERRAIN_SURFACE_FLAGS
+{
+    NONE                = 0,
+    SMOOTH_WITH_SELF    = 1 << 0,
+    SMOOTH_WITH_OTHER   = 1 << 1,
+};
+
 class TerrainSurfaceObject final : public Object
 {
 private:
@@ -27,7 +34,13 @@ public:
     rct_string_id NameStringId{};
     uint32 IconImageId{};
     uint32 BaseImageId{};
+    uint32 GridBaseImageId{};
+    uint32 UndergroundBaseImageId{};
+    uint32 PatternBaseImageId{};
+    colour_t Colour{};
+    uint8 Rotations{};
     money32 Price{};
+    TERRAIN_SURFACE_FLAGS Flags{};
 
     explicit TerrainSurfaceObject(const rct_object_entry &entry) : Object(entry) { }
 

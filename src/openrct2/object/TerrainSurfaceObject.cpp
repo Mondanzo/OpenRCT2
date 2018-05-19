@@ -29,6 +29,17 @@ void TerrainSurfaceObject::Load()
 
     // First image is icon followed by edge images
     BaseImageId = IconImageId + 1;
+    GridBaseImageId = BaseImageId + 19;
+    UndergroundBaseImageId = BaseImageId + 38;
+    PatternBaseImageId = BaseImageId + 57;
+    if (Rotations == 2)
+    {
+        PatternBaseImageId += 57;
+    }
+    else if (Rotations == 4)
+    {
+        PatternBaseImageId += 57 * 3;
+    }
 }
 
 void TerrainSurfaceObject::Unload()
@@ -66,7 +77,12 @@ void TerrainSurfaceObject::DrawPreview(rct_drawpixelinfo * dpi, sint32 width, si
 void TerrainSurfaceObject::ReadJson(IReadObjectContext * context, const json_t * root)
 {
     auto properties = json_object_get(root, "properties");
+    Colour = ObjectJsonHelpers::ParseColour(ObjectJsonHelpers::GetString(properties, "colour"), 255);
+    Rotations = ObjectJsonHelpers::GetInteger(properties, "rotations", 1);
     Price = ObjectJsonHelpers::GetInteger(properties, "price", 0);
+    Flags = ObjectJsonHelpers::GetFlags<TERRAIN_SURFACE_FLAGS>(properties, {
+        { "smoothWithSelf", TERRAIN_SURFACE_FLAGS::SMOOTH_WITH_SELF },
+        { "smoothWithOther", TERRAIN_SURFACE_FLAGS::SMOOTH_WITH_OTHER }});
 
     ObjectJsonHelpers::LoadStrings(root, GetStringTable());
     ObjectJsonHelpers::LoadImages(context, root, GetImageTable());
