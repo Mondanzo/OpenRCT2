@@ -20,7 +20,6 @@
 #include "../Game.h"
 #include "../core/Guard.hpp"
 #include "../interface/Window.h"
-// #include "../interface/Window_internal.h"
 #include "../localisation/Localisation.h"
 #include "../ride/Track.h"
 #include "../windows/Intent.h"
