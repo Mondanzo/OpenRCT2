@@ -548,11 +548,11 @@ void window_set_window_limit(sint32 value);
 rct_window *window_create_subclass(std::unique_ptr<rct_window> w, sint32 x, sint32 y, sint32 width, sint32 height, rct_window_event_list *event_handlers, rct_windowclass cls, uint16 flags);
 
 template<typename T>
-T* OpenWindow(sint32 x, sint32 y, sint32 width, sint32 height, rct_window_event_list *event_handlers, rct_windowclass cls, uint16 flags)
+T* OpenWindow(sint32 x, sint32 y, sint32 width, sint32 height, rct_windowclass cls, uint16 flags)
 {
     auto wptr = std::make_unique<T>();
     auto w = wptr.get();
-    window_create_subclass(std::move(wptr), x, y, width, height, event_handlers, cls, flags);
+    window_create_subclass(std::move(wptr), x, y, width, height, nullptr, cls, flags);
     return w;
 }
 

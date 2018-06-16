@@ -21,30 +21,30 @@ struct rct_object_entry;
  * size: 0x4C0
  */
 struct rct_window {
-    rct_window_event_list* event_handlers;      // 0x000
-    rct_viewport* viewport;     // 0x004
-    uint64 enabled_widgets;     // 0x008
-    uint64 disabled_widgets;    // 0x010
-    uint64 pressed_widgets;     // 0x018
-    uint64 hold_down_widgets;   // 0x020
-    rct_widget* widgets;        // 0x028
-    sint16 x;                   // 0x02C
-    sint16 y;                   // 0x02E
-    sint16 width;               // 0x030
-    sint16 height;              // 0x032
-    sint16 min_width;           // 0x034
-    sint16 max_width;           // 0x036
-    sint16 min_height;          // 0x038
-    sint16 max_height;          // 0x03A
-    rct_windownumber number;    // 0x03C
-    uint16 flags;               // 0x03E
-    rct_scroll scrolls[3];      // 0x040
-    uint8 list_item_positions[1024];// 0x076
-    uint16 no_list_items;           // 0x476 0 for no items
-    sint16 pad_478;
-    sint16 selected_list_item;      // 0x47A -1 for none selected
-    sint16 pad_47C;
-    sint16 pad_47E;
+    rct_window_event_list* event_handlers{};      // 0x000
+    rct_viewport* viewport{};   // 0x004
+    uint64 enabled_widgets{};   // 0x008
+    uint64 disabled_widgets{};  // 0x010
+    uint64 pressed_widgets{};   // 0x018
+    uint64 hold_down_widgets{}; // 0x020
+    rct_widget* widgets{};      // 0x028
+    sint16 x{};                 // 0x02C
+    sint16 y{};                 // 0x02E
+    sint16 width{};             // 0x030
+    sint16 height{};            // 0x032
+    sint16 min_width{};         // 0x034
+    sint16 max_width{};         // 0x036
+    sint16 min_height{};        // 0x038
+    sint16 max_height{};        // 0x03A
+    rct_windownumber number{};  // 0x03C
+    uint16 flags{};             // 0x03E
+    rct_scroll scrolls[3]{};    // 0x040
+    uint8 list_item_positions[1024]{}; // 0x076
+    uint16 no_list_items{};     // 0x476 0 for no items
+    sint16 pad_478{};
+    sint16 selected_list_item{}; // 0x47A -1 for none selected
+    sint16 pad_47C{};
+    sint16 pad_47E{};
     union {
         coordinate_focus viewport_focus_coordinates;
         sprite_focus viewport_focus_sprite;
@@ -57,15 +57,15 @@ struct rct_window {
         track_list_variables track_list;
         error_variables error;
     };
-    sint16 page;                    // 0x48A
+    sint16 page{};                  // 0x48A
     union {
         sint16 picked_peep_old_x;   // 0x48C staff/guest window: peep x gets set to 0x8000 on pickup, this is the old value
         sint16 vehicleIndex;        // 0x48C Ride window: selected car when setting vehicle colours
         sint16 numberOfStaff;       // 0x48C Used in park window.
         sint16 var_48C;
     };
-    uint16 frame_no;                // 0x48E updated every tic for motion in windows sprites
-    uint16 list_information_type;   // 0x490 0 for none, Used as current position of marquee in window_peep
+    uint16 frame_no{};              // 0x48E updated every tic for motion in windows sprites
+    uint16 list_information_type{}; // 0x490 0 for none, Used as current position of marquee in window_peep
     union {
         sint16 picked_peep_frame;   // 0x492 Animation frame of picked peep in staff window and guest window
         sint16 var_492;
@@ -81,23 +81,49 @@ struct rct_window {
             uint16 var_496;
         };
     };
-    uint8 var_498[0x14];
-    sint16 selected_tab;            // 0x4AC
-    sint16 var_4AE;
-    uint16 viewport_target_sprite;  // 0x4B0 viewport target sprite
-    sint16 saved_view_x;            // 0x4B2
-    sint16 saved_view_y;            // 0x4B4
-    rct_windowclass classification; // 0x4B6
-    uint8 pad_4B7;
-    sint8 var_4B8;
-    sint8 var_4B9;
-    uint8 colours[6];           // 0x4BA
-    uint8 visibility;           // VISIBILITY_CACHE
-    uint16 viewport_smart_follow_sprite; // Smart following of sprites. Handles setting viewport target sprite etc
+    uint8 var_498[0x14]{};
+    sint16 selected_tab{};          // 0x4AC
+    sint16 var_4AE{};
+    uint16 viewport_target_sprite{}; // 0x4B0 viewport target sprite
+    sint16 saved_view_x{};          // 0x4B2
+    sint16 saved_view_y{};          // 0x4B4
+    rct_windowclass classification{}; // 0x4B6
+    uint8 pad_4B7{};
+    sint8 var_4B8{};
+    sint8 var_4B9{};
+    uint8 colours[6]{};         // 0x4BA
+    uint8 visibility{};         // VISIBILITY_CACHE
+    uint16 viewport_smart_follow_sprite = 0xFFFF; // Smart following of sprites. Handles setting viewport target sprite etc
 
+    // ----------------------------------------------------
+    // New window class:
+    // ----------------------------------------------------
     rct_window() = default;
     rct_window(const rct_window&) = delete;
     virtual ~rct_window() = default;
+
+private:
+    bool _isLegacy = true;
+
+protected:
+    rct_window(rct_windowclass wc) :
+        classification(wc),
+        _isLegacy(false)
+    {
+    }
+
+public:
+    bool IsLegacy() { return _isLegacy; }
+
+    virtual void OnClose() { }
+    virtual void OnMouseUp(rct_widgetindex widgetIndex) { }
+    virtual void OnMouseDown(rct_widgetindex widgetIndex) { }
+    virtual void OnDropdown(rct_widgetindex widgetIndex, sint32 selectedIndex) { }
+    virtual void OnTextInput(rct_widgetindex widgetIndex, const std::string_view& text) { }
+    virtual void Update() { }
+    virtual void PreparePaint() { }
+    virtual void Paint(rct_drawpixelinfo* dpi) { }
+    virtual void PaintScrollView(rct_drawpixelinfo* dpi, sint32 scrollViewIndex) { }
 };
 
 // rct2: 0x01420078

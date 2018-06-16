@@ -1375,175 +1375,295 @@ void tool_cancel()
 
 void window_event_close_call(rct_window *w)
 {
-    if (w->event_handlers->close != nullptr)
-        w->event_handlers->close(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->close != nullptr)
+            w->event_handlers->close(w);
+    }
+    else
+    {
+        w->OnClose();
+    }
 }
 
 void window_event_mouse_up_call(rct_window *w, rct_widgetindex widgetIndex)
 {
-    if (w->event_handlers->mouse_up != nullptr)
-        w->event_handlers->mouse_up(w, widgetIndex);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->mouse_up != nullptr)
+            w->event_handlers->mouse_up(w, widgetIndex);
+    }
+    else
+    {
+        w->OnMouseUp(widgetIndex);
+    }
 }
 
 void window_event_resize_call(rct_window *w)
 {
-    if (w->event_handlers->resize != nullptr)
-        w->event_handlers->resize(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->resize != nullptr)
+            w->event_handlers->resize(w);
+    }
 }
 
 void window_event_mouse_down_call(rct_window *w, rct_widgetindex widgetIndex)
 {
-    if (w->event_handlers->mouse_down != nullptr)
-        w->event_handlers->mouse_down(w, widgetIndex, &w->widgets[widgetIndex]);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->mouse_down != nullptr)
+            w->event_handlers->mouse_down(w, widgetIndex, &w->widgets[widgetIndex]);
+    }
+    else
+    {
+        w->OnMouseDown(widgetIndex);
+    }
 }
 
 void window_event_dropdown_call(rct_window *w, rct_widgetindex widgetIndex, sint32 dropdownIndex)
 {
-    if (w->event_handlers->dropdown != nullptr)
-        w->event_handlers->dropdown(w, widgetIndex, dropdownIndex);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->dropdown != nullptr)
+            w->event_handlers->dropdown(w, widgetIndex, dropdownIndex);
+    }
+    else
+    {
+        w->OnDropdown(widgetIndex, dropdownIndex);
+    }
 }
 
 void window_event_unknown_05_call(rct_window *w)
 {
-    if (w->event_handlers->unknown_05 != nullptr)
-        w->event_handlers->unknown_05(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->unknown_05 != nullptr)
+            w->event_handlers->unknown_05(w);
+    }
 }
 
 void window_event_update_call(rct_window *w)
 {
-    if (w->event_handlers->update != nullptr)
-        w->event_handlers->update(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->update != nullptr)
+            w->event_handlers->update(w);
+    }
+    else
+    {
+        w->Update();
+    }
 }
 
 void window_event_unknown_07_call(rct_window *w)
 {
-    if (w->event_handlers->unknown_07 != nullptr)
-        w->event_handlers->unknown_07(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->unknown_07 != nullptr)
+            w->event_handlers->unknown_07(w);
+    }
 }
 
 void window_event_unknown_08_call(rct_window *w)
 {
-    if (w->event_handlers->unknown_08 != nullptr)
-        w->event_handlers->unknown_08(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->unknown_08 != nullptr)
+            w->event_handlers->unknown_08(w);
+    }
 }
 
 void window_event_tool_update_call(rct_window *w, rct_widgetindex widgetIndex, sint32 x, sint32 y)
 {
-    if (w->event_handlers->tool_update != nullptr)
-        w->event_handlers->tool_update(w, widgetIndex, x, y);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->tool_update != nullptr)
+            w->event_handlers->tool_update(w, widgetIndex, x, y);
+    }
 }
 
 void window_event_tool_down_call(rct_window *w, rct_widgetindex widgetIndex, sint32 x, sint32 y)
 {
-    if (w->event_handlers->tool_down != nullptr)
-        w->event_handlers->tool_down(w, widgetIndex, x, y);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->tool_down != nullptr)
+            w->event_handlers->tool_down(w, widgetIndex, x, y);
+    }
 }
 
 void window_event_tool_drag_call(rct_window *w, rct_widgetindex widgetIndex, sint32 x, sint32 y)
 {
-    if (w->event_handlers->tool_drag != nullptr)
-        w->event_handlers->tool_drag(w, widgetIndex, x, y);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->tool_drag != nullptr)
+            w->event_handlers->tool_drag(w, widgetIndex, x, y);
+    }
 }
 
 void window_event_tool_up_call(rct_window *w, rct_widgetindex widgetIndex, sint32 x, sint32 y)
 {
-    if (w->event_handlers->tool_up != nullptr)
-        w->event_handlers->tool_up(w, widgetIndex, x, y);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->tool_up != nullptr)
+            w->event_handlers->tool_up(w, widgetIndex, x, y);
+    }
 }
 
 void window_event_tool_abort_call(rct_window *w, rct_widgetindex widgetIndex)
 {
-    if (w->event_handlers->tool_abort != nullptr)
-        w->event_handlers->tool_abort(w, widgetIndex);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->tool_abort != nullptr)
+            w->event_handlers->tool_abort(w, widgetIndex);
+    }
 }
 
 void window_event_unknown_0E_call(rct_window *w)
 {
-    if (w->event_handlers->unknown_0E != nullptr)
-        w->event_handlers->unknown_0E(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->unknown_0E != nullptr)
+            w->event_handlers->unknown_0E(w);
+    }
 }
 
 void window_get_scroll_size(rct_window *w, sint32 scrollIndex, sint32 *width, sint32 *height)
 {
-    if (w->event_handlers->get_scroll_size != nullptr) {
-        w->event_handlers->get_scroll_size(w, scrollIndex, width, height);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->get_scroll_size != nullptr) {
+            w->event_handlers->get_scroll_size(w, scrollIndex, width, height);
+        }
     }
 }
 
 void window_event_scroll_mousedown_call(rct_window *w, sint32 scrollIndex, sint32 x, sint32 y)
 {
-    if (w->event_handlers->scroll_mousedown != nullptr)
-        w->event_handlers->scroll_mousedown(w, scrollIndex, x, y);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->scroll_mousedown != nullptr)
+            w->event_handlers->scroll_mousedown(w, scrollIndex, x, y);
+    }
 }
 
 void window_event_scroll_mousedrag_call(rct_window *w, sint32 scrollIndex, sint32 x, sint32 y)
 {
-    if (w->event_handlers->scroll_mousedrag != nullptr)
-        w->event_handlers->scroll_mousedrag(w, scrollIndex, x, y);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->scroll_mousedrag != nullptr)
+            w->event_handlers->scroll_mousedrag(w, scrollIndex, x, y);
+    }
 }
 
 void window_event_scroll_mouseover_call(rct_window *w, sint32 scrollIndex, sint32 x, sint32 y)
 {
-    if (w->event_handlers->scroll_mouseover != nullptr)
-        w->event_handlers->scroll_mouseover(w, scrollIndex, x, y);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->scroll_mouseover != nullptr)
+            w->event_handlers->scroll_mouseover(w, scrollIndex, x, y);
+    }
 }
 
 void window_event_textinput_call(rct_window *w, rct_widgetindex widgetIndex, char *text)
 {
-    if (w->event_handlers->text_input != nullptr)
-        w->event_handlers->text_input(w, widgetIndex, text);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->text_input != nullptr)
+            w->event_handlers->text_input(w, widgetIndex, text);
+    }
+    else
+    {
+        w->OnTextInput(widgetIndex, text == nullptr ? "" : text);
+    }
 }
 
 void window_event_viewport_rotate_call(rct_window *w)
 {
-    if (w->event_handlers->viewport_rotate != nullptr)
-        w->event_handlers->viewport_rotate(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->viewport_rotate != nullptr)
+            w->event_handlers->viewport_rotate(w);
+    }
 }
 
 void window_event_unknown_15_call(rct_window *w, sint32 scrollIndex, sint32 scrollAreaType)
 {
-    if (w->event_handlers->unknown_15 != nullptr)
-        w->event_handlers->unknown_15(w, scrollIndex, scrollAreaType);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->unknown_15 != nullptr)
+            w->event_handlers->unknown_15(w, scrollIndex, scrollAreaType);
+    }
 }
 
 rct_string_id window_event_tooltip_call(rct_window *w, rct_widgetindex widgetIndex)
 {
     rct_string_id result = 0;
-    if (w->event_handlers->tooltip != nullptr)
-        w->event_handlers->tooltip(w, widgetIndex, &result);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->tooltip != nullptr)
+            w->event_handlers->tooltip(w, widgetIndex, &result);
+    }
     return result;
 }
 
 sint32 window_event_cursor_call(rct_window *w, rct_widgetindex widgetIndex, sint32 x, sint32 y)
 {
     sint32 cursorId = CURSOR_ARROW;
-    if (w->event_handlers->cursor != nullptr)
-        w->event_handlers->cursor(w, widgetIndex, x, y, &cursorId);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->cursor != nullptr)
+            w->event_handlers->cursor(w, widgetIndex, x, y, &cursorId);
+    }
     return cursorId;
 }
 
 void window_event_moved_call(rct_window *w, sint32 x, sint32 y)
 {
-    if (w->event_handlers->moved != nullptr)
-        w->event_handlers->moved(w, x, y);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->moved != nullptr)
+            w->event_handlers->moved(w, x, y);
+    }
 }
 
 void window_event_invalidate_call(rct_window *w)
 {
-    if (w->event_handlers->invalidate != nullptr)
-        w->event_handlers->invalidate(w);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->invalidate != nullptr)
+            w->event_handlers->invalidate(w);
+    }
+    else
+    {
+        w->PreparePaint();
+    }
 }
 
 void window_event_paint_call(rct_window *w, rct_drawpixelinfo *dpi)
 {
-    if (w->event_handlers->paint != nullptr)
-        w->event_handlers->paint(w, dpi);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->paint != nullptr)
+            w->event_handlers->paint(w, dpi);
+    }
+    else
+    {
+        w->Paint(dpi);
+    }
 }
 
 void window_event_scroll_paint_call(rct_window *w, rct_drawpixelinfo *dpi, sint32 scrollIndex)
 {
-    if (w->event_handlers->scroll_paint != nullptr)
-        w->event_handlers->scroll_paint(w, dpi, scrollIndex);
+    if (w->IsLegacy())
+    {
+        if (w->event_handlers->scroll_paint != nullptr)
+            w->event_handlers->scroll_paint(w, dpi, scrollIndex);
+    }
+    else
+    {
+        w->PaintScrollView(dpi, scrollIndex);
+    }
 }
 
 /**

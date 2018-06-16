@@ -9,7 +9,6 @@
 
 #include <openrct2/config/Config.h>
 #include <openrct2/Context.h>
-#include <openrct2/core/Math.hpp>
 #include <openrct2/core/Util.hpp>
 #include <openrct2/localisation/Date.h>
 #include <openrct2/localisation/Localisation.h>
@@ -25,19 +24,8 @@
 
 #define CHEATS_MONEY_DEFAULT MONEY(10000,00)
 #define CHEATS_MONEY_INCREMENT_DIV MONEY(5000,00)
-static utf8 _moneySpinnerText[MONEY_STRING_MAXLENGTH];
-static money32 _moneySpinnerValue = CHEATS_MONEY_DEFAULT;
-static sint32 _selectedStaffSpeed = 1;
 
 // clang-format off
-enum
-{
-    WINDOW_CHEATS_PAGE_MONEY,
-    WINDOW_CHEATS_PAGE_GUESTS,
-    WINDOW_CHEATS_PAGE_MISC,
-    WINDOW_CHEATS_PAGE_RIDES,
-};
-
 static rct_string_id _staffSpeedNames[] =
 {
     STR_FROZEN,
@@ -169,7 +157,7 @@ enum WINDOW_CHEATS_WIDGET_IDX
 #pragma region MEASUREMENTS
 
 #define WW              249
-#define WH              300
+#define WH              290
 #define TAB_HEIGHT      43
 #define XSPA            5                                               // X spacing
 #define YSPA            5                                               // Y spacing
@@ -323,156 +311,6 @@ static rct_widget *window_cheats_page_widgets[] =
     window_cheats_rides_widgets,
 };
 
-static void window_cheats_money_mouseup(rct_window *w, rct_widgetindex widgetIndex);
-static void window_cheats_money_mousedown(rct_window *w, rct_widgetindex widgetIndex, rct_widget* widget);
-static void window_cheats_misc_mousedown(rct_window *w, rct_widgetindex widgetIndex, rct_widget* widget);
-static void window_cheats_misc_dropdown(rct_window *w, rct_widgetindex widgetIndex, sint32 dropdownIndex);
-static void window_cheats_guests_mouseup(rct_window *w, rct_widgetindex widgetIndex);
-static void window_cheats_misc_mouseup(rct_window *w, rct_widgetindex widgetIndex);
-static void window_cheats_rides_mouseup(rct_window *w, rct_widgetindex widgetIndex);
-static void window_cheats_update(rct_window *w);
-static void window_cheats_invalidate(rct_window *w);
-static void window_cheats_paint(rct_window *w, rct_drawpixelinfo *dpi);
-static void window_cheats_set_page(rct_window *w, sint32 page);
-static void window_cheats_text_input(rct_window *w, rct_widgetindex widgetIndex, char *text);
-
-static rct_window_event_list window_cheats_money_events =
-{
-    nullptr,
-    window_cheats_money_mouseup,
-    nullptr,
-    window_cheats_money_mousedown,
-    nullptr,
-    nullptr,
-    window_cheats_update,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    window_cheats_text_input,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    window_cheats_invalidate,
-    window_cheats_paint,
-    nullptr
-};
-
-static rct_window_event_list window_cheats_guests_events =
-{
-    nullptr,
-    window_cheats_guests_mouseup,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    window_cheats_update,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    window_cheats_invalidate,
-    window_cheats_paint,
-    nullptr
-};
-
-static rct_window_event_list window_cheats_misc_events =
-{
-    nullptr,
-    window_cheats_misc_mouseup,
-    nullptr,
-    window_cheats_misc_mousedown,
-    window_cheats_misc_dropdown,
-    nullptr,
-    window_cheats_update,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    window_cheats_invalidate,
-    window_cheats_paint,
-    nullptr
-};
-
-static rct_window_event_list window_cheats_rides_events =
-{
-    nullptr,
-    window_cheats_rides_mouseup,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    window_cheats_update,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    window_cheats_invalidate,
-    window_cheats_paint,
-    nullptr
-};
-
-
-static rct_window_event_list *window_cheats_page_events[] =
-{
-    &window_cheats_money_events,
-    &window_cheats_guests_events,
-    &window_cheats_misc_events,
-    &window_cheats_rides_events,
-};
-
 #define MAIN_CHEAT_ENABLED_WIDGETS (1ULL << WIDX_CLOSE) | (1ULL << WIDX_TAB_1) | (1ULL << WIDX_TAB_2) | (1ULL << WIDX_TAB_3) | (1ULL << WIDX_TAB_4)
 
 static uint64 window_cheats_page_enabled_widgets[] = {
@@ -600,678 +438,681 @@ static rct_string_id window_cheats_page_titles[] = {
 };
 // clang-format on
 
-static void window_cheats_draw_tab_images(rct_drawpixelinfo *dpi, rct_window *w);
-
-class CheatsWindow : public rct_window
+class CheatsWindow final : public rct_window
 {
+private:
+    enum class PAGE
+    {
+        MONEY,
+        GUESTS,
+        MISC,
+        RIDES,
+    };
+
+    PAGE _page;
+    std::string _moneySpinnerText;
+    money32 _moneySpinnerValue = CHEATS_MONEY_DEFAULT;
+    sint32 _selectedStaffSpeed = 1;
+
 public:
+    CheatsWindow() :
+        rct_window(WC_CHEATS)
+    {
+        SetPage(PAGE::MONEY);
+        park_rating_spinner_value = get_forced_park_rating() >= 0 ? get_forced_park_rating() : 999;
+    }
+
     ~CheatsWindow() override
     {
         std::printf("Cheats window has been deleted!\n");
     }
 
-    uint32 ExtraData;
+    void Update() override
+    {
+        this->frame_no++;
+        widget_invalidate(this, WIDX_TAB_1 + (rct_widgetindex)_page);
+    }
+
+    void PreparePaint() override
+    {
+        this->pressed_widgets = 0;
+        this->disabled_widgets = 0;
+
+        // Set correct active tab
+        for (auto i = 0; i < 7; i++)
+        {
+            this->pressed_widgets &= ~(1 << (WIDX_TAB_1 + i));
+        }
+        this->pressed_widgets |= 1LL << (WIDX_TAB_1 + (size_t)_page);
+
+        // Set title
+        this->widgets[WIDX_TITLE].text = window_cheats_page_titles[(size_t)_page];
+
+        switch (_page)
+        {
+            case PAGE::MONEY:
+            {
+                widget_set_checkbox_value(this, WIDX_NO_MONEY, gParkFlags & PARK_FLAGS_NO_MONEY);
+
+                uint64 money_widgets = (1 << WIDX_ADD_SET_MONEY_GROUP) | (1 << WIDX_MONEY_SPINNER) | (1 << WIDX_MONEY_SPINNER_INCREMENT) |
+                    (1 << WIDX_MONEY_SPINNER_DECREMENT) | (1 << WIDX_ADD_MONEY) | (1 << WIDX_SET_MONEY) | (1 << WIDX_CLEAR_LOAN);
+                if (gParkFlags & PARK_FLAGS_NO_MONEY)
+                {
+                    this->disabled_widgets |= money_widgets;
+                }
+                else
+                {
+                    this->disabled_widgets &= ~money_widgets;
+                }
+                break;
+            }
+            case PAGE::GUESTS:
+                set_format_arg(0, sint32, 10000);
+                widget_set_checkbox_value(this, WIDX_GUEST_IGNORE_RIDE_INTENSITY, gCheatsIgnoreRideIntensity);
+                widget_set_checkbox_value(this, WIDX_DISABLE_VANDALISM, gCheatsDisableVandalism);
+                widget_set_checkbox_value(this, WIDX_DISABLE_LITTERING, gCheatsDisableLittering);
+                break;
+            case PAGE::MISC:
+                this->widgets[WIDX_OPEN_CLOSE_PARK].text = (gParkFlags & PARK_FLAGS_PARK_OPEN) ? STR_CHEAT_CLOSE_PARK : STR_CHEAT_OPEN_PARK;
+                widget_set_checkbox_value(this, WIDX_FORCE_PARK_RATING, get_forced_park_rating() >= 0);
+                this->widgets[WIDX_SANDBOX_MODE].text = gCheatsSandboxMode ? STR_CHEAT_SANDBOX_MODE_DISABLE : STR_CHEAT_SANDBOX_MODE;
+                this->widgets[WIDX_FREEZE_CLIMATE].text = gCheatsFreezeClimate ? STR_CHEAT_UNFREEZE_CLIMATE : STR_CHEAT_FREEZE_CLIMATE;
+                widget_set_checkbox_value(this, WIDX_NEVERENDING_MARKETING, gCheatsNeverendingMarketing);
+                widget_set_checkbox_value(this, WIDX_DISABLE_PLANT_AGING, gCheatsDisablePlantAging);
+                break;
+            case PAGE::RIDES:
+                set_format_arg(0, uint16, 255);
+                widget_set_checkbox_value(this, WIDX_FAST_LIFT_HILL, gCheatsFastLiftHill);
+                widget_set_checkbox_value(this, WIDX_DISABLE_BRAKES_FAILURE, gCheatsDisableBrakesFailure);
+                widget_set_checkbox_value(this, WIDX_DISABLE_ALL_BREAKDOWNS, gCheatsDisableAllBreakdowns);
+                widget_set_checkbox_value(this, WIDX_BUILD_IN_PAUSE_MODE, gCheatsBuildInPauseMode);
+                widget_set_checkbox_value(this, WIDX_SHOW_ALL_OPERATING_MODES, gCheatsShowAllOperatingModes);
+                widget_set_checkbox_value(this, WIDX_SHOW_VEHICLES_FROM_OTHER_TRACK_TYPES, gCheatsShowVehiclesFromOtherTrackTypes);
+                widget_set_checkbox_value(this, WIDX_DISABLE_TRAIN_LENGTH_LIMITS, gCheatsDisableTrainLengthLimit);
+                widget_set_checkbox_value(this, WIDX_ENABLE_CHAIN_LIFT_ON_ALL_TRACK, gCheatsEnableChainLiftOnAllTrack);
+                widget_set_checkbox_value(this, WIDX_ENABLE_ARBITRARY_RIDE_TYPE_CHANGES, gCheatsAllowArbitraryRideTypeChanges);
+                widget_set_checkbox_value(this, WIDX_DISABLE_RIDE_VALUE_AGING, gCheatsDisableRideValueAging);
+                widget_set_checkbox_value(this, WIDX_IGNORE_RESEARCH_STATUS, gCheatsIgnoreResearchStatus);
+                widget_set_checkbox_value(this, WIDX_ENABLE_ALL_DRAWABLE_TRACK_PIECES, gCheatsEnableAllDrawableTrackPieces);
+                break;
+        }
+
+        // Current weather
+        window_cheats_misc_widgets[WIDX_WEATHER].text = WeatherTypes[gClimateCurrent.Weather];
+        // Staff speed
+        window_cheats_misc_widgets[WIDX_STAFF_SPEED].text = _staffSpeedNames[_selectedStaffSpeed];
+    }
+
+    void Paint(rct_drawpixelinfo* dpi)
+    {
+        window_draw_widgets(this, dpi);
+        PaintTabImages(dpi);
+
+        switch (_page)
+        {
+            case PAGE::MONEY:
+            {
+                uint8 colour = this->colours[1];
+                set_format_arg(0, money32, _moneySpinnerValue);
+                if (widget_is_disabled(this, WIDX_MONEY_SPINNER))
+                {
+                    colour |= COLOUR_FLAG_INSET;
+                }
+                sint32 actual_month = month_spinner_value - 1;
+                gfx_draw_string_left(dpi, STR_BOTTOM_TOOLBAR_CASH, gCommonFormatArgs, colour, this->x + XPL(0) + TXTO, this->y + YPL(2) + TXTO);
+                gfx_draw_string_left(dpi, STR_YEAR, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(7) + TXTO);
+                gfx_draw_string_left(dpi, STR_MONTH, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(8) + TXTO);
+                gfx_draw_string_left(dpi, STR_DAY, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(9) + TXTO);
+                gfx_draw_string_right(dpi, STR_FORMAT_INTEGER, &year_spinner_value, this->colours[1], this->x + WPL(1) - 34 - TXTO, this->y + YPL(7) + TXTO);
+                gfx_draw_string_right(dpi, STR_FORMAT_MONTH, &actual_month, this->colours[1], this->x + WPL(1) - 34 - TXTO, this->y + YPL(8) + TXTO);
+                gfx_draw_string_right(dpi, STR_FORMAT_INTEGER, &day_spinner_value, this->colours[1], this->x + WPL(1) - 34 - TXTO, this->y + YPL(9) + TXTO);
+                break;
+            }
+            case PAGE::MISC:
+                gfx_draw_string_left(dpi, STR_CHEAT_STAFF_SPEED, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(17) + TXTO);
+                gfx_draw_string_left(dpi, STR_FORCE_WEATHER, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(10) + TXTO);
+                gfx_draw_string_right(dpi, STR_FORMAT_INTEGER, &park_rating_spinner_value, this->colours[1], this->x + WPL(1) - 34 - TXTO, this->y + YPL(5) + TXTO);
+                break;
+            case PAGE::GUESTS:
+                gfx_draw_string_left(dpi, STR_CHEAT_GUEST_HAPPINESS, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(1) + TXTO);
+                gfx_draw_string_left(dpi, STR_CHEAT_GUEST_ENERGY, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(2) + TXTO);
+                gfx_draw_string_left(dpi, STR_CHEAT_GUEST_HUNGER, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(3) + TXTO);
+                gfx_draw_string_left(dpi, STR_CHEAT_GUEST_THIRST, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(4) + TXTO);
+                gfx_draw_string_left(dpi, STR_CHEAT_GUEST_NAUSEA, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(5) + TXTO);
+                gfx_draw_string_left(dpi, STR_CHEAT_GUEST_NAUSEA_TOLERANCE, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(6) + TXTO);
+                gfx_draw_string_left(dpi, STR_CHEAT_GUEST_BATHROOM, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(7) + TXTO);
+                gfx_draw_string_left(dpi, STR_CHEAT_GUEST_PREFERRED_INTENSITY, nullptr, COLOUR_BLACK, this->x + XPL(0) + TXTO, this->y + YPL(8) + TXTO);
+                break;
+        }
+    }
+
+    void OnMouseUp(rct_widgetindex widx) override
+    {
+        switch (widx)
+        {
+            case WIDX_CLOSE:
+                window_close(this);
+                break;
+            case WIDX_TAB_1:
+            case WIDX_TAB_2:
+            case WIDX_TAB_3:
+            case WIDX_TAB_4:
+                SetPage((PAGE)(widx - WIDX_TAB_1));
+                break;
+            default:
+                switch (_page)
+                {
+                    case PAGE::MONEY:
+                        OnMouseUp_Money(widx);
+                        break;
+                    case PAGE::GUESTS:
+                        OnMouseUp_Guests(widx);
+                        break;
+                    case PAGE::MISC:
+                        OnMouseUp_Misc(widx);
+                        break;
+                    case PAGE::RIDES:
+                        OnMouseUp_Rides(widx);
+                        break;
+                }
+                break;
+        }
+    }
+
+    void OnMouseDown(rct_widgetindex widx) override
+    {
+        switch (_page)
+        {
+            case PAGE::MONEY:
+                OnMouseDown_Money(widx);
+                break;
+            case PAGE::MISC:
+                OnMouseDown_Misc(widx);
+                break;
+        }
+    }
+
+    void OnDropdown(rct_widgetindex widgetIndex, sint32 selectedIndex) override
+    {
+        if (selectedIndex == -1)
+        {
+            return;
+        }
+        else if (widgetIndex == WIDX_WEATHER_DROPDOWN_BUTTON)
+        {
+            game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FORCEWEATHER, selectedIndex, GAME_COMMAND_CHEAT, 0, 0);
+        }
+        else if (widgetIndex == WIDX_STAFF_SPEED_DROPDOWN_BUTTON)
+        {
+            auto speed = CHEATS_STAFF_FAST_SPEED;
+            switch (selectedIndex)
+            {
+                case 0:
+                    speed = CHEATS_STAFF_FREEZE_SPEED;
+                    break;
+                case 1:
+                    speed = CHEATS_STAFF_NORMAL_SPEED;
+                    break;
+            }
+            game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETSTAFFSPEED, speed, GAME_COMMAND_CHEAT, 0, 0);
+            _selectedStaffSpeed = selectedIndex;
+        }
+    }
+
+    void OnTextInput(rct_widgetindex widgetIndex, const std::string_view& text) override
+    {
+        if (!text.empty())
+        {
+            if (_page == PAGE::MONEY && widgetIndex == WIDX_MONEY_SPINNER)
+            {
+                money32 val = string_to_money(std::string(text).data());
+                if (val != MONEY32_UNDEFINED)
+                {
+                    _moneySpinnerValue = val;
+                }
+                window_invalidate(this);
+            }
+        }
+    }
+
+private:
+    void SetPage(PAGE p)
+    {
+        _page = p;
+        this->frame_no = 0;
+
+        this->enabled_widgets = window_cheats_page_enabled_widgets[(size_t)p];
+        this->hold_down_widgets = window_cheats_page_hold_down_widgets[(size_t)p];
+        this->pressed_widgets = 0;
+        this->widgets = window_cheats_page_widgets[(size_t)p];
+        window_init_scroll_widgets(this);
+
+        sint32 maxY = 0;
+        rct_widget *widget = &this->widgets[WIDX_TAB_CONTENT];
+        while (widget->type != WWT_LAST)
+        {
+            maxY = std::max(maxY, (sint32)widget->bottom);
+            widget++;
+        }
+        maxY += 6;
+
+        window_invalidate(this);
+        this->height = maxY;
+        this->widgets[WIDX_BACKGROUND].bottom = maxY - 1;
+        this->widgets[WIDX_PAGE_BACKGROUND].bottom = maxY - 1;
+        window_invalidate(this);
+    }
+
+    void PaintTabImages(rct_drawpixelinfo* dpi)
+    {
+        // Money tab
+        if (!(this->disabled_widgets & (1 << WIDX_TAB_1)))
+        {
+            sint32 sprite_idx = SPR_TAB_FINANCES_SUMMARY_0;
+            if (_page == PAGE::MONEY)
+                sprite_idx += (this->frame_no / 2) % 8;
+            gfx_draw_sprite(dpi, sprite_idx, this->x + this->widgets[WIDX_TAB_1].left, this->y + this->widgets[WIDX_TAB_1].top, 0);
+        }
+
+        // Guests tab
+        if (!(this->disabled_widgets & (1 << WIDX_TAB_2)))
+        {
+            sint32 sprite_idx = SPR_TAB_GUESTS_0;
+            if (_page == PAGE::GUESTS)
+                sprite_idx += (this->frame_no / 3) % 8;
+            gfx_draw_sprite(dpi, sprite_idx, this->x + this->widgets[WIDX_TAB_2].left, this->y + this->widgets[WIDX_TAB_2].top, 0);
+        }
+
+        // Misc tab
+        if (!(this->disabled_widgets & (1 << WIDX_TAB_3)))
+        {
+            sint32 sprite_idx = SPR_TAB_PARK;
+            gfx_draw_sprite(dpi, sprite_idx, this->x + this->widgets[WIDX_TAB_3].left, this->y + this->widgets[WIDX_TAB_3].top, 0);
+        }
+
+        // Rides tab
+        if (!(this->disabled_widgets & (1 << WIDX_TAB_4)))
+        {
+            sint32 sprite_idx = SPR_TAB_RIDE_0;
+            if (_page == PAGE::RIDES)
+                sprite_idx += (this->frame_no / 4) % 16;
+            gfx_draw_sprite(dpi, sprite_idx, this->x + this->widgets[WIDX_TAB_4].left, this->y + this->widgets[WIDX_TAB_4].top, 0);
+        }
+    }
+
+    void OnMouseUp_Money(rct_widgetindex widx)
+    {
+        switch (widx)
+        {
+            case WIDX_NO_MONEY:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_NOMONEY, gParkFlags & PARK_FLAGS_NO_MONEY ? 0 : 1, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_MONEY_SPINNER:
+                _moneySpinnerText.resize(MONEY_STRING_MAXLENGTH);
+                money_to_string(_moneySpinnerValue, _moneySpinnerText.data(), _moneySpinnerText.size(), false);
+                window_text_input_raw_open(this, WIDX_MONEY_SPINNER, STR_ENTER_NEW_VALUE, STR_ENTER_NEW_VALUE, _moneySpinnerText.data(), (sint32)_moneySpinnerText.size());
+                break;
+            case WIDX_SET_MONEY:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETMONEY, _moneySpinnerValue, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_CLEAR_LOAN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_CLEARLOAN, CHEATS_MONEY_DEFAULT, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+        }
+    }
+
+    void OnMouseUp_Guests(rct_widgetindex widx)
+    {
+        switch (widx)
+        {
+            case WIDX_GUEST_HAPPINESS_MAX:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_HAPPINESS, GAME_COMMAND_CHEAT, PEEP_MAX_HAPPINESS, 0);
+                break;
+            case WIDX_GUEST_HAPPINESS_MIN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_HAPPINESS, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GUEST_ENERGY_MAX:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_ENERGY, GAME_COMMAND_CHEAT, PEEP_MAX_ENERGY, 0);
+                break;
+            case WIDX_GUEST_ENERGY_MIN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_ENERGY, GAME_COMMAND_CHEAT, PEEP_MIN_ENERGY, 0);
+                break;
+            case WIDX_GUEST_HUNGER_MAX:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_HUNGER, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GUEST_HUNGER_MIN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_HUNGER, GAME_COMMAND_CHEAT, 255, 0);
+                break;
+            case WIDX_GUEST_THIRST_MAX:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_THIRST, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GUEST_THIRST_MIN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_THIRST, GAME_COMMAND_CHEAT, 255, 0);
+                break;
+            case WIDX_GUEST_NAUSEA_MAX:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_NAUSEA, GAME_COMMAND_CHEAT, 255, 0);
+                break;
+            case WIDX_GUEST_NAUSEA_MIN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_NAUSEA, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GUEST_NAUSEA_TOLERANCE_MAX:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_NAUSEA_TOLERANCE, GAME_COMMAND_CHEAT, PEEP_NAUSEA_TOLERANCE_HIGH, 0);
+                break;
+            case WIDX_GUEST_NAUSEA_TOLERANCE_MIN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_NAUSEA_TOLERANCE, GAME_COMMAND_CHEAT, PEEP_NAUSEA_TOLERANCE_NONE, 0);
+                break;
+            case WIDX_GUEST_BATHROOM_MAX:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_BATHROOM, GAME_COMMAND_CHEAT, 255, 0);
+                break;
+            case WIDX_GUEST_BATHROOM_MIN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_BATHROOM, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GUEST_RIDE_INTENSITY_MORE_THAN_1:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_PREFERRED_RIDE_INTENSITY, GAME_COMMAND_CHEAT, 1, 0);
+                break;
+            case WIDX_GUEST_RIDE_INTENSITY_LESS_THAN_15:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_PREFERRED_RIDE_INTENSITY, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_TRAM_GUESTS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GENERATEGUESTS, CHEATS_TRAM_INCREMENT, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_REMOVE_ALL_GUESTS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_REMOVEALLGUESTS, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_EXPLODE_GUESTS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_EXPLODEGUESTS, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GIVE_GUESTS_MONEY:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GIVEALLGUESTS, OBJECT_MONEY, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GIVE_GUESTS_PARK_MAPS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GIVEALLGUESTS, OBJECT_PARK_MAP, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GIVE_GUESTS_BALLOONS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GIVEALLGUESTS, OBJECT_BALLOON, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GIVE_GUESTS_UMBRELLAS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GIVEALLGUESTS, OBJECT_UMBRELLA, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_GUEST_IGNORE_RIDE_INTENSITY:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_IGNORERIDEINTENSITY, !gCheatsIgnoreRideIntensity, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_DISABLE_VANDALISM:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLEVANDALISM, !gCheatsDisableVandalism, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_DISABLE_LITTERING:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLELITTERING, !gCheatsDisableLittering, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+        }
+    }
+
+    void OnMouseUp_Misc(rct_widgetindex widx)
+    {
+        switch (widx)
+        {
+            case WIDX_FREEZE_CLIMATE:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FREEZECLIMATE, !gCheatsFreezeClimate, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_OPEN_CLOSE_PARK:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_OPENCLOSEPARK, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_CLEAR_GRASS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGRASSLENGTH, GRASS_LENGTH_CLEAR_0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_MOWED_GRASS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGRASSLENGTH, GRASS_LENGTH_MOWED, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_WATER_PLANTS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_WATERPLANTS, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_FIX_VANDALISM:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FIXVANDALISM, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_REMOVE_LITTER:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_REMOVELITTER, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_DISABLE_PLANT_AGING:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLEPLANTAGING, !gCheatsDisablePlantAging, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_WIN_SCENARIO:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_WINSCENARIO, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_HAVE_FUN:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_HAVEFUN, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_OWN_ALL_LAND:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_OWNALLLAND, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_NEVERENDING_MARKETING:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_NEVERENDINGMARKETING, !gCheatsNeverendingMarketing, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_SANDBOX_MODE:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SANDBOXMODE, !gCheatsSandboxMode, GAME_COMMAND_CHEAT, 0, 0);
+                // To prevent tools from staying active after disabling cheat
+                // tool_cancel();
+                break;
+            case WIDX_RESET_DATE:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_RESETDATE, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_PARK_PARAMETERS:
+                context_open_window(WC_EDITOR_SCENARIO_OPTIONS);
+                break;
+            case WIDX_FORCE_PARK_RATING:
+                if (get_forced_park_rating() >= 0)
+                {
+                    game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETFORCEDPARKRATING, -1, GAME_COMMAND_CHEAT, 0, 0);
+                }
+                else
+                {
+                    game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETFORCEDPARKRATING, park_rating_spinner_value, GAME_COMMAND_CHEAT, 0, 0);
+                }
+                break;
+            }
+    }
+
+    void OnMouseUp_Rides(rct_widgetindex widx)
+    {
+        switch (widx)
+        {
+            case WIDX_RENEW_RIDES:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_RENEWRIDES, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_MAKE_DESTRUCTIBLE:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_MAKEDESTRUCTIBLE, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_FIX_ALL:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FIXRIDES, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_FAST_LIFT_HILL:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FASTLIFTHILL, !gCheatsFastLiftHill, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_DISABLE_BRAKES_FAILURE:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLEBRAKESFAILURE, !gCheatsDisableBrakesFailure, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_DISABLE_ALL_BREAKDOWNS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLEALLBREAKDOWNS, !gCheatsDisableAllBreakdowns, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_BUILD_IN_PAUSE_MODE:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_BUILDINPAUSEMODE, !gCheatsBuildInPauseMode, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_RESET_CRASH_STATUS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_RESETCRASHSTATUS, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_10_MINUTE_INSPECTIONS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_10MINUTEINSPECTIONS, 0, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_SHOW_ALL_OPERATING_MODES:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SHOWALLOPERATINGMODES, !gCheatsShowAllOperatingModes, GAME_COMMAND_CHEAT, 0, 0);
+                if (gCheatsShowAllOperatingModes) {
+                    context_show_error(STR_WARNING_IN_CAPS, STR_THIS_FEATURE_IS_CURRENTLY_UNSTABLE);
+                }
+                break;
+            case WIDX_SHOW_VEHICLES_FROM_OTHER_TRACK_TYPES:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SHOWVEHICLESFROMOTHERTRACKTYPES, !gCheatsShowVehiclesFromOtherTrackTypes, GAME_COMMAND_CHEAT, 0, 0);
+                if (gCheatsShowVehiclesFromOtherTrackTypes) {
+                    context_show_error(STR_WARNING_IN_CAPS, STR_THIS_FEATURE_IS_CURRENTLY_UNSTABLE);
+                }
+                break;
+            case WIDX_DISABLE_TRAIN_LENGTH_LIMITS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLETRAINLENGTHLIMIT, !gCheatsDisableTrainLengthLimit, GAME_COMMAND_CHEAT, 0, 0);
+                if (gCheatsDisableTrainLengthLimit)
+                {
+                    context_show_error(STR_WARNING_IN_CAPS, STR_THIS_FEATURE_IS_CURRENTLY_UNSTABLE);
+                }
+                break;
+            case WIDX_ENABLE_CHAIN_LIFT_ON_ALL_TRACK:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_ENABLECHAINLIFTONALLTRACK, !gCheatsEnableChainLiftOnAllTrack, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_ENABLE_ARBITRARY_RIDE_TYPE_CHANGES:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_ALLOW_ARBITRARY_RIDE_TYPE_CHANGES, !gCheatsAllowArbitraryRideTypeChanges, GAME_COMMAND_CHEAT, 0, 0);
+                if (gCheatsAllowArbitraryRideTypeChanges)
+                {
+                    context_show_error(STR_WARNING_IN_CAPS, STR_THIS_FEATURE_IS_CURRENTLY_UNSTABLE);
+                }
+                break;
+            case WIDX_DISABLE_RIDE_VALUE_AGING:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLERIDEVALUEAGING, !gCheatsDisableRideValueAging, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_IGNORE_RESEARCH_STATUS:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_IGNORERESEARCHSTATUS, !gCheatsIgnoreResearchStatus, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_ENABLE_ALL_DRAWABLE_TRACK_PIECES:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_ENABLEALLDRAWABLETRACKPIECES, !gCheatsEnableAllDrawableTrackPieces, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+        }
+    }
+
+    void OnMouseDown_Money(rct_widgetindex widx)
+    {
+        switch (widx)
+        {
+            case WIDX_MONEY_SPINNER_INCREMENT:
+                _moneySpinnerValue = add_clamp_money32(CHEATS_MONEY_INCREMENT_DIV * (_moneySpinnerValue / CHEATS_MONEY_INCREMENT_DIV), CHEATS_MONEY_INCREMENT_DIV);
+                widget_invalidate_by_class(WC_CHEATS, WIDX_MONEY_SPINNER);
+                break;
+            case WIDX_MONEY_SPINNER_DECREMENT:
+                _moneySpinnerValue = add_clamp_money32(CHEATS_MONEY_INCREMENT_DIV * (_moneySpinnerValue / CHEATS_MONEY_INCREMENT_DIV), -CHEATS_MONEY_INCREMENT_DIV);
+                widget_invalidate_by_class(WC_CHEATS, WIDX_MONEY_SPINNER);
+                break;
+            case WIDX_ADD_MONEY:
+                game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_ADDMONEY, _moneySpinnerValue, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_YEAR_UP:
+                year_spinner_value++;
+                year_spinner_value = std::clamp(1, year_spinner_value, 8192);
+                widget_invalidate(this, WIDX_YEAR_BOX);
+                break;
+            case WIDX_YEAR_DOWN:
+                year_spinner_value--;
+                year_spinner_value = std::clamp(1, year_spinner_value, 8192);
+                widget_invalidate(this, WIDX_YEAR_BOX);
+                break;
+            case WIDX_MONTH_UP:
+                month_spinner_value++;
+                month_spinner_value = std::clamp(1, month_spinner_value, (int)MONTH_COUNT);
+                day_spinner_value = std::clamp(1, day_spinner_value, (int)days_in_month[month_spinner_value - 1]);
+                widget_invalidate(this, WIDX_MONTH_BOX);
+                widget_invalidate(this, WIDX_DAY_BOX);
+                break;
+            case WIDX_MONTH_DOWN:
+                month_spinner_value--;
+                month_spinner_value = std::clamp(1, month_spinner_value, (int)MONTH_COUNT);
+                day_spinner_value = std::clamp(1, day_spinner_value, (int)days_in_month[month_spinner_value - 1]);
+                widget_invalidate(this, WIDX_MONTH_BOX);
+                widget_invalidate(this, WIDX_DAY_BOX);
+                break;
+            case WIDX_DAY_UP:
+                day_spinner_value++;
+                day_spinner_value = std::clamp(1, day_spinner_value, (int)days_in_month[month_spinner_value - 1]);
+                widget_invalidate(this, WIDX_DAY_BOX);
+                break;
+            case WIDX_DAY_DOWN:
+                day_spinner_value--;
+                day_spinner_value = std::clamp(1, day_spinner_value, (int)days_in_month[month_spinner_value - 1]);
+                widget_invalidate(this, WIDX_DAY_BOX);
+                break;
+            case WIDX_DATE_SET:
+                date_set(year_spinner_value, month_spinner_value, day_spinner_value);
+                window_invalidate_by_class(WC_BOTTOM_TOOLBAR);
+                break;
+            case WIDX_DATE_RESET:
+                date_set(1, 1, 1);
+                window_invalidate_by_class(WC_BOTTOM_TOOLBAR);
+                widget_invalidate(this, WIDX_YEAR_BOX);
+                widget_invalidate(this, WIDX_MONTH_BOX);
+                widget_invalidate(this, WIDX_DAY_BOX);
+                break;
+        }
+    }
+
+    void OnMouseDown_Misc(rct_widgetindex widx)
+    {
+        switch (widx)
+        {
+            case WIDX_INCREASE_PARK_RATING:
+                park_rating_spinner_value = std::min(999, 10 * (park_rating_spinner_value / 10 + 1));
+                widget_invalidate_by_class(WC_CHEATS, WIDX_PARK_RATING_SPINNER);
+                if (get_forced_park_rating() >= 0)
+                    game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETFORCEDPARKRATING, park_rating_spinner_value, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_DECREASE_PARK_RATING:
+                park_rating_spinner_value = std::max(0, 10 * (park_rating_spinner_value / 10 - 1));
+                widget_invalidate_by_class(WC_CHEATS, WIDX_PARK_RATING_SPINNER);
+                if (get_forced_park_rating() >= 0)
+                    game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETFORCEDPARKRATING, park_rating_spinner_value, GAME_COMMAND_CHEAT, 0, 0);
+                break;
+            case WIDX_WEATHER_DROPDOWN_BUTTON:
+            {
+                auto dropdownWidget = &this->widgets[widx - 1];
+                for (auto i = 0; i < 6; i++)
+                {
+                    gDropdownItemsFormat[i] = STR_DROPDOWN_MENU_LABEL;
+                    gDropdownItemsArgs[i] = WeatherTypes[i];
+                }
+                window_dropdown_show_text_custom_width(
+                    this->x + dropdownWidget->left,
+                    this->y + dropdownWidget->top,
+                    dropdownWidget->bottom - dropdownWidget->top + 1,
+                    this->colours[1],
+                    0,
+                    DROPDOWN_FLAG_STAY_OPEN,
+                    6,
+                    dropdownWidget->right - dropdownWidget->left - 3);
+                dropdown_set_checked(gClimateCurrent.Weather, true);
+                break;
+            }
+            case WIDX_STAFF_SPEED_DROPDOWN_BUTTON:
+            {
+                auto dropdownWidget = &this->widgets[widx - 1];
+                for (size_t i = 0; i < Util::CountOf(_staffSpeedNames); i++)
+                {
+                    gDropdownItemsArgs[i] = _staffSpeedNames[i];
+                    gDropdownItemsFormat[i] = STR_DROPDOWN_MENU_LABEL;
+                }
+
+                window_dropdown_show_text_custom_width(
+                    this->x + dropdownWidget->left,
+                    this->y + dropdownWidget->top,
+                    dropdownWidget->bottom - dropdownWidget->top + 1,
+                    this->colours[1],
+                    0,
+                    DROPDOWN_FLAG_STAY_OPEN,
+                    3,
+                    dropdownWidget->right - dropdownWidget->left - 3
+                );
+                dropdown_set_checked(_selectedStaffSpeed, true);
+            }
+        }
+    }
 };
 
 rct_window * window_cheats_open()
 {
-    rct_window* window;
-
     // Check if window is already open
-    window = window_bring_to_front_by_class(WC_CHEATS);
-    if (window != nullptr)
-        return window;
-
-    window = OpenWindow<CheatsWindow>(32, 32, WW, WH, &window_cheats_money_events, WC_CHEATS, 0);
-    // window = window_create(32, 32, WW, WH, &window_cheats_money_events, WC_CHEATS, 0);
-    window->widgets = window_cheats_money_widgets;
-    window->enabled_widgets = window_cheats_page_enabled_widgets[0];
-    window->hold_down_widgets = window_cheats_page_hold_down_widgets[0];
-    window_init_scroll_widgets(window);
-    window_cheats_set_page(window, WINDOW_CHEATS_PAGE_MONEY);
-    park_rating_spinner_value = get_forced_park_rating() >= 0 ? get_forced_park_rating() : 999;
-
-    return window;
-}
-
-static void window_cheats_money_mousedown(rct_window * w, rct_widgetindex widgetIndex, [[maybe_unused]] rct_widget * widget)
-{
-    switch (widgetIndex)
+    auto w = window_bring_to_front_by_class(WC_CHEATS);
+    if (w == nullptr)
     {
-    case WIDX_MONEY_SPINNER_INCREMENT:
-        _moneySpinnerValue = add_clamp_money32(CHEATS_MONEY_INCREMENT_DIV * (_moneySpinnerValue / CHEATS_MONEY_INCREMENT_DIV), CHEATS_MONEY_INCREMENT_DIV);
-        widget_invalidate_by_class(WC_CHEATS, WIDX_MONEY_SPINNER);
-        break;
-    case WIDX_MONEY_SPINNER_DECREMENT:
-        _moneySpinnerValue = add_clamp_money32(CHEATS_MONEY_INCREMENT_DIV * (_moneySpinnerValue / CHEATS_MONEY_INCREMENT_DIV), -CHEATS_MONEY_INCREMENT_DIV);
-        widget_invalidate_by_class(WC_CHEATS, WIDX_MONEY_SPINNER);
-        break;
-    case WIDX_ADD_MONEY:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_ADDMONEY, _moneySpinnerValue, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_YEAR_UP:
-        year_spinner_value++;
-        year_spinner_value = Math::Clamp(1, year_spinner_value, 8192);
-        widget_invalidate(w, WIDX_YEAR_BOX);
-        break;
-    case WIDX_YEAR_DOWN:
-        year_spinner_value--;
-        year_spinner_value = Math::Clamp(1, year_spinner_value, 8192);
-        widget_invalidate(w, WIDX_YEAR_BOX);
-        break;
-    case WIDX_MONTH_UP:
-        month_spinner_value++;
-        month_spinner_value = Math::Clamp(1, month_spinner_value, (int)MONTH_COUNT);
-        day_spinner_value = Math::Clamp(1, day_spinner_value, (int)days_in_month[month_spinner_value - 1]);
-        widget_invalidate(w, WIDX_MONTH_BOX);
-        widget_invalidate(w, WIDX_DAY_BOX);
-        break;
-    case WIDX_MONTH_DOWN:
-        month_spinner_value--;
-        month_spinner_value = Math::Clamp(1, month_spinner_value, (int)MONTH_COUNT);
-        day_spinner_value = Math::Clamp(1, day_spinner_value, (int)days_in_month[month_spinner_value - 1]);
-        widget_invalidate(w, WIDX_MONTH_BOX);
-        widget_invalidate(w, WIDX_DAY_BOX);
-        break;
-    case WIDX_DAY_UP:
-        day_spinner_value++;
-        day_spinner_value = Math::Clamp(1, day_spinner_value, (int)days_in_month[month_spinner_value - 1]);
-        widget_invalidate(w, WIDX_DAY_BOX);
-        break;
-    case WIDX_DAY_DOWN:
-        day_spinner_value--;
-        day_spinner_value = Math::Clamp(1, day_spinner_value, (int)days_in_month[month_spinner_value - 1]);
-        widget_invalidate(w, WIDX_DAY_BOX);
-        break;
-    case WIDX_DATE_SET:
-        date_set(year_spinner_value, month_spinner_value, day_spinner_value);
-        window_invalidate_by_class(WC_BOTTOM_TOOLBAR);
-        break;
-    case WIDX_DATE_RESET:
-        date_set(1, 1, 1);
-        window_invalidate_by_class(WC_BOTTOM_TOOLBAR);
-        widget_invalidate(w, WIDX_YEAR_BOX);
-        widget_invalidate(w, WIDX_MONTH_BOX);
-        widget_invalidate(w, WIDX_DAY_BOX);
-        break;
+        w = OpenWindow<CheatsWindow>(32, 32, WW, WH, WC_CHEATS, 0);
     }
-}
-
-static void window_cheats_misc_mousedown(rct_window *w, rct_widgetindex widgetIndex, rct_widget* widget)
-{
-    switch (widgetIndex)
-    {
-    case WIDX_INCREASE_PARK_RATING:
-        park_rating_spinner_value = Math::Min(999, 10 * (park_rating_spinner_value / 10 + 1));
-        widget_invalidate_by_class(WC_CHEATS, WIDX_PARK_RATING_SPINNER);
-        if (get_forced_park_rating() >= 0)
-            game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETFORCEDPARKRATING, park_rating_spinner_value, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_DECREASE_PARK_RATING:
-        park_rating_spinner_value = Math::Max(0, 10 * (park_rating_spinner_value / 10 - 1));
-        widget_invalidate_by_class(WC_CHEATS, WIDX_PARK_RATING_SPINNER);
-        if (get_forced_park_rating() >= 0)
-            game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETFORCEDPARKRATING, park_rating_spinner_value, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_WEATHER_DROPDOWN_BUTTON:
-        {
-        rct_widget *dropdownWidget;
-        int i, currentWeather;
-
-        dropdownWidget = widget - 1;
-
-        for (i = 0; i < 6; i++) {
-            gDropdownItemsFormat[i] = STR_DROPDOWN_MENU_LABEL;
-            gDropdownItemsArgs[i] = WeatherTypes[i];
-        }
-        window_dropdown_show_text_custom_width(
-            w->x + dropdownWidget->left,
-            w->y + dropdownWidget->top,
-            dropdownWidget->bottom - dropdownWidget->top + 1,
-            w->colours[1],
-            0,
-            DROPDOWN_FLAG_STAY_OPEN,
-            6,
-            dropdownWidget->right - dropdownWidget->left - 3
-        );
-
-        currentWeather = gClimateCurrent.Weather;
-        dropdown_set_checked(currentWeather, true);
-        }
-        break;
-    case WIDX_STAFF_SPEED_DROPDOWN_BUTTON:
-        {
-            rct_widget * dropdownWidget;
-
-            dropdownWidget = widget - 1;
-
-            for (size_t i = 0; i < Util::CountOf(_staffSpeedNames); i++)
-            {
-                gDropdownItemsArgs[i] = _staffSpeedNames[i];
-                gDropdownItemsFormat[i] = STR_DROPDOWN_MENU_LABEL;
-            }
-
-            window_dropdown_show_text_custom_width(
-                w->x + dropdownWidget->left,
-                w->y + dropdownWidget->top,
-                dropdownWidget->bottom - dropdownWidget->top + 1,
-                w->colours[1],
-                0,
-                DROPDOWN_FLAG_STAY_OPEN,
-                3,
-                dropdownWidget->right - dropdownWidget->left - 3
-            );
-            dropdown_set_checked(_selectedStaffSpeed, true);
-        }
-    }
-}
-
-static void window_cheats_misc_dropdown([[maybe_unused]] rct_window * w, rct_widgetindex widgetIndex, sint32 dropdownIndex)
-{
-    if (dropdownIndex == -1)
-    {
-        return;
-    }
-    else if (widgetIndex == WIDX_WEATHER_DROPDOWN_BUTTON)
-    {
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FORCEWEATHER, dropdownIndex, GAME_COMMAND_CHEAT, 0, 0);
-
-    }
-    else if (widgetIndex == WIDX_STAFF_SPEED_DROPDOWN_BUTTON)
-    {
-        sint32 speed = CHEATS_STAFF_FAST_SPEED;
-        switch (dropdownIndex)
-        {
-        case 0:
-            speed = CHEATS_STAFF_FREEZE_SPEED;
-            break;
-        case 1:
-            speed = CHEATS_STAFF_NORMAL_SPEED;
-        }
-
-       game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETSTAFFSPEED, speed, GAME_COMMAND_CHEAT, 0, 0);
-        _selectedStaffSpeed = dropdownIndex;
-    }
-}
-
-static void window_cheats_money_mouseup(rct_window *w, rct_widgetindex widgetIndex)
-{
-    switch (widgetIndex)
-    {
-    case WIDX_CLOSE:
-        window_close(w);
-        break;
-    case WIDX_TAB_1:
-    case WIDX_TAB_2:
-    case WIDX_TAB_3:
-    case WIDX_TAB_4:
-        window_cheats_set_page(w, widgetIndex - WIDX_TAB_1);
-        break;
-    case WIDX_NO_MONEY:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_NOMONEY, gParkFlags & PARK_FLAGS_NO_MONEY ? 0 : 1, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_MONEY_SPINNER:
-        money_to_string(_moneySpinnerValue, _moneySpinnerText, MONEY_STRING_MAXLENGTH, false);
-        window_text_input_raw_open(w, WIDX_MONEY_SPINNER, STR_ENTER_NEW_VALUE, STR_ENTER_NEW_VALUE, _moneySpinnerText, MONEY_STRING_MAXLENGTH);
-        break;
-    case WIDX_SET_MONEY:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETMONEY, _moneySpinnerValue, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_CLEAR_LOAN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_CLEARLOAN, CHEATS_MONEY_DEFAULT, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    }
-}
-
-static void window_cheats_guests_mouseup(rct_window *w, rct_widgetindex widgetIndex)
-{
-    switch (widgetIndex)
-    {
-    case WIDX_CLOSE:
-        window_close(w);
-        break;
-    case WIDX_TAB_1:
-    case WIDX_TAB_2:
-    case WIDX_TAB_3:
-    case WIDX_TAB_4:
-        window_cheats_set_page(w, widgetIndex - WIDX_TAB_1);
-        break;
-    case WIDX_GUEST_HAPPINESS_MAX:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_HAPPINESS, GAME_COMMAND_CHEAT, PEEP_MAX_HAPPINESS, 0);
-        break;
-    case WIDX_GUEST_HAPPINESS_MIN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_HAPPINESS, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GUEST_ENERGY_MAX:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_ENERGY, GAME_COMMAND_CHEAT, PEEP_MAX_ENERGY, 0);
-        break;
-    case WIDX_GUEST_ENERGY_MIN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_ENERGY, GAME_COMMAND_CHEAT, PEEP_MIN_ENERGY, 0);
-        break;
-    case WIDX_GUEST_HUNGER_MAX:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_HUNGER, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GUEST_HUNGER_MIN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_HUNGER, GAME_COMMAND_CHEAT, 255, 0);
-        break;
-    case WIDX_GUEST_THIRST_MAX:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_THIRST, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GUEST_THIRST_MIN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_THIRST, GAME_COMMAND_CHEAT, 255, 0);
-        break;
-    case WIDX_GUEST_NAUSEA_MAX:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_NAUSEA, GAME_COMMAND_CHEAT, 255, 0);
-        break;
-    case WIDX_GUEST_NAUSEA_MIN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_NAUSEA, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GUEST_NAUSEA_TOLERANCE_MAX:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_NAUSEA_TOLERANCE, GAME_COMMAND_CHEAT, PEEP_NAUSEA_TOLERANCE_HIGH, 0);
-        break;
-    case WIDX_GUEST_NAUSEA_TOLERANCE_MIN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_NAUSEA_TOLERANCE, GAME_COMMAND_CHEAT, PEEP_NAUSEA_TOLERANCE_NONE, 0);
-        break;
-    case WIDX_GUEST_BATHROOM_MAX:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_BATHROOM, GAME_COMMAND_CHEAT, 255, 0);
-        break;
-    case WIDX_GUEST_BATHROOM_MIN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_BATHROOM, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GUEST_RIDE_INTENSITY_MORE_THAN_1:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_PREFERRED_RIDE_INTENSITY, GAME_COMMAND_CHEAT, 1, 0);
-        break;
-    case WIDX_GUEST_RIDE_INTENSITY_LESS_THAN_15:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGUESTPARAMETER, GUEST_PARAMETER_PREFERRED_RIDE_INTENSITY, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_TRAM_GUESTS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GENERATEGUESTS, CHEATS_TRAM_INCREMENT, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_REMOVE_ALL_GUESTS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_REMOVEALLGUESTS, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_EXPLODE_GUESTS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_EXPLODEGUESTS, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GIVE_GUESTS_MONEY:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GIVEALLGUESTS, OBJECT_MONEY, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GIVE_GUESTS_PARK_MAPS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GIVEALLGUESTS, OBJECT_PARK_MAP, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GIVE_GUESTS_BALLOONS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GIVEALLGUESTS, OBJECT_BALLOON, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GIVE_GUESTS_UMBRELLAS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_GIVEALLGUESTS, OBJECT_UMBRELLA, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_GUEST_IGNORE_RIDE_INTENSITY:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_IGNORERIDEINTENSITY, !gCheatsIgnoreRideIntensity, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_DISABLE_VANDALISM:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLEVANDALISM, !gCheatsDisableVandalism, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_DISABLE_LITTERING:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLELITTERING, !gCheatsDisableLittering, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    }
-}
-
-static void window_cheats_misc_mouseup(rct_window *w, rct_widgetindex widgetIndex)
-{
-    switch (widgetIndex)
-    {
-    case WIDX_CLOSE:
-        window_close(w);
-        break;
-    case WIDX_TAB_1:
-    case WIDX_TAB_2:
-    case WIDX_TAB_3:
-    case WIDX_TAB_4:
-        window_cheats_set_page(w, widgetIndex - WIDX_TAB_1);
-        break;
-    case WIDX_FREEZE_CLIMATE:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FREEZECLIMATE, !gCheatsFreezeClimate, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_OPEN_CLOSE_PARK:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_OPENCLOSEPARK, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_CLEAR_GRASS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGRASSLENGTH, GRASS_LENGTH_CLEAR_0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_MOWED_GRASS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETGRASSLENGTH, GRASS_LENGTH_MOWED, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_WATER_PLANTS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_WATERPLANTS, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_FIX_VANDALISM:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FIXVANDALISM, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_REMOVE_LITTER:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_REMOVELITTER, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_DISABLE_PLANT_AGING:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLEPLANTAGING, !gCheatsDisablePlantAging, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_WIN_SCENARIO:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_WINSCENARIO, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_HAVE_FUN:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_HAVEFUN, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_OWN_ALL_LAND:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_OWNALLLAND, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_NEVERENDING_MARKETING:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_NEVERENDINGMARKETING, !gCheatsNeverendingMarketing, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_SANDBOX_MODE:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SANDBOXMODE, !gCheatsSandboxMode, GAME_COMMAND_CHEAT, 0, 0);
-        // To prevent tools from staying active after disabling cheat
-        // tool_cancel();
-        break;
-    case WIDX_RESET_DATE:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_RESETDATE, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_PARK_PARAMETERS:
-        context_open_window(WC_EDITOR_SCENARIO_OPTIONS);
-        break;
-    case WIDX_FORCE_PARK_RATING:
-        if (get_forced_park_rating() >= 0)
-        {
-            game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETFORCEDPARKRATING, -1, GAME_COMMAND_CHEAT, 0, 0);
-        }
-        else
-        {
-            game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SETFORCEDPARKRATING, park_rating_spinner_value, GAME_COMMAND_CHEAT, 0, 0);
-        }
-        break;
-    }
-}
-
-static void window_cheats_rides_mouseup(rct_window *w, rct_widgetindex widgetIndex)
-{
-    switch (widgetIndex)
-    {
-    case WIDX_CLOSE:
-        window_close(w);
-        break;
-    case WIDX_TAB_1:
-    case WIDX_TAB_2:
-    case WIDX_TAB_3:
-    case WIDX_TAB_4:
-        window_cheats_set_page(w, widgetIndex - WIDX_TAB_1);
-        break;
-    case WIDX_RENEW_RIDES:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_RENEWRIDES, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_MAKE_DESTRUCTIBLE:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_MAKEDESTRUCTIBLE, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_FIX_ALL:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FIXRIDES, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_FAST_LIFT_HILL:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_FASTLIFTHILL, !gCheatsFastLiftHill, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_DISABLE_BRAKES_FAILURE:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLEBRAKESFAILURE, !gCheatsDisableBrakesFailure, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_DISABLE_ALL_BREAKDOWNS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLEALLBREAKDOWNS, !gCheatsDisableAllBreakdowns, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_BUILD_IN_PAUSE_MODE:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_BUILDINPAUSEMODE, !gCheatsBuildInPauseMode, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_RESET_CRASH_STATUS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_RESETCRASHSTATUS, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_10_MINUTE_INSPECTIONS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_10MINUTEINSPECTIONS, 0, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_SHOW_ALL_OPERATING_MODES:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SHOWALLOPERATINGMODES, !gCheatsShowAllOperatingModes, GAME_COMMAND_CHEAT, 0, 0);
-        if (gCheatsShowAllOperatingModes) {
-            context_show_error(STR_WARNING_IN_CAPS, STR_THIS_FEATURE_IS_CURRENTLY_UNSTABLE);
-        }
-        break;
-    case WIDX_SHOW_VEHICLES_FROM_OTHER_TRACK_TYPES:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_SHOWVEHICLESFROMOTHERTRACKTYPES, !gCheatsShowVehiclesFromOtherTrackTypes, GAME_COMMAND_CHEAT, 0, 0);
-        if (gCheatsShowVehiclesFromOtherTrackTypes) {
-            context_show_error(STR_WARNING_IN_CAPS, STR_THIS_FEATURE_IS_CURRENTLY_UNSTABLE);
-        }
-        break;
-    case WIDX_DISABLE_TRAIN_LENGTH_LIMITS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLETRAINLENGTHLIMIT, !gCheatsDisableTrainLengthLimit, GAME_COMMAND_CHEAT, 0, 0);
-        if (gCheatsDisableTrainLengthLimit)
-        {
-            context_show_error(STR_WARNING_IN_CAPS, STR_THIS_FEATURE_IS_CURRENTLY_UNSTABLE);
-        }
-        break;
-    case WIDX_ENABLE_CHAIN_LIFT_ON_ALL_TRACK:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_ENABLECHAINLIFTONALLTRACK, !gCheatsEnableChainLiftOnAllTrack, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_ENABLE_ARBITRARY_RIDE_TYPE_CHANGES:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_ALLOW_ARBITRARY_RIDE_TYPE_CHANGES, !gCheatsAllowArbitraryRideTypeChanges, GAME_COMMAND_CHEAT, 0, 0);
-        if (gCheatsAllowArbitraryRideTypeChanges)
-        {
-            context_show_error(STR_WARNING_IN_CAPS, STR_THIS_FEATURE_IS_CURRENTLY_UNSTABLE);
-        }
-        break;
-    case WIDX_DISABLE_RIDE_VALUE_AGING:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_DISABLERIDEVALUEAGING, !gCheatsDisableRideValueAging, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_IGNORE_RESEARCH_STATUS:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_IGNORERESEARCHSTATUS, !gCheatsIgnoreResearchStatus, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    case WIDX_ENABLE_ALL_DRAWABLE_TRACK_PIECES:
-        game_do_command(0, GAME_COMMAND_FLAG_APPLY, CHEAT_ENABLEALLDRAWABLETRACKPIECES, !gCheatsEnableAllDrawableTrackPieces, GAME_COMMAND_CHEAT, 0, 0);
-        break;
-    }
-}
-
-static void window_cheats_text_input(rct_window *w, rct_widgetindex widgetIndex, char *text)
-{
-    if (text == nullptr)
-        return;
-
-    if (w->page == WINDOW_CHEATS_PAGE_MONEY && widgetIndex == WIDX_MONEY_SPINNER)
-    {
-        money32 val = string_to_money(text);
-        if (val != MONEY32_UNDEFINED)
-        {
-            _moneySpinnerValue = val;
-        }
-        window_invalidate(w);
-    }
-}
-
-static void window_cheats_update(rct_window *w)
-{
-    w->frame_no++;
-    widget_invalidate(w, WIDX_TAB_1 + w->page);
-}
-
-static void window_cheats_invalidate(rct_window *w)
-{
-    sint32 i;
-
-    rct_widget *widgets = window_cheats_page_widgets[w->page];
-    if (w->widgets != widgets)
-    {
-        w->widgets = widgets;
-        window_init_scroll_widgets(w);
-    }
-
-    w->pressed_widgets = 0;
-    w->disabled_widgets = 0;
-
-    // Set correct active tab
-    for (i = 0; i < 7; i++)
-        w->pressed_widgets &= ~(1 << (WIDX_TAB_1 + i));
-    w->pressed_widgets |= 1LL << (WIDX_TAB_1 + w->page);
-
-    // Set title
-    w->widgets[WIDX_TITLE].text = window_cheats_page_titles[w->page];
-
-    switch (w->page)
-    {
-    case WINDOW_CHEATS_PAGE_MONEY:{
-        widget_set_checkbox_value(w, WIDX_NO_MONEY, gParkFlags & PARK_FLAGS_NO_MONEY);
-
-        uint64 money_widgets = (1 << WIDX_ADD_SET_MONEY_GROUP) | (1 << WIDX_MONEY_SPINNER) | (1 << WIDX_MONEY_SPINNER_INCREMENT) |
-            (1 << WIDX_MONEY_SPINNER_DECREMENT) | (1 << WIDX_ADD_MONEY) | (1 << WIDX_SET_MONEY) | (1 << WIDX_CLEAR_LOAN);
-        if (gParkFlags & PARK_FLAGS_NO_MONEY)
-        {
-            w->disabled_widgets |= money_widgets;
-        }
-        else
-        {
-            w->disabled_widgets &= ~money_widgets;
-        }
-    }break;
-    case WINDOW_CHEATS_PAGE_GUESTS:
-        set_format_arg(0, sint32, 10000);
-        widget_set_checkbox_value(w, WIDX_GUEST_IGNORE_RIDE_INTENSITY, gCheatsIgnoreRideIntensity);
-        widget_set_checkbox_value(w, WIDX_DISABLE_VANDALISM, gCheatsDisableVandalism);
-        widget_set_checkbox_value(w, WIDX_DISABLE_LITTERING, gCheatsDisableLittering);
-        break;
-    case WINDOW_CHEATS_PAGE_MISC:
-        w->widgets[WIDX_OPEN_CLOSE_PARK].text = (gParkFlags & PARK_FLAGS_PARK_OPEN) ? STR_CHEAT_CLOSE_PARK : STR_CHEAT_OPEN_PARK;
-        widget_set_checkbox_value(w, WIDX_FORCE_PARK_RATING, get_forced_park_rating() >= 0);
-        w->widgets[WIDX_SANDBOX_MODE].text = gCheatsSandboxMode ? STR_CHEAT_SANDBOX_MODE_DISABLE : STR_CHEAT_SANDBOX_MODE;
-        w->widgets[WIDX_FREEZE_CLIMATE].text = gCheatsFreezeClimate ? STR_CHEAT_UNFREEZE_CLIMATE : STR_CHEAT_FREEZE_CLIMATE;
-        widget_set_checkbox_value(w, WIDX_NEVERENDING_MARKETING, gCheatsNeverendingMarketing);
-        widget_set_checkbox_value(w, WIDX_DISABLE_PLANT_AGING, gCheatsDisablePlantAging);
-        break;
-    case WINDOW_CHEATS_PAGE_RIDES:
-        set_format_arg(0, uint16, 255);
-        widget_set_checkbox_value(w, WIDX_FAST_LIFT_HILL, gCheatsFastLiftHill);
-        widget_set_checkbox_value(w, WIDX_DISABLE_BRAKES_FAILURE, gCheatsDisableBrakesFailure);
-        widget_set_checkbox_value(w, WIDX_DISABLE_ALL_BREAKDOWNS, gCheatsDisableAllBreakdowns);
-        widget_set_checkbox_value(w, WIDX_BUILD_IN_PAUSE_MODE, gCheatsBuildInPauseMode);
-        widget_set_checkbox_value(w, WIDX_SHOW_ALL_OPERATING_MODES, gCheatsShowAllOperatingModes);
-        widget_set_checkbox_value(w, WIDX_SHOW_VEHICLES_FROM_OTHER_TRACK_TYPES, gCheatsShowVehiclesFromOtherTrackTypes);
-        widget_set_checkbox_value(w, WIDX_DISABLE_TRAIN_LENGTH_LIMITS, gCheatsDisableTrainLengthLimit);
-        widget_set_checkbox_value(w, WIDX_ENABLE_CHAIN_LIFT_ON_ALL_TRACK, gCheatsEnableChainLiftOnAllTrack);
-        widget_set_checkbox_value(w, WIDX_ENABLE_ARBITRARY_RIDE_TYPE_CHANGES, gCheatsAllowArbitraryRideTypeChanges);
-        widget_set_checkbox_value(w, WIDX_DISABLE_RIDE_VALUE_AGING, gCheatsDisableRideValueAging);
-        widget_set_checkbox_value(w, WIDX_IGNORE_RESEARCH_STATUS, gCheatsIgnoreResearchStatus);
-        widget_set_checkbox_value(w, WIDX_ENABLE_ALL_DRAWABLE_TRACK_PIECES, gCheatsEnableAllDrawableTrackPieces);
-        break;
-    }
-
-    // Current weather
-    window_cheats_misc_widgets[WIDX_WEATHER].text = WeatherTypes[gClimateCurrent.Weather];
-    // Staff speed
-    window_cheats_misc_widgets[WIDX_STAFF_SPEED].text = _staffSpeedNames[_selectedStaffSpeed];
-}
-
-static void window_cheats_paint(rct_window *w, rct_drawpixelinfo *dpi)
-{
-    window_draw_widgets(w, dpi);
-    window_cheats_draw_tab_images(dpi, w);
-
-    if (w->page == WINDOW_CHEATS_PAGE_MONEY)
-    {
-        uint8 colour = w->colours[1];
-        set_format_arg(0, money32, _moneySpinnerValue);
-        if (widget_is_disabled(w, WIDX_MONEY_SPINNER))
-        {
-            colour |= COLOUR_FLAG_INSET;
-        }
-        sint32 actual_month = month_spinner_value - 1;
-        gfx_draw_string_left(dpi, STR_BOTTOM_TOOLBAR_CASH,          gCommonFormatArgs, colour, w->x + XPL(0) + TXTO, w->y + YPL(2) + TXTO);
-        gfx_draw_string_left(dpi, STR_YEAR,                         nullptr, COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(7) + TXTO);
-        gfx_draw_string_left(dpi, STR_MONTH,                        nullptr, COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(8) + TXTO);
-        gfx_draw_string_left(dpi, STR_DAY,                          nullptr, COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(9) + TXTO);
-        gfx_draw_string_right(dpi, STR_FORMAT_INTEGER,              &year_spinner_value, w->colours[1], w->x + WPL(1) - 34 - TXTO, w->y + YPL(7) + TXTO);
-        gfx_draw_string_right(dpi, STR_FORMAT_MONTH,                &actual_month,       w->colours[1], w->x + WPL(1) - 34 - TXTO, w->y + YPL(8) + TXTO);
-        gfx_draw_string_right(dpi, STR_FORMAT_INTEGER,              &day_spinner_value,  w->colours[1], w->x + WPL(1) - 34 - TXTO, w->y + YPL(9) + TXTO);
-    }
-    else if (w->page == WINDOW_CHEATS_PAGE_MISC)
-    {
-        gfx_draw_string_left(dpi, STR_CHEAT_STAFF_SPEED,            nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(17) + TXTO);
-        gfx_draw_string_left(dpi, STR_FORCE_WEATHER,                nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(10) + TXTO);
-        gfx_draw_string_right(dpi, STR_FORMAT_INTEGER,              &park_rating_spinner_value, w->colours[1], w->x + WPL(1) - 34 - TXTO, w->y + YPL(5) + TXTO);
-    }
-    else if (w->page == WINDOW_CHEATS_PAGE_GUESTS)
-    {
-        gfx_draw_string_left(dpi, STR_CHEAT_GUEST_HAPPINESS,        nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(1) + TXTO);
-        gfx_draw_string_left(dpi, STR_CHEAT_GUEST_ENERGY,           nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(2) + TXTO);
-        gfx_draw_string_left(dpi, STR_CHEAT_GUEST_HUNGER,           nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(3) + TXTO);
-        gfx_draw_string_left(dpi, STR_CHEAT_GUEST_THIRST,           nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(4) + TXTO);
-        gfx_draw_string_left(dpi, STR_CHEAT_GUEST_NAUSEA,           nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(5) + TXTO);
-        gfx_draw_string_left(dpi, STR_CHEAT_GUEST_NAUSEA_TOLERANCE, nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(6) + TXTO);
-        gfx_draw_string_left(dpi, STR_CHEAT_GUEST_BATHROOM,         nullptr,   COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(7) + TXTO);
-        gfx_draw_string_left(dpi, STR_CHEAT_GUEST_PREFERRED_INTENSITY,nullptr, COLOUR_BLACK, w->x + XPL(0) + TXTO, w->y + YPL(8) + TXTO);
-    }
-}
-
-static void window_cheats_draw_tab_images(rct_drawpixelinfo *dpi, rct_window *w)
-{
-    sint32 sprite_idx;
-
-    // Money tab
-    if (!(w->disabled_widgets & (1 << WIDX_TAB_1)))
-    {
-        sprite_idx = SPR_TAB_FINANCES_SUMMARY_0;
-        if (w->page == WINDOW_CHEATS_PAGE_MONEY)
-            sprite_idx += (w->frame_no / 2) % 8;
-        gfx_draw_sprite(dpi, sprite_idx, w->x + w->widgets[WIDX_TAB_1].left, w->y + w->widgets[WIDX_TAB_1].top, 0);
-    }
-
-    // Guests tab
-    if (!(w->disabled_widgets & (1 << WIDX_TAB_2)))
-    {
-        sprite_idx = SPR_TAB_GUESTS_0;
-        if (w->page == WINDOW_CHEATS_PAGE_GUESTS)
-            sprite_idx += (w->frame_no / 3) % 8;
-        gfx_draw_sprite(dpi, sprite_idx, w->x + w->widgets[WIDX_TAB_2].left, w->y + w->widgets[WIDX_TAB_2].top, 0);
-    }
-
-    // Misc tab
-    if (!(w->disabled_widgets & (1 << WIDX_TAB_3)))
-    {
-        sprite_idx = SPR_TAB_PARK;
-        gfx_draw_sprite(dpi, sprite_idx, w->x + w->widgets[WIDX_TAB_3].left, w->y + w->widgets[WIDX_TAB_3].top, 0);
-    }
-
-    // Rides tab
-    if (!(w->disabled_widgets & (1 << WIDX_TAB_4)))
-    {
-        sprite_idx = SPR_TAB_RIDE_0;
-        if (w->page == WINDOW_CHEATS_PAGE_RIDES)
-            sprite_idx += (w->frame_no / 4) % 16;
-        gfx_draw_sprite(dpi, sprite_idx, w->x + w->widgets[WIDX_TAB_4].left, w->y + w->widgets[WIDX_TAB_4].top, 0);
-    }
-}
-
-static void window_cheats_set_page(rct_window *w, sint32 page)
-{
-    w->page = page;
-    w->frame_no = 0;
-
-    w->enabled_widgets = window_cheats_page_enabled_widgets[page];
-    w->hold_down_widgets = window_cheats_page_hold_down_widgets[page];
-    w->pressed_widgets = 0;
-
-    w->event_handlers = window_cheats_page_events[page];
-    w->widgets = window_cheats_page_widgets[page];
-
-    sint32 maxY = 0;
-    rct_widget *widget = &w->widgets[WIDX_TAB_CONTENT];
-    while (widget->type != WWT_LAST)
-    {
-        maxY = Math::Max(maxY, (sint32) widget->bottom);
-        widget++;
-    }
-    maxY += 6;
-
-    window_invalidate(w);
-    w->height = maxY;
-    w->widgets[WIDX_BACKGROUND].bottom = maxY - 1;
-    w->widgets[WIDX_PAGE_BACKGROUND].bottom = maxY - 1;
-    window_invalidate(w);
+    return w;
 }

@@ -134,30 +134,14 @@ rct_window *window_create_subclass(std::unique_ptr<rct_window> wptr, sint32 x, s
         audio_play_sound(SOUND_WINDOW_OPEN, 0, x + (width / 2));
     }
 
-    w->number = 0;
     w->x = x;
     w->y = y;
     w->width = width;
     w->height = height;
-    w->viewport = nullptr;
-    w->event_handlers = event_handlers;
-    w->enabled_widgets = 0;
-    w->disabled_widgets = 0;
-    w->pressed_widgets = 0;
-    w->hold_down_widgets = 0;
-    w->viewport_focus_coordinates.var_480 = 0;
-    w->viewport_focus_coordinates.x = 0;
-    w->viewport_focus_coordinates.y = 0;
-    w->viewport_focus_coordinates.z = 0;
-    w->viewport_focus_coordinates.rotation = 0;
-    w->page = 0;
-    w->var_48C = 0;
-    w->frame_no = 0;
-    w->list_information_type = 0;
-    w->var_492 = 0;
-    w->selected_tab = 0;
-    w->var_4AE = 0;
-    w->viewport_smart_follow_sprite = SPRITE_INDEX_NULL;
+    if (w->IsLegacy())
+    {
+        w->event_handlers = event_handlers;
+    }
 
     colour_scheme_update(w);
     window_invalidate(w);
