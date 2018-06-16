@@ -94,6 +94,10 @@ struct rct_window {
     uint8 colours[6];           // 0x4BA
     uint8 visibility;           // VISIBILITY_CACHE
     uint16 viewport_smart_follow_sprite; // Smart following of sprites. Handles setting viewport target sprite etc
+
+    rct_window() = default;
+    rct_window(const rct_window&) = delete;
+    virtual ~rct_window() = default;
 };
 
 // rct2: 0x01420078

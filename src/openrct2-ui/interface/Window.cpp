@@ -72,6 +72,14 @@ static bool window_fits_on_screen(sint32 x, sint32 y, sint32 width, sint32 heigh
 
 rct_window *window_create(sint32 x, sint32 y, sint32 width, sint32 height, rct_window_event_list *event_handlers, rct_windowclass cls, uint16 flags)
 {
+    auto w = std::make_unique<rct_window>();
+    auto ret = w.get();
+    window_create_subclass(std::move(w), x, y, width, height, event_handlers, cls, flags);
+    return ret;
+}
+
+rct_window *window_create_subclass(std::unique_ptr<rct_window> wptr, sint32 x, sint32 y, sint32 width, sint32 height, rct_window_event_list *event_handlers, rct_windowclass cls, uint16 flags)
+{
     // Check if there are any window slots left
     // include WINDOW_LIMIT_RESERVED for items such as the main viewport and toolbars to not appear to be counted.
     if (g_window_list.size() >= (size_t)(gConfigGeneral.window_limit + WINDOW_LIMIT_RESERVED))
@@ -111,8 +119,8 @@ rct_window *window_create(sint32 x, sint32 y, sint32 width, sint32 height, rct_w
         }
     }
 
-    g_window_list.insert(g_window_list.begin() + dstIndex, std::make_unique<rct_window>());
-    auto w = g_window_list[dstIndex].get();
+    auto w = wptr.get();
+    g_window_list.insert(g_window_list.begin() + dstIndex, std::move(wptr));
 
     // Setup window
     w->classification = cls;
