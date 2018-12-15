@@ -50,5 +50,6 @@ void maze_entrance_hedge_replacement(int32_t x, int32_t y, TileElement* tileElem
 void maze_entrance_hedge_removal(int32_t x, int32_t y, TileElement* tileElement);
 
 void fix_park_entrance_locations();
+void UpdateParkEntranceLocations();
 
 #endif
