@@ -542,7 +542,7 @@ namespace OpenRCT2
                         sprite_position_tween_reset();
                         gScreenAge = 0;
                         gLastAutoSaveUpdate = AUTOSAVE_PAUSE;
-                        if (info.Type == FILE_TYPE::SAVED_GAME)
+                        if (info.Type == FILE_TYPE::PARK || info.Type == FILE_TYPE::SAVED_GAME)
                         {
                             if (network_get_mode() == NETWORK_MODE_CLIENT)
                             {
