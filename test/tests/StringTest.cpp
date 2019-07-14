@@ -147,3 +147,18 @@ TEST_F(StringTest, ToUpper_Japanese)
     auto actual = String::ToUpper(u8"日本語で大文字がなし");
     ASSERT_STREQ(actual.c_str(), u8"日本語で大文字がなし");
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Tests for String::ToWideChar
+///////////////////////////////////////////////////////////////////////////////
+TEST_F(StringTest, ToWideChar_Korean)
+{
+    auto actual = String::ToWideChar(u8"서버");
+    ASSERT_STREQ(actual.c_str(), L"서버");
+}
+
+TEST_F(StringTest, ToMultiByte_Korean)
+{
+    auto actual = String::ToMultiByte(u8"서버");
+    ASSERT_STREQ(actual.c_str(), u8"서버");
+}

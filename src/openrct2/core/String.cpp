@@ -97,38 +97,66 @@ namespace String
 #endif
     }
 
+#ifdef _WIN32
     std::wstring ToUtf16(const std::string_view& src)
     {
-#ifdef _WIN32
         int srcLen = (int)src.size();
         int sizeReq = MultiByteToWideChar(CODE_PAGE::CP_UTF8, 0, src.data(), srcLen, nullptr, 0);
         auto result = std::wstring(sizeReq, 0);
         MultiByteToWideChar(CODE_PAGE::CP_UTF8, 0, src.data(), srcLen, result.data(), sizeReq);
         return result;
-#else
-        icu::UnicodeString str = icu::UnicodeString::fromUTF8(std::string(src));
-
-// Which constructor to use depends on the size of wchar_t...
-// UTF-32 is the default on most POSIX systems; Windows uses UTF-16.
-// Unfortunately, we'll have to help the compiler here.
-#    if U_SIZEOF_WCHAR_T == 4
-        size_t length = (size_t)str.length();
-        std::wstring result(length, '\0');
-
-        UErrorCode status = U_ZERO_ERROR;
-        str.toUTF32((UChar32*)&result[0], str.length(), status);
-
-#    elif U_SIZEOF_WCHAR_T == 2
-        const char16_t* buffer = str.getBuffer();
-        std::wstring result = (wchar_t*)buffer;
-
-#    else
-#        error Unsupported U_SIZEOF_WCHAR_T size
-#    endif
-
-        return result;
-#endif
     }
+#else
+    std::wstring ToWideChar(const std::string_view& src)
+    {
+        std::wstring result;
+        icu::UnicodeString icuString(src.data(), src.size());
+
+#    if U_SIZEOF_WCHAR_T == 4
+        auto errorStatus = U_ZERO_ERROR;
+        auto requiredLen = icuString.toUTF32(nullptr, 0, errorStatus);
+        if (requiredLen != 0)
+        {
+            result = std::wstring(requiredLen, 0);
+
+            // Convert the utf-8 string to wchar_t
+            errorStatus = U_ZERO_ERROR;
+            icuString.toUTF32((UChar32*)result.data(), result.size(), errorStatus);
+            if (U_FAILURE(errorStatus))
+            {
+                throw std::runtime_error("Unable to convert string: " + std::string(u_errorName(errorStatus)));
+            }
+        }
+#    else
+        result = std::wstring(icuString.getTerminatedBuffer());
+#    endif
+        return result;
+    }
+
+    std::string ToMultiByte(const std::string_view& src)
+    {
+        constexpr std::size_t wcstombserr = (std::size_t)-1;
+
+        std::string mbString;
+        auto wcString = ToWideChar(src);
+        std::setlocale(LC_CTYPE, "en_US.utf8");
+        auto len = std::wcstombs(nullptr, wcString.c_str(), 0);
+        if (len == wcstombserr)
+        {
+            throw std::runtime_error("wcstombs failed");
+        }
+        if (len != 0)
+        {
+            mbString = std::string(len, 0);
+            len = std::wcstombs((char*)mbString.data(), wcString.c_str(), mbString.size());
+            if (len == wcstombserr)
+            {
+                throw std::runtime_error("wcstombs failed");
+            }
+        }
+        return mbString;
+    }
+#endif
 
     bool IsNullOrEmpty(const utf8* str)
     {

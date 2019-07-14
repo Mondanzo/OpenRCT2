@@ -21,6 +21,7 @@
 #    include "../OpenRCT2.h"
 #    include "../config/Config.h"
 #    include "../core/Path.hpp"
+#    include "../core/String.hpp"
 #    include "../localisation/Date.h"
 #    include "../localisation/Language.h"
 #    include "../util/Util.h"
@@ -95,64 +96,33 @@ void platform_get_time_local(rct2_time* out_time)
     out_time->hour = timeinfo->tm_hour;
 }
 
-static size_t platform_utf8_to_multibyte(const utf8* path, char* buffer, size_t buffer_size)
-{
-    wchar_t* wpath = utf8_to_widechar(path);
-    setlocale(LC_CTYPE, "UTF-8");
-    size_t len = wcstombs(NULL, wpath, 0);
-    bool truncated = false;
-    if (len > buffer_size - 1)
-    {
-        truncated = true;
-        len = buffer_size - 1;
-    }
-    wcstombs(buffer, wpath, len);
-    buffer[len] = '\0';
-    if (truncated)
-        log_warning("truncated string %s", buffer);
-    free(wpath);
-    return len;
-}
-
 bool platform_file_exists(const utf8* path)
 {
-    char buffer[MAX_PATH];
-    platform_utf8_to_multibyte(path, buffer, MAX_PATH);
-    bool exists = access(buffer, F_OK) != -1;
-    log_verbose("file '%s' exists = %i", buffer, exists);
+    auto mbPath = String::ToMultiByte(path);
+    bool exists = access(mbPath.c_str(), F_OK) != -1;
+    log_verbose("file '%s' exists = %i", mbPath.c_str(), exists);
     return exists;
 }
 
 bool platform_directory_exists(const utf8* path)
 {
-    char buffer[MAX_PATH];
-    platform_utf8_to_multibyte(path, buffer, MAX_PATH);
+    auto mbPath = String::ToMultiByte(path);
     struct stat dirinfo;
-    int32_t result = stat(buffer, &dirinfo);
-    log_verbose("checking dir %s, result = %d, is_dir = %d", buffer, result, S_ISDIR(dirinfo.st_mode));
+    int32_t result = stat(mbPath.c_str(), &dirinfo);
+    log_verbose("checking dir %s, result = %d, is_dir = %d", mbPath.c_str(), result, S_ISDIR(dirinfo.st_mode));
     return result == 0 && S_ISDIR(dirinfo.st_mode);
 }
 
 bool platform_original_game_data_exists(const utf8* path)
 {
-    char buffer[MAX_PATH];
-    platform_utf8_to_multibyte(path, buffer, MAX_PATH);
-    char checkPath[MAX_PATH];
-    safe_strcpy(checkPath, buffer, MAX_PATH);
-    safe_strcat_path(checkPath, "Data", MAX_PATH);
-    safe_strcat_path(checkPath, "g1.dat", MAX_PATH);
-    return platform_file_exists(checkPath);
+    auto checkPath = Path::Combine(path, "Data", "g1.dat");
+    return platform_file_exists(checkPath.c_str());
 }
 
 bool platform_original_rct1_data_exists(const utf8* path)
 {
-    char buffer[MAX_PATH], checkPath1[MAX_PATH], checkPath2[MAX_PATH];
-    platform_utf8_to_multibyte(path, buffer, MAX_PATH);
-    safe_strcat_path(buffer, "Data", MAX_PATH);
-    safe_strcpy(checkPath1, buffer, MAX_PATH);
-    safe_strcpy(checkPath2, buffer, MAX_PATH);
-    safe_strcat_path(checkPath1, "CSG1.DAT", MAX_PATH);
-    safe_strcat_path(checkPath2, "CSG1.1", MAX_PATH);
+    auto checkPath1 = Path::Combine(path, "Data", "CSG1.DAT");
+    auto checkPath2 = Path::Combine(path, "Data", "CSG1.1");
 
     // Since Linux is case sensitive (and macOS sometimes too), make sure we handle case properly.
     std::string path1result = Path::ResolveCasing(checkPath1);
@@ -185,11 +155,11 @@ static mode_t openrct2_getumask()
 bool platform_ensure_directory_exists(const utf8* path)
 {
     mode_t mask = openrct2_getumask();
-    char buffer[MAX_PATH];
-    platform_utf8_to_multibyte(path, buffer, MAX_PATH);
+    auto mbPath = String::ToMultiByte(path);
+    auto buffer = mbPath.data();
 
     log_verbose("Create directory: %s", buffer);
-    for (char* p = buffer + 1; *p != '\0'; p++)
+    for (auto p = buffer + 1; *p != '\0'; p++)
     {
         if (*p == '/')
         {
