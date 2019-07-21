@@ -355,7 +355,7 @@ public:
             }
 
             Banner* banner = &gBanners[_bannerId];
-            banner->string_idx = STR_DEFAULT_SIGN;
+            banner->text = {};
             banner->colour = 2;
             banner->text_colour = 2;
             banner->flags = BANNER_FLAG_IS_WALL;

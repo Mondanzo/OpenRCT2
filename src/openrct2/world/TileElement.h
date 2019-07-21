@@ -448,6 +448,7 @@ public:
 };
 assert_struct_size(EntranceElement, 8);
 
+struct Banner;
 struct BannerElement : TileElementBase
 {
 private:
@@ -468,6 +469,8 @@ public:
     uint8_t GetAllowedEdges() const;
     void SetAllowedEdges(uint8_t newEdges);
     void ResetAllowedEdges();
+
+    Banner* GetBanner() const;
 };
 assert_struct_size(BannerElement, 8);
 

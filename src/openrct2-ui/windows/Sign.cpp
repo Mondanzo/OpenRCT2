@@ -549,18 +549,6 @@ static void window_sign_small_invalidate(rct_window* w)
 
 static void window_sign_show_text_input(rct_window* w, const Banner* banner)
 {
-    std::string inputText;
-    if (banner->flags & BANNER_FLAG_LINKED_TO_RIDE)
-    {
-        auto ride = get_ride(banner->ride_index);
-        if (ride != nullptr)
-        {
-            inputText = ride->GetName();
-        }
-    }
-    else
-    {
-        inputText = format_string(gBanners[w->number].string_idx, nullptr);
-    }
-    window_text_input_raw_open(w, WIDX_SIGN_TEXT, STR_SIGN_TEXT_TITLE, STR_SIGN_TEXT_PROMPT, inputText.c_str(), 32);
+    auto bannerText = banner->GetText();
+    window_text_input_raw_open(w, WIDX_SIGN_TEXT, STR_SIGN_TEXT_TITLE, STR_SIGN_TEXT_PROMPT, bannerText.c_str(), 32);
 }

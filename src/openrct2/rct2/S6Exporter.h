@@ -46,6 +46,8 @@ public:
     void ExportSpritePeep(RCT2SpritePeep* dst, const Peep* src);
     void ExportSpriteMisc(RCT12SpriteBase* dst, const rct_sprite_common* src);
     void ExportSpriteLitter(RCT12SpriteLitter* dst, const rct_litter* src);
+    void ExportBanners();
+    void ExportBanner(RCT12Banner* dst, const Banner* src);
 
 private:
     rct_s6_data _s6{};

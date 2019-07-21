@@ -343,7 +343,7 @@ void S6Exporter::Export()
     }
     safe_strcpy(_s6.scenario_filename, gScenarioFileName, sizeof(_s6.scenario_filename));
     std::memcpy(_s6.saved_expansion_pack_names, gScenarioExpansionPacks, sizeof(_s6.saved_expansion_pack_names));
-    std::memcpy(_s6.banners, gBanners, sizeof(_s6.banners));
+    ExportBanners();
     std::memcpy(_s6.custom_strings, gUserStrings, sizeof(_s6.custom_strings));
     _s6.game_ticks_1 = gCurrentTicks;
 
@@ -1190,6 +1190,40 @@ void S6Exporter::ExportSpriteLitter(RCT12SpriteLitter* dst, const rct_litter* sr
 {
     ExportSpriteCommonProperties(dst, src);
     dst->creationTick = src->creationTick;
+}
+
+void S6Exporter::ExportBanners()
+{
+    for (BannerIndex i = 0; i < RCT2_MAX_BANNERS_IN_PARK; i++)
+    {
+        auto src = get_banner(i);
+        auto dst = &_s6.banners[i];
+        ExportBanner(dst, src);
+    }
+}
+
+void S6Exporter::ExportBanner(RCT12Banner* dst, const Banner* src)
+{
+    dst = {};
+    dst->type = src->type;
+
+    if (!src->IsNull())
+    {
+        dst->flags = src->flags;
+
+        dst->string_idx = STR_DEFAULT_SIGN;
+        auto stringId = user_string_allocate(USER_STRING_DUPLICATION_PERMITTED, src->text.c_str());
+        if (stringId != 0)
+        {
+            dst->string_idx = stringId;
+        }
+
+        dst->colour = src->colour;
+        dst->ride_index = src->ride_index;
+        dst->text_colour = src->text_colour;
+        dst->x = src->x;
+        dst->y = src->y;
+    }
 }
 
 enum : uint32_t

@@ -196,9 +196,11 @@ static void window_banner_mouseup(rct_window* w, rct_widgetindex widgetIndex)
             break;
         }
         case WIDX_BANNER_TEXT:
-            window_text_input_open(
-                w, WIDX_BANNER_TEXT, STR_BANNER_TEXT, STR_ENTER_BANNER_TEXT, gBanners[w->number].string_idx, 0, 32);
+        {
+            auto bannerText = gBanners[w->number].GetText();
+            window_text_input_raw_open(w, WIDX_BANNER_TEXT, STR_BANNER_TEXT, STR_ENTER_BANNER_TEXT, bannerText.c_str(), 32);
             break;
+        }
         case WIDX_BANNER_NO_ENTRY:
         {
             textinput_cancel();

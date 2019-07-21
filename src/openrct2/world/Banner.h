@@ -20,17 +20,22 @@ constexpr uint8_t SCROLLING_MODE_NONE = 255;
 
 struct Banner
 {
-    uint8_t type;
-    uint8_t flags;
-    rct_string_id string_idx;
-    union
+    uint8_t type = BANNER_NULL;
+    uint8_t flags{};
+    std::string text;
+    uint8_t colour{};
+    ride_id_t ride_index{};
+    uint8_t text_colour{};
+    uint8_t x{};
+    uint8_t y{};
+
+    bool IsNull() const
     {
-        uint8_t colour;
-        uint8_t ride_index;
-    };
-    uint8_t text_colour;
-    uint8_t x;
-    uint8_t y;
+        return type == BANNER_NULL;
+    }
+
+    std::string GetText() const;
+    size_t FormatTextTo(void* args) const;
 };
 
 enum BANNER_FLAGS
@@ -50,3 +55,4 @@ WallElement* banner_get_scrolling_wall_tile_element(BannerIndex bannerIndex);
 uint8_t banner_get_closest_ride_index(int32_t x, int32_t y, int32_t z);
 void banner_reset_broken_index();
 void fix_duplicated_banners();
+Banner* get_banner(BannerIndex id);

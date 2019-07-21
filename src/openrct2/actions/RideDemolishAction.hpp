@@ -138,10 +138,10 @@ private:
 
         for (auto& banner : gBanners)
         {
-            if (banner.type != BANNER_NULL && banner.flags & BANNER_FLAG_LINKED_TO_RIDE && banner.ride_index == _rideIndex)
+            if (banner.type != BANNER_NULL && (banner.flags & BANNER_FLAG_LINKED_TO_RIDE) && banner.ride_index == _rideIndex)
             {
-                banner.flags &= 0xFB;
-                banner.string_idx = STR_DEFAULT_SIGN;
+                banner.flags &= ~BANNER_FLAG_LINKED_TO_RIDE;
+                banner.text = {};
             }
         }
 

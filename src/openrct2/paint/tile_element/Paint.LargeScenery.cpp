@@ -311,18 +311,9 @@ void large_scenery_paint(paint_session* session, uint8_t direction, uint16_t hei
         textColour = (textColour << 19) | IMAGE_TYPE_REMAP;
         BannerIndex bannerIndex = tileElement->AsLargeScenery()->GetBannerIndex();
         Banner* banner = &gBanners[bannerIndex];
-        rct_string_id stringId = banner->string_idx;
-        if (banner->flags & BANNER_FLAG_LINKED_TO_RIDE)
-        {
-            auto ride = get_ride(banner->ride_index);
-            if (ride != nullptr)
-            {
-                stringId = STR_STRINGID;
-                ride->FormatNameTo(gCommonFormatArgs);
-            }
-        }
+        banner->FormatTextTo(gCommonFormatArgs);
         utf8 signString[256];
-        format_string(signString, sizeof(signString), stringId, gCommonFormatArgs);
+        format_string(signString, sizeof(signString), STR_STRINGID, gCommonFormatArgs);
         rct_large_scenery_text* text = entry->large_scenery.text;
         int32_t y_offset = (text->offset[(direction & 1)].y * 2);
         if (text->flags & LARGE_SCENERY_TEXT_FLAG_VERTICAL)
@@ -433,24 +424,16 @@ void large_scenery_paint(paint_session* session, uint8_t direction, uint16_t hei
     BannerIndex bannerIndex = tileElement->AsLargeScenery()->GetBannerIndex();
     uint16_t scrollMode = entry->large_scenery.scrolling_mode + ((direction + 1) & 0x3);
     Banner* banner = &gBanners[bannerIndex];
-    set_format_arg(0, rct_string_id, banner->string_idx);
-    if (banner->flags & BANNER_FLAG_LINKED_TO_RIDE)
-    {
-        auto ride = get_ride(banner->ride_index);
-        if (ride != nullptr)
-        {
-            ride->FormatNameTo(gCommonFormatArgs);
-        }
-    }
+    banner->FormatTextTo(gCommonFormatArgs);
     utf8 signString[256];
     rct_string_id stringId = STR_SCROLLING_SIGN_TEXT;
     if (gConfigGeneral.upper_case_banners)
     {
-        format_string_to_upper(signString, sizeof(signString), stringId, gCommonFormatArgs);
+        format_string_to_upper(signString, sizeof(signString), STR_STRINGID, gCommonFormatArgs);
     }
     else
     {
-        format_string(signString, sizeof(signString), stringId, gCommonFormatArgs);
+        format_string(signString, sizeof(signString), STR_STRINGID, gCommonFormatArgs);
     }
 
     gCurrentFontSpriteBase = FONT_SPRITE_BASE_TINY;
@@ -458,7 +441,7 @@ void large_scenery_paint(paint_session* session, uint8_t direction, uint16_t hei
     uint16_t string_width = gfx_get_string_width(signString);
     uint16_t scroll = (gCurrentTicks / 2) % string_width;
     sub_98199C(
-        session, scrolling_text_setup(session, stringId, scroll, scrollMode), 0, 0, 1, 1, 21, height + 25, boxoffset.x,
+        session, scrolling_text_setup(session, stringId, scroll, scrollMode, banner->colour), 0, 0, 1, 1, 21, height + 25, boxoffset.x,
         boxoffset.y, boxoffset.z);
 
     large_scenery_paint_supports(session, direction, height, tileElement, dword_F4387C, tile);

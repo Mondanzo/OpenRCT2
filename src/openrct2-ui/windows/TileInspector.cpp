@@ -2031,9 +2031,13 @@ static void window_tile_inspector_paint(rct_window* w, rct_drawpixelinfo* dpi)
                 rct_wall_scenery_entry wallEntry = get_wall_entry(wallType)->wall;
                 if (wallEntry.flags & WALL_SCENERY_IS_BANNER)
                 {
-                    gfx_draw_string_left(
-                        dpi, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT,
-                        &gBanners[tileElement->AsWall()->GetBannerIndex()].string_idx, COLOUR_DARK_GREEN, x, y + 11);
+                    auto banner = get_banner(tileElement->AsWall()->GetBannerIndex());
+                    if (banner != nullptr && !banner->IsNull())
+                    {
+                        uint8_t args[32]{};
+                        banner->FormatTextTo(args);
+                        gfx_draw_string_left(dpi, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, args, COLOUR_DARK_GREEN, x, y + 11);
+                    }
                 }
                 else
                 {
@@ -2073,9 +2077,13 @@ static void window_tile_inspector_paint(rct_window* w, rct_drawpixelinfo* dpi)
                 rct_scenery_entry* largeSceneryEntry = get_large_scenery_entry(largeSceneryType);
                 if (largeSceneryEntry->large_scenery.scrolling_mode != SCROLLING_MODE_NONE)
                 {
-                    const BannerIndex bannerIndex = sceneryElement->GetBannerIndex();
-                    rct_string_id* string = &gBanners[bannerIndex].string_idx;
-                    gfx_draw_string_left(dpi, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, string, COLOUR_DARK_GREEN, x, y + 22);
+                    auto banner = get_banner(sceneryElement->GetBannerIndex());
+                    if (banner != nullptr && !banner->IsNull())
+                    {
+                        uint8_t args[32]{};
+                        banner->FormatTextTo(args);
+                        gfx_draw_string_left(dpi, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, args, COLOUR_DARK_GREEN, x, y + 22);
+                    }
                 }
                 else
                 {
@@ -2098,16 +2106,12 @@ static void window_tile_inspector_paint(rct_window* w, rct_drawpixelinfo* dpi)
             {
                 // Details
                 // Banner info
-                const uint8_t bannerIndex = tileElement->AsBanner()->GetIndex();
-                if (gBanners[bannerIndex].flags & BANNER_FLAG_NO_ENTRY)
+                auto banner = get_banner(tileElement->AsBanner()->GetIndex());
+                if (banner != nullptr && !banner->IsNull())
                 {
-                    rct_string_id noEntryStringIdx = STR_NO_ENTRY;
-                    gfx_draw_string_left(dpi, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, &noEntryStringIdx, COLOUR_DARK_GREEN, x, y);
-                }
-                else
-                {
-                    gfx_draw_string_left(
-                        dpi, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, &gBanners[bannerIndex].string_idx, COLOUR_DARK_GREEN, x, y);
+                    uint8_t args[32]{};
+                    banner->FormatTextTo(args);
+                    gfx_draw_string_left(dpi, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, args, COLOUR_DARK_GREEN, x, y + 22);
                 }
 
                 // Properties

@@ -850,18 +850,9 @@ public:
         dst->type = src->type;
         dst->flags = src->flags;
 
-        dst->string_idx = STR_DEFAULT_SIGN;
-        if (is_user_string_id(src->string_idx))
+        if (!(src->flags & BANNER_FLAG_LINKED_TO_RIDE) && is_user_string_id(src->string_idx))
         {
-            std::string bannerText = GetUserString(src->string_idx);
-            if (!bannerText.empty())
-            {
-                rct_string_id bannerTextStringId = user_string_allocate(USER_STRING_DUPLICATION_PERMITTED, bannerText.c_str());
-                if (bannerTextStringId != 0)
-                {
-                    dst->string_idx = bannerTextStringId;
-                }
-            }
+            dst->text = GetUserString(src->string_idx);
         }
 
         if (src->flags & BANNER_FLAG_LINKED_TO_RIDE)
