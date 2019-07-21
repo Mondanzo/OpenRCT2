@@ -371,9 +371,6 @@ public:
             String::Set(gScenarioFileName, sizeof(gScenarioFileName), _s6.scenario_filename);
         }
         std::memcpy(gScenarioExpansionPacks, _s6.saved_expansion_pack_names, sizeof(_s6.saved_expansion_pack_names));
-        // Clear all of the strings, since we will probably have a higher limit on user strings in the future than RCT2.
-        user_string_clear_all();
-        std::memcpy(gUserStrings, _s6.custom_strings, sizeof(_s6.custom_strings));
         gCurrentTicks = _s6.game_ticks_1;
         gCurrentRealTimeTicks = 0;
 
@@ -449,15 +446,8 @@ public:
         gWidePathTileLoopY = _s6.wide_path_tile_loop_y;
         // pad_13CE778
 
-        // Park name, must be after user strings are loaded
-        // Eventually format_string should be something that the S6 user strings can be passed directly to
-        {
-            char parkName[128]{};
-            format_string(parkName, sizeof(parkName), _s6.park_name, &_s6.park_name_args);
-            auto& park = OpenRCT2::GetContext()->GetGameState()->GetPark();
-            park.Name = parkName;
-            user_string_free(_s6.park_name);
-        }
+        auto& park = OpenRCT2::GetContext()->GetGameState()->GetPark();
+        park.Name = GetUserString(_s6.park_name);
 
         // Fix and set dynamic variables
         map_strip_ghost_flag_from_elements();
