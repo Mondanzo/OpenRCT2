@@ -10,9 +10,12 @@
 #pragma once
 
 #include "../common.h"
+#include "../core/Optional.hpp"
 #include "../object/ObjectList.h"
 #include "../scenario/Scenario.h"
 
+#include <string>
+#include <string_view>
 #include <vector>
 
 interface IStream;
@@ -51,6 +54,7 @@ public:
 
 private:
     rct_s6_data _s6{};
+    std::vector<std::string> _userStrings;
 
     void Save(IStream* stream, bool isScenario);
     static uint32_t GetLoanHash(money32 initialCash, money32 bankLoan, uint32_t maxBankLoan);
@@ -62,4 +66,7 @@ private:
     void ExportPeepSpawns();
     void ExportRideMeasurements();
     void ExportRideMeasurement(RCT12RideMeasurement& dst, const RideMeasurement& src);
+
+    opt::optional<uint16_t> AllocateUserString(const std::string_view& value);
+    void ExportUserStrings();
 };
