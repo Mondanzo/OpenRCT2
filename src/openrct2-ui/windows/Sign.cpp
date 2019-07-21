@@ -131,7 +131,7 @@ static rct_window_event_list window_sign_small_events = {
 };
 // clang-format on
 
-static void window_sign_show_text_input(rct_window* w, const rct_banner* banner);
+static void window_sign_show_text_input(rct_window* w, const Banner* banner);
 
 /**
  *
@@ -204,7 +204,7 @@ rct_window* window_sign_open(rct_windownumber number)
  */
 static void window_sign_mouseup(rct_window* w, rct_widgetindex widgetIndex)
 {
-    rct_banner* banner = &gBanners[w->number];
+    Banner* banner = &gBanners[w->number];
     int32_t x = banner->x << 5;
     int32_t y = banner->y << 5;
 
@@ -361,7 +361,7 @@ static void window_sign_viewport_rotate(rct_window* w)
 
     view->width = 0;
 
-    rct_banner* banner = &gBanners[w->number];
+    Banner* banner = &gBanners[w->number];
 
     int32_t view_x = (banner->x << 5) + 16;
     int32_t view_y = (banner->y << 5) + 16;
@@ -450,7 +450,7 @@ rct_window* window_sign_small_open(rct_windownumber number)
  */
 static void window_sign_small_mouseup(rct_window* w, rct_widgetindex widgetIndex)
 {
-    rct_banner* banner = &gBanners[w->number];
+    Banner* banner = &gBanners[w->number];
     int32_t x = banner->x << 5;
     int32_t y = banner->y << 5;
 
@@ -547,7 +547,7 @@ static void window_sign_small_invalidate(rct_window* w)
     text_colour_btn->image = SPRITE_ID_PALETTE_COLOUR_1(w->var_492) | IMAGE_TYPE_TRANSPARENT | SPR_PALETTE_BTN;
 }
 
-static void window_sign_show_text_input(rct_window* w, const rct_banner* banner)
+static void window_sign_show_text_input(rct_window* w, const Banner* banner)
 {
     std::string inputText;
     if (banner->flags & BANNER_FLAG_LINKED_TO_RIDE)

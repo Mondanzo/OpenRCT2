@@ -204,7 +204,7 @@ int32_t viewport_interaction_get_item_right(int32_t x, int32_t y, viewport_inter
 {
     TileElement* tileElement;
     rct_scenery_entry* sceneryEntry;
-    rct_banner* banner;
+    Banner* banner;
     Ride* ride;
     int32_t i, stationIndex;
 

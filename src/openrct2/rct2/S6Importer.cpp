@@ -47,6 +47,7 @@
 #include "../world/Entrance.h"
 #include "../world/MapAnimation.h"
 #include "../world/Park.h"
+#include "../world/Scenery.h"
 #include "../world/Sprite.h"
 #include "../world/Surface.h"
 
@@ -370,7 +371,6 @@ public:
             String::Set(gScenarioFileName, sizeof(gScenarioFileName), _s6.scenario_filename);
         }
         std::memcpy(gScenarioExpansionPacks, _s6.saved_expansion_pack_names, sizeof(_s6.saved_expansion_pack_names));
-        std::memcpy(gBanners, _s6.banners, sizeof(_s6.banners));
         // Clear all of the strings, since we will probably have a higher limit on user strings in the future than RCT2.
         user_string_clear_all();
         std::memcpy(gUserStrings, _s6.custom_strings, sizeof(_s6.custom_strings));
@@ -844,6 +844,40 @@ public:
         std::memcpy(gResearchItems, _s6.research_items, sizeof(_s6.research_items));
     }
 
+    void ImportBanner(Banner* dst, const RCT12Banner* src)
+    {
+        *dst = {};
+        dst->type = src->type;
+        dst->flags = src->flags;
+
+        dst->string_idx = STR_DEFAULT_SIGN;
+        if (is_user_string_id(src->string_idx))
+        {
+            std::string bannerText = GetUserString(src->string_idx);
+            if (!bannerText.empty())
+            {
+                rct_string_id bannerTextStringId = user_string_allocate(USER_STRING_DUPLICATION_PERMITTED, bannerText.c_str());
+                if (bannerTextStringId != 0)
+                {
+                    dst->string_idx = bannerTextStringId;
+                }
+            }
+        }
+
+        if (src->flags & BANNER_FLAG_LINKED_TO_RIDE)
+        {
+            dst->ride_index = src->ride_index;
+        }
+        else
+        {
+            dst->colour = src->colour;
+        }
+
+        dst->text_colour = src->text_colour;
+        dst->x = src->x;
+        dst->y = src->y;
+    }
+
     void Initialise()
     {
         OpenRCT2::GetContext()->GetGameState()->InitAll(_s6.map_size);
@@ -1048,6 +1082,22 @@ public:
                 dst2->SetAcrossTrack(src2->IsAcrossTrack());
                 dst2->SetAnimationIsBackwards(src2->AnimationIsBackwards());
 
+                // Import banner information
+                auto entry = dst2->GetEntry();
+                if (entry != nullptr && entry->wall.scrolling_mode != SCROLLING_MODE_NONE)
+                {
+                    auto bannerIndex = dst2->GetBannerIndex();
+                    if (bannerIndex < sizeof(_s6.banners))
+                    {
+                        auto srcBanner = &_s6.banners[bannerIndex];
+                        auto dstBanner = &gBanners[bannerIndex];
+                        ImportBanner(dstBanner, srcBanner);
+                    }
+                    else
+                    {
+                        dst2->SetBannerIndex(BANNER_INDEX_NULL);
+                    }
+                }
                 break;
             }
             case TILE_ELEMENT_TYPE_LARGE_SCENERY:
@@ -1061,6 +1111,22 @@ public:
                 dst2->SetSecondaryColour(src2->GetSecondaryColour());
                 dst2->SetBannerIndex(src2->GetBannerIndex());
 
+                // Import banner information
+                auto entry = dst2->GetEntry();
+                if (entry != nullptr && entry->large_scenery.scrolling_mode != SCROLLING_MODE_NONE)
+                {
+                    auto bannerIndex = dst2->GetBannerIndex();
+                    if (bannerIndex < sizeof(_s6.banners))
+                    {
+                        auto srcBanner = &_s6.banners[bannerIndex];
+                        auto dstBanner = &gBanners[bannerIndex];
+                        ImportBanner(dstBanner, srcBanner);
+                    }
+                    else
+                    {
+                        dst2->SetBannerIndex(BANNER_INDEX_NULL);
+                    }
+                }
                 break;
             }
             case TILE_ELEMENT_TYPE_BANNER:
@@ -1072,6 +1138,17 @@ public:
                 dst2->SetPosition(src2->GetPosition());
                 dst2->SetAllowedEdges(src2->GetAllowedEdges());
 
+                auto bannerIndex = src2->GetIndex();
+                if (bannerIndex < sizeof(_s6.banners))
+                {
+                    auto srcBanner = &_s6.banners[bannerIndex];
+                    auto dstBanner = &gBanners[bannerIndex];
+                    ImportBanner(dstBanner, srcBanner);
+                }
+                else
+                {
+                    dst2->SetIndex(BANNER_INDEX_NULL);
+                }
                 break;
             }
             default:

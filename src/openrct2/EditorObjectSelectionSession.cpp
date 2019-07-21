@@ -125,7 +125,7 @@ void setup_in_use_selection_flags()
     do
     {
         uint16_t type;
-        rct_banner* banner;
+        Banner* banner;
 
         switch (iter.element->GetType())
         {

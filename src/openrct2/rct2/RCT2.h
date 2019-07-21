@@ -17,7 +17,6 @@
 #include "../world/Location.hpp"
 
 #define RCT2_MAX_STAFF 200
-#define RCT2_MAX_BANNERS_IN_PARK 250
 #define RCT2_MAX_VEHICLES_PER_RIDE 32
 #define RCT2_MAX_CARS_PER_TRAIN 32
 #define RCT2_MAX_CATEGORIES_PER_RIDE 2
@@ -32,6 +31,7 @@
 #define RCT2_MAX_RESEARCHED_RIDE_ENTRY_QUADS 8 // With 32 bits per uint32_t, this means there is room for 256 entries.
 #define RCT2_MAX_RESEARCHED_SCENERY_ITEM_QUADS 56
 #define RCT2_MAX_RESEARCHED_SCENERY_ITEMS (RCT2_MAX_RESEARCHED_SCENERY_ITEM_QUADS * 32) // There are 32 bits per quad.
+#define RCT2_MAX_BANNERS_IN_PARK 250
 
 struct rct2_install_info
 {
