@@ -441,8 +441,8 @@ void large_scenery_paint(paint_session* session, uint8_t direction, uint16_t hei
     uint16_t string_width = gfx_get_string_width(signString);
     uint16_t scroll = (gCurrentTicks / 2) % string_width;
     sub_98199C(
-        session, scrolling_text_setup(session, stringId, scroll, scrollMode, banner->colour), 0, 0, 1, 1, 21, height + 25, boxoffset.x,
-        boxoffset.y, boxoffset.z);
+        session, scrolling_text_setup(session, stringId, scroll, scrollMode, banner->colour), 0, 0, 1, 1, 21, height + 25,
+        boxoffset.x, boxoffset.y, boxoffset.z);
 
     large_scenery_paint_supports(session, direction, height, tileElement, dword_F4387C, tile);
 }
