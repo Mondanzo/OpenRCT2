@@ -2242,7 +2242,7 @@ private:
                 dst2->SetPosition(src2->GetPosition());
                 dst2->SetAllowedEdges(src2->GetAllowedEdges());
 
-                if (index < sizeof(_s4.banners))
+                if (index < std::size(_s4.banners))
                 {
                     auto srcBanner = &_s4.banners[index];
                     auto dstBanner = &gBanners[index];

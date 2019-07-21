@@ -1068,7 +1068,7 @@ public:
                 if (entry != nullptr && entry->wall.scrolling_mode != SCROLLING_MODE_NONE)
                 {
                     auto bannerIndex = dst2->GetBannerIndex();
-                    if (bannerIndex < sizeof(_s6.banners))
+                    if (bannerIndex < std::size(_s6.banners))
                     {
                         auto srcBanner = &_s6.banners[bannerIndex];
                         auto dstBanner = &gBanners[bannerIndex];
@@ -1097,7 +1097,7 @@ public:
                 if (entry != nullptr && entry->large_scenery.scrolling_mode != SCROLLING_MODE_NONE)
                 {
                     auto bannerIndex = dst2->GetBannerIndex();
-                    if (bannerIndex < sizeof(_s6.banners))
+                    if (bannerIndex < std::size(_s6.banners))
                     {
                         auto srcBanner = &_s6.banners[bannerIndex];
                         auto dstBanner = &gBanners[bannerIndex];
@@ -1120,7 +1120,7 @@ public:
                 dst2->SetAllowedEdges(src2->GetAllowedEdges());
 
                 auto bannerIndex = src2->GetIndex();
-                if (bannerIndex < sizeof(_s6.banners))
+                if (bannerIndex < std::size(_s6.banners))
                 {
                     auto srcBanner = &_s6.banners[bannerIndex];
                     auto dstBanner = &gBanners[bannerIndex];
