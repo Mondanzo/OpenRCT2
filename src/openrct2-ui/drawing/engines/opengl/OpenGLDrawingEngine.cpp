@@ -106,6 +106,7 @@ public:
     void DrawSpriteRawMasked(int32_t x, int32_t y, uint32_t maskImage, uint32_t colourImage) override;
     void DrawSpriteSolid(uint32_t image, int32_t x, int32_t y, uint8_t colour) override;
     void DrawGlyph(uint32_t image, int32_t x, int32_t y, uint8_t* palette) override;
+    void DrawBitmap(uint32_t image, const void* pixels, int32_t width, int32_t height, int32_t x, int32_t y) override;
 
     void FlushCommandBuffers();
 
@@ -889,6 +890,48 @@ void OpenGLDrawingContext::DrawGlyph(uint32_t image, int32_t x, int32_t y, uint8
     int32_t drawOffsetY = g1Element->y_offset;
     int32_t drawWidth = (uint16_t)g1Element->width;
     int32_t drawHeight = (uint16_t)g1Element->height;
+
+    int32_t left = x + drawOffsetX;
+    int32_t top = y + drawOffsetY;
+    int32_t right = left + drawWidth;
+    int32_t bottom = top + drawHeight;
+
+    if (left > right)
+    {
+        std::swap(left, right);
+    }
+    if (top > bottom)
+    {
+        std::swap(top, bottom);
+    }
+
+    left += _offsetX;
+    top += _offsetY;
+    right += _offsetX;
+    bottom += _offsetY;
+
+    DrawRectCommand& command = _commandBuffers.rects.allocate();
+
+    command.clip = { _clipLeft, _clipTop, _clipRight, _clipBottom };
+    command.texColourAtlas = texture.index;
+    command.texColourBounds = texture.normalizedBounds;
+    command.texMaskAtlas = 0;
+    command.texMaskBounds = { 0.0f, 0.0f, 0.0f, 0.0f };
+    command.palettes = { 0, 0, 0 };
+    command.flags = 0;
+    command.colour = 0;
+    command.bounds = { left, top, right, bottom };
+    command.depth = _drawCount++;
+}
+
+void OpenGLDrawingContext::DrawBitmap(uint32_t image, const void* pixels, int32_t width, int32_t height, int32_t x, int32_t y)
+{
+    const auto texture = _textureCache->GetOrLoadBitmapTexture(image, pixels, width, height);
+
+    int32_t drawOffsetX = 0;
+    int32_t drawOffsetY = 0;
+    int32_t drawWidth = (uint16_t)width;
+    int32_t drawHeight = (uint16_t)height;
 
     int32_t left = x + drawOffsetX;
     int32_t top = y + drawOffsetY;

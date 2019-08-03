@@ -7,9 +7,12 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
+#include "../Context.h"
 #include "../common.h"
 #include "../config/Config.h"
 #include "../drawing/Drawing.h"
+#include "../drawing/IDrawingContext.h"
+#include "../drawing/IDrawingEngine.h"
 #include "../interface/Viewport.h"
 #include "../localisation/Localisation.h"
 #include "../localisation/LocalisationService.h"
@@ -517,6 +520,7 @@ static void ttf_draw_string_raw_sprite(rct_drawpixelinfo* dpi, const utf8* text,
 
 #ifndef NO_TTF
 
+static int _ttfGlId = 0;
 static void ttf_draw_string_raw_ttf(rct_drawpixelinfo* dpi, const utf8* text, text_draw_info* info)
 {
     if (!ttf_initialise())
@@ -545,6 +549,37 @@ static void ttf_draw_string_raw_ttf(rct_drawpixelinfo* dpi, const utf8* text, te
         int32_t drawY = info->y + fontDesc->offset_y;
         int32_t width = surface->w;
         int32_t height = surface->h;
+
+        if (OpenRCT2::GetContext()->GetDrawingEngineType() == DRAWING_ENGINE_OPENGL)
+        {
+            auto pixels = (uint8_t*)surface->pixels;
+            auto pixelsLen = (size_t)surface->pitch * surface->h;
+            for (size_t pp = 0; pp < pixelsLen; pp++)
+            {
+                if (pixels[pp] != 0)
+                {
+                    pixels[pp] = colour;
+                }
+                else
+                {
+                    pixels[pp] = PALETTE_INDEX_0;
+                }
+            }
+
+            auto baseId = (uint32_t)0x7FFFF - 1024;
+            auto imageId = baseId + _ttfGlId;
+            auto drawingEngine = dpi->DrawingEngine;
+            auto drawingContext = drawingEngine->GetDrawingContext(dpi);
+            drawingEngine->InvalidateImage(imageId);
+            drawingContext->DrawBitmap(imageId, surface->pixels, surface->pitch, surface->h, drawX, drawY);
+
+            _ttfGlId++;
+            if (_ttfGlId >= 1023)
+            {
+                _ttfGlId = 0;
+            }
+            return;
+        }
 
         int32_t overflowX = (dpi->x + dpi->width) - (drawX + width);
         int32_t overflowY = (dpi->y + dpi->height) - (drawY + height);
