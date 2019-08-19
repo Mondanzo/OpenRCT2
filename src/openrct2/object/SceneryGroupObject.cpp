@@ -83,7 +83,10 @@ void SceneryGroupObject::UpdateEntryIndexes()
             continue;
 
         uint16_t sceneryEntry = objectManager.GetLoadedObjectEntryIndex(ori->LoadedObject);
-        Guard::Assert(sceneryEntry != UINT8_MAX, GUARD_LINE);
+        if (sceneryEntry == UINT8_MAX)
+        {
+            continue;
+        }
 
         auto objectType = ori->ObjectEntry.flags & 0x0F;
         switch (objectType)

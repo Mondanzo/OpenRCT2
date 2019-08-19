@@ -171,18 +171,19 @@ void S6Exporter::Export()
     uint32_t researchedTrackPiecesA[128];
     uint32_t researchedTrackPiecesB[128];
 
-    for (int32_t i = 0; i < OBJECT_ENTRY_COUNT; i++)
+    auto& objectManager = OpenRCT2::GetContext()->GetObjectManager();
+    for (size_t i = 0; i < OBJECT_ENTRY_COUNT; i++)
     {
-        const rct_object_entry* entry = get_loaded_object_entry(i);
-        void* entryData = get_loaded_object_chunk(i);
-        // RCT2 uses (void *)-1 to mark NULL. Make sure it's written in a vanilla-compatible way.
-        if (entryData == nullptr || entryData == (void*)-1)
+        auto oti = GetRCT2ObjectTypeIndex(i);
+        auto object = objectManager.GetLoadedObject(oti.Type, oti.Index);
+        if (object == nullptr)
         {
+            // RCT2 uses (void *)-1 to mark NULL. Make sure it's written in a vanilla-compatible way.
             std::memset(&_s6.objects[i], 0xFF, sizeof(rct_object_entry));
         }
         else
         {
-            _s6.objects[i] = *entry;
+            _s6.objects[i] = *object->GetObjectEntry();
         }
     }
 

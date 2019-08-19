@@ -14,6 +14,7 @@
 #include "../core/Console.hpp"
 #include "../core/Memory.hpp"
 #include "../localisation/StringIds.h"
+#include "../rct2/RCT2.h"
 #include "FootpathItemObject.h"
 #include "LargeSceneryObject.h"
 #include "Object.h"
@@ -34,14 +35,12 @@ class ObjectManager final : public IObjectManager
 {
 private:
     IObjectRepository& _objectRepository;
-    std::vector<Object*> _loadedObjects;
+    std::vector<std::vector<Object*>> _loadedObjects;
 
 public:
     explicit ObjectManager(IObjectRepository& objectRepository)
         : _objectRepository(objectRepository)
     {
-        _loadedObjects.resize(OBJECT_ENTRY_COUNT);
-
         UpdateSceneryGroupIndexes();
         ResetTypeToRideEntryIndexMap();
     }
@@ -51,27 +50,17 @@ public:
         UnloadAll();
     }
 
-    Object* GetLoadedObject(size_t index) override
-    {
-        if (index >= _loadedObjects.size())
-        {
-            return nullptr;
-        }
-        return _loadedObjects[index];
-    }
-
     Object* GetLoadedObject(int32_t objectType, size_t index) override
     {
-        if (index >= (size_t)object_entry_group_counts[objectType])
+        if (_loadedObjects.size() > objectType)
         {
-#ifdef DEBUG
-            log_warning("Object index %u exceeds maximum for type %d.", index, objectType);
-#endif
-            return nullptr;
+            auto& objectList = _loadedObjects[objectType];
+            if (objectList.size() > index)
+            {
+                return objectList[index];
+            }
         }
-
-        auto objectIndex = GetIndexFromTypeEntry(objectType, index);
-        return GetLoadedObject(objectIndex);
+        return nullptr;
     }
 
     Object* GetLoadedObject(const rct_object_entry* entry) override
@@ -87,11 +76,19 @@ public:
 
     uint8_t GetLoadedObjectEntryIndex(const Object* object) override
     {
-        uint8_t result = UINT8_MAX;
-        size_t index = GetLoadedObjectIndex(object);
-        if (index != SIZE_MAX)
+        uint8_t result = std::numeric_limits<uint8_t>::max();
+        auto objectType = object->GetObjectType();
+        if (objectType < _loadedObjects.size())
         {
-            get_type_entry_index(index, nullptr, &result);
+            auto& objectList = _loadedObjects[objectType];
+            for (size_t index = 0; index < objectList.size(); index++)
+            {
+                if (objectList[index] == object)
+                {
+                    result = (uint8_t)index;
+                    break;
+                }
+            }
         }
         return result;
     }
@@ -112,11 +109,8 @@ public:
                     loadedObject = GetOrLoadObject(ori);
                     if (loadedObject != nullptr)
                     {
-                        if (_loadedObjects.size() <= (size_t)slot)
-                        {
-                            _loadedObjects.resize(slot + 1);
-                        }
-                        _loadedObjects[slot] = loadedObject;
+                        auto& objectList = _loadedObjects[objectType];
+                        objectList[slot] = loadedObject;
                         UpdateSceneryGroupIndexes();
                         ResetTypeToRideEntryIndexMap();
                     }
@@ -173,9 +167,12 @@ public:
 
     void UnloadAll() override
     {
-        for (auto object : _loadedObjects)
+        for (auto& objectList : _loadedObjects)
         {
-            UnloadObject(object);
+            for (auto object : objectList)
+            {
+                UnloadObject(object);
+            }
         }
         UpdateSceneryGroupIndexes();
         ResetTypeToRideEntryIndexMap();
@@ -183,12 +180,15 @@ public:
 
     void ResetObjects() override
     {
-        for (auto loadedObject : _loadedObjects)
+        for (auto& objectList : _loadedObjects)
         {
-            if (loadedObject != nullptr)
+            for (auto loadedObject : objectList)
             {
-                loadedObject->Unload();
-                loadedObject->Load();
+                if (loadedObject != nullptr)
+                {
+                    loadedObject->Unload();
+                    loadedObject->Load();
+                }
             }
         }
         UpdateSceneryGroupIndexes();
@@ -297,34 +297,26 @@ private:
 
     int32_t FindSpareSlot(uint8_t objectType)
     {
-        size_t firstIndex = GetIndexFromTypeEntry(objectType, 0);
-        size_t endIndex = firstIndex + object_entry_group_counts[objectType];
-        for (size_t i = firstIndex; i < endIndex; i++)
+        // Ensure we have an object list for this type of object
+        if (_loadedObjects.size() <= objectType)
         {
-            if (_loadedObjects.size() <= i)
-            {
-                _loadedObjects.resize(i + 1);
-                return (int32_t)i;
-            }
-            else if (_loadedObjects[i] == nullptr)
+            _loadedObjects.resize((size_t)objectType + 1);
+        }
+
+        // Find spare slot in list for object type
+        auto& objectList = _loadedObjects[objectType];
+        for (size_t i = 0; i < objectList.size(); i++)
+        {
+            if (objectList[i] == nullptr)
             {
                 return (int32_t)i;
             }
         }
-        return -1;
-    }
 
-    size_t GetLoadedObjectIndex(const Object* object)
-    {
-        Guard::ArgumentNotNull(object, GUARD_LINE);
-
-        auto result = std::numeric_limits<size_t>().max();
-        auto it = std::find(_loadedObjects.begin(), _loadedObjects.end(), object);
-        if (it != _loadedObjects.end())
-        {
-            result = std::distance(_loadedObjects.begin(), it);
-        }
-        return result;
+        // No slot available, expand list
+        auto result = objectList.size();
+        objectList.resize(std::max<size_t>(8, objectList.size() * 2));
+        return (int32_t)result;
     }
 
     void SetNewLoadedObjectList(const std::vector<Object*>& newLoadedObjects)
@@ -337,7 +329,23 @@ private:
         {
             UnloadObjectsExcept(newLoadedObjects);
         }
-        _loadedObjects = newLoadedObjects;
+
+        for (size_t index = 0; index < newLoadedObjects.size(); index++)
+        {
+            auto objectTypeIndex = GetRCT2ObjectTypeIndex(index);
+            auto objectType = objectTypeIndex.Type;
+            auto entryIndex = objectTypeIndex.Index;
+            if (_loadedObjects.size() <= objectType)
+            {
+                _loadedObjects.resize((size_t)objectType + 1);
+            }
+            auto& objectList = _loadedObjects[objectType];
+            if (objectList.size() <= entryIndex)
+            {
+                objectList.resize((size_t)entryIndex + 1);
+            }
+            objectList[entryIndex] = newLoadedObjects[index];
+        }
     }
 
     void UnloadObject(Object* object)
@@ -353,11 +361,14 @@ private:
 
             // Because it's possible to have the same loaded object for multiple
             // slots, we have to make sure find and set all of them to nullptr
-            for (auto& obj : _loadedObjects)
+            for (auto& objectList : _loadedObjects)
             {
-                if (obj == object)
+                for (auto& obj : objectList)
                 {
-                    obj = nullptr;
+                    if (obj == object)
+                    {
+                        obj = nullptr;
+                    }
                 }
             }
 
@@ -381,15 +392,18 @@ private:
         // Unload objects that are not in the hash set
         size_t totalObjectsLoaded = 0;
         size_t numObjectsUnloaded = 0;
-        for (auto object : _loadedObjects)
+        for (auto& objectList : _loadedObjects)
         {
-            if (object != nullptr)
+            for (auto object : objectList)
             {
-                totalObjectsLoaded++;
-                if (exceptSet.find(object) == exceptSet.end())
+                if (object != nullptr)
                 {
-                    UnloadObject(object);
-                    numObjectsUnloaded++;
+                    totalObjectsLoaded++;
+                    if (exceptSet.find(object) == exceptSet.end())
+                    {
+                        UnloadObject(object);
+                        numObjectsUnloaded++;
+                    }
                 }
             }
         }
@@ -399,37 +413,40 @@ private:
 
     void UpdateSceneryGroupIndexes()
     {
-        for (auto loadedObject : _loadedObjects)
+        for (auto& objectList : _loadedObjects)
         {
-            if (loadedObject != nullptr)
+            for (auto loadedObject : objectList)
             {
-                rct_scenery_entry* sceneryEntry;
-                switch (loadedObject->GetObjectType())
+                if (loadedObject != nullptr)
                 {
-                    case OBJECT_TYPE_SMALL_SCENERY:
-                        sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
-                        sceneryEntry->small_scenery.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
-                        break;
-                    case OBJECT_TYPE_LARGE_SCENERY:
-                        sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
-                        sceneryEntry->large_scenery.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
-                        break;
-                    case OBJECT_TYPE_WALLS:
-                        sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
-                        sceneryEntry->wall.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
-                        break;
-                    case OBJECT_TYPE_BANNERS:
-                        sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
-                        sceneryEntry->banner.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
-                        break;
-                    case OBJECT_TYPE_PATH_BITS:
-                        sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
-                        sceneryEntry->path_bit.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
-                        break;
-                    case OBJECT_TYPE_SCENERY_GROUP:
-                        auto sgObject = dynamic_cast<SceneryGroupObject*>(loadedObject);
-                        sgObject->UpdateEntryIndexes();
-                        break;
+                    rct_scenery_entry* sceneryEntry;
+                    switch (loadedObject->GetObjectType())
+                    {
+                        case OBJECT_TYPE_SMALL_SCENERY:
+                            sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
+                            sceneryEntry->small_scenery.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
+                            break;
+                        case OBJECT_TYPE_LARGE_SCENERY:
+                            sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
+                            sceneryEntry->large_scenery.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
+                            break;
+                        case OBJECT_TYPE_WALLS:
+                            sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
+                            sceneryEntry->wall.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
+                            break;
+                        case OBJECT_TYPE_BANNERS:
+                            sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
+                            sceneryEntry->banner.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
+                            break;
+                        case OBJECT_TYPE_PATH_BITS:
+                            sceneryEntry = (rct_scenery_entry*)loadedObject->GetLegacyData();
+                            sceneryEntry->path_bit.scenery_tab_id = GetPrimarySceneryGroupEntryIndex(loadedObject);
+                            break;
+                        case OBJECT_TYPE_SCENERY_GROUP:
+                            auto sgObject = dynamic_cast<SceneryGroupObject*>(loadedObject);
+                            sgObject->UpdateEntryIndexes();
+                            break;
+                    }
                 }
             }
         }
@@ -674,13 +691,6 @@ private:
 std::unique_ptr<IObjectManager> CreateObjectManager(IObjectRepository& objectRepository)
 {
     return std::make_unique<ObjectManager>(objectRepository);
-}
-
-void* object_manager_get_loaded_object_by_index(size_t index)
-{
-    auto& objectManager = OpenRCT2::GetContext()->GetObjectManager();
-    Object* loadedObject = objectManager.GetLoadedObject(index);
-    return (void*)loadedObject;
 }
 
 void* object_manager_get_loaded_object(const rct_object_entry* entry)

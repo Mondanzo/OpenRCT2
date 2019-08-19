@@ -121,43 +121,6 @@ bool find_object_in_entry_group(const rct_object_entry* entry, uint8_t* entry_ty
     return false;
 }
 
-void get_type_entry_index(size_t index, uint8_t* outObjectType, uint8_t* outEntryIndex)
-{
-    uint8_t objectType = OBJECT_TYPE_RIDE;
-    for (size_t groupCount : object_entry_group_counts)
-    {
-        if (index >= groupCount)
-        {
-            index -= groupCount;
-            objectType++;
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    if (outObjectType != nullptr)
-        *outObjectType = objectType;
-    if (outEntryIndex != nullptr)
-        *outEntryIndex = (uint8_t)index;
-}
-
-const rct_object_entry* get_loaded_object_entry(size_t index)
-{
-    uint8_t objectType, entryIndex;
-    get_type_entry_index(index, &objectType, &entryIndex);
-
-    return object_entry_get_entry(objectType, entryIndex);
-}
-
-void* get_loaded_object_chunk(size_t index)
-{
-    uint8_t objectType, entryIndex;
-    get_type_entry_index(index, &objectType, &entryIndex);
-    return object_entry_get_chunk(objectType, entryIndex);
-}
-
 void object_entry_get_name_fixed(utf8* buffer, size_t bufferSize, const rct_object_entry* entry)
 {
     bufferSize = std::min((size_t)DAT_NAME_LENGTH + 1, bufferSize);
@@ -167,15 +130,9 @@ void object_entry_get_name_fixed(utf8* buffer, size_t bufferSize, const rct_obje
 
 void* object_entry_get_chunk(int32_t objectType, size_t index)
 {
-    size_t objectIndex = index;
-    for (int32_t i = 0; i < objectType; i++)
-    {
-        objectIndex += object_entry_group_counts[i];
-    }
-
     void* result = nullptr;
     auto& objectMgr = OpenRCT2::GetContext()->GetObjectManager();
-    auto obj = objectMgr.GetLoadedObject(objectIndex);
+    auto obj = objectMgr.GetLoadedObject(objectType, index);
     if (obj != nullptr)
     {
         result = obj->GetLegacyData();

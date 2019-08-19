@@ -714,4 +714,74 @@ assert_struct_size(RCT2RideRatingCalculationData, 76);
 
 #pragma pack(pop)
 
+struct ObjectTypeIndex
+{
+    uint8_t Type{};
+    uint8_t Index{};
+};
+
+inline size_t GetRCT2MaxObjectCountOfType(uint8_t type)
+{
+    switch (type)
+    {
+        case OBJECT_TYPE_RIDE:
+            return 128;
+        case OBJECT_TYPE_SMALL_SCENERY:
+            return 252;
+        case OBJECT_TYPE_LARGE_SCENERY:
+            return 128;
+        case OBJECT_TYPE_WALLS:
+            return 128;
+        case OBJECT_TYPE_BANNERS:
+            return 32;
+        case OBJECT_TYPE_PATHS:
+            return 16;
+        case OBJECT_TYPE_PATH_BITS:
+            return 15;
+        case OBJECT_TYPE_SCENERY_GROUP:
+            return 19;
+        case OBJECT_TYPE_PARK_ENTRANCE:
+            return 1;
+        case OBJECT_TYPE_WATER:
+            return 1;
+        case OBJECT_TYPE_SCENARIO_TEXT:
+            return 1;
+        default:
+            return 0;
+    }
+}
+
+inline size_t GetRCT2ObjectIndex(ObjectTypeIndex typeIndex)
+{
+    if (typeIndex.Index >= GetRCT2MaxObjectCountOfType(typeIndex.Type))
+    {
+        throw std::invalid_argument("Index too high for object type.");
+    }
+
+    size_t index = 0;
+    for (uint8_t objectType = 0; objectType < typeIndex.Type; objectType++)
+    {
+        index += GetRCT2MaxObjectCountOfType(objectType);
+    }
+    return index + typeIndex.Index;
+}
+
+inline ObjectTypeIndex GetRCT2ObjectTypeIndex(size_t index)
+{
+    for (uint8_t objectType = 0; objectType <= OBJECT_TYPE_SCENARIO_TEXT; objectType++)
+    {
+        auto objectTypeMax = GetRCT2MaxObjectCountOfType(objectType);
+        if (index >= objectTypeMax)
+        {
+            index -= objectTypeMax;
+        }
+        else
+        {
+            return { objectType, (uint8_t)index };
+        }
+    }
+
+    throw std::invalid_argument("Index greater than RCT2 object limit.");
+}
+
 #endif
