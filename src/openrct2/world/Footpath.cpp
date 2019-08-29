@@ -762,7 +762,14 @@ static void loc_6A6D7E(
 {
     int32_t x = initialX + CoordsDirectionDelta[direction].x;
     int32_t y = initialY + CoordsDirectionDelta[direction].y;
-    if (((gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gCheatsSandboxMode) && map_is_edge({ x, y }))
+
+    auto isPlacingQueue = false;
+    auto pathElement = initialTileElement->AsPath();
+    if (pathElement != nullptr && pathElement->IsQueue())
+    {
+        isPlacingQueue = true;
+    }
+    if (!isPlacingQueue && ((gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gCheatsSandboxMode) && map_is_edge({ x, y }))
     {
         if (query)
         {
