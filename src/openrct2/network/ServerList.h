@@ -10,6 +10,7 @@
 #pragma once
 
 #include "../common.h"
+#include "../core/Json.hpp"
 #include "../core/Optional.hpp"
 
 #include <future>
@@ -17,7 +18,6 @@
 #include <string>
 #include <vector>
 
-struct json_t;
 struct INetworkEndpoint;
 
 struct ServerListEntry
@@ -35,7 +35,11 @@ struct ServerListEntry
     int32_t CompareTo(const ServerListEntry& other) const;
     bool IsVersionValid() const;
 
-    static opt::optional<ServerListEntry> FromJson(const json_t* root);
+    static opt::optional<ServerListEntry> FromJson(const json_t* root)
+    {
+        return {};
+    }
+    static opt::optional<ServerListEntry> FromJson(const rapidjson::Value& root);
 };
 
 class ServerList

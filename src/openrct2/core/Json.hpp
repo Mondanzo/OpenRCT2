@@ -12,6 +12,7 @@
 #include "../common.h"
 
 #include <jansson.h>
+#include <rapidjson/document.h>
 #include <stdexcept>
 #include <string>
 #include <string_view>

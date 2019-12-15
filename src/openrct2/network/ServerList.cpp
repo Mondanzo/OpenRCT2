@@ -75,20 +75,20 @@ bool ServerListEntry::IsVersionValid() const
     return version.empty() || version == network_get_version();
 }
 
-opt::optional<ServerListEntry> ServerListEntry::FromJson(const json_t* server)
+opt::optional<ServerListEntry> ServerListEntry::FromJson(const rapidjson::Value& server)
 {
-    auto port = json_object_get(server, "port");
-    auto name = json_object_get(server, "name");
-    auto description = json_object_get(server, "description");
-    auto requiresPassword = json_object_get(server, "requiresPassword");
-    auto version = json_object_get(server, "version");
-    auto players = json_object_get(server, "players");
-    auto maxPlayers = json_object_get(server, "maxPlayers");
-    auto ip = json_object_get(server, "ip");
-    auto ip4 = json_object_get(ip, "v4");
-    auto addressIp = json_array_get(ip4, 0);
+    const auto& port = server["port"];
+    const auto& name = server["name"];
+    const auto& description = server["description"];
+    const auto& requiresPassword = server["requiresPassword"];
+    const auto& version = server["version"];
+    const auto& players = server["players"];
+    const auto& maxPlayers = server["maxPlayers"];
+    const auto& ip = server["ip"];
+    const auto& ip4 = ip["v4"];
+    const auto& addressIp = ip4[0];
 
-    if (name == nullptr || version == nullptr)
+    if (name.GetStringLength() == 0 || version.GetStringLength() == 0)
     {
         log_verbose("Cowardly refusing to add server without name or version specified.");
         return {};
@@ -96,13 +96,13 @@ opt::optional<ServerListEntry> ServerListEntry::FromJson(const json_t* server)
     else
     {
         ServerListEntry entry;
-        entry.address = String::StdFormat("%s:%d", json_string_value(addressIp), (int32_t)json_integer_value(port));
-        entry.name = (name == nullptr ? "" : json_string_value(name));
-        entry.description = (description == nullptr ? "" : json_string_value(description));
-        entry.version = json_string_value(version);
-        entry.requiresPassword = json_is_true(requiresPassword);
-        entry.players = (uint8_t)json_integer_value(players);
-        entry.maxplayers = (uint8_t)json_integer_value(maxPlayers);
+        entry.address = String::StdFormat("%s:%d", addressIp.GetString(), (int32_t)port.GetInt());
+        entry.name = name.GetString();
+        entry.description = description.GetString();
+        entry.version = version.GetString();
+        entry.requiresPassword = requiresPassword.IsTrue();
+        entry.players = (uint8_t)players.GetInt();
+        entry.maxplayers = (uint8_t)maxPlayers.GetInt();
         return entry;
     }
 }
@@ -346,7 +346,6 @@ std::future<std::vector<ServerListEntry>> ServerList::FetchOnlineServerListAsync
     request.method = Http::Method::GET;
     request.header["Accept"] = "application/json";
     Http::DoAsync(request, [p](Http::Response& response) -> void {
-        json_t* root{};
         try
         {
             if (response.status != Http::Status::OK)
@@ -354,31 +353,31 @@ std::future<std::vector<ServerListEntry>> ServerList::FetchOnlineServerListAsync
                 throw MasterServerException(STR_SERVER_LIST_NO_CONNECTION);
             }
 
-            root = Json::FromString(response.body);
-            auto jsonStatus = json_object_get(root, "status");
-            if (!json_is_number(jsonStatus))
+            rapidjson::Document root;
+            root.Parse(response.body.c_str(), response.body.size());
+
+            const auto& jsonStatus = root["status"];
+            if (!jsonStatus.IsNumber())
             {
                 throw MasterServerException(STR_SERVER_LIST_INVALID_RESPONSE_JSON_NUMBER);
             }
 
-            auto status = (int32_t)json_integer_value(jsonStatus);
+            auto status = jsonStatus.GetInt();
             if (status != 200)
             {
                 throw MasterServerException(STR_SERVER_LIST_MASTER_SERVER_FAILED);
             }
 
-            auto jServers = json_object_get(root, "servers");
-            if (!json_is_array(jServers))
+            const auto& jServers = root["servers"];
+            if (!jServers.IsArray())
             {
                 throw MasterServerException(STR_SERVER_LIST_INVALID_RESPONSE_JSON_ARRAY);
             }
 
             std::vector<ServerListEntry> entries;
-            auto count = json_array_size(jServers);
-            for (size_t i = 0; i < count; i++)
+            for (const auto& jServer : jServers.GetArray())
             {
-                auto jServer = json_array_get(jServers, i);
-                if (json_is_object(jServer))
+                if (jServer.IsObject())
                 {
                     auto entry = ServerListEntry::FromJson(jServer);
                     if (entry.has_value())
@@ -394,7 +393,6 @@ std::future<std::vector<ServerListEntry>> ServerList::FetchOnlineServerListAsync
         {
             p->set_exception(std::current_exception());
         }
-        json_decref(root);
     });
     return f;
 #    endif
