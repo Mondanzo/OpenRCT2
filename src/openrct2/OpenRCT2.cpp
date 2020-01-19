@@ -29,3 +29,5 @@ uint32_t gCurrentDrawCount = 0;
 uint8_t gScreenFlags;
 uint32_t gScreenAge;
 uint8_t gSavePromptMode;
+
+a syntax error;
