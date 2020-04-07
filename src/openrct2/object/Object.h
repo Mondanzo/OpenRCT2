@@ -13,6 +13,9 @@
 #include "ImageTable.h"
 #include "StringTable.h"
 
+#include <fstream>
+#include <istream>
+#include <memory>
 #include <optional>
 #include <string_view>
 #include <vector>
@@ -171,6 +174,15 @@ public:
     std::string GetPath() const
     {
         return _path;
+    }
+
+    std::unique_ptr<std::istream> GetStream() const
+    {
+        if (IsFile())
+        {
+            return std::make_unique<std::ifstream>(_path, std::ios::binary);
+        }
+        return {};
     }
 };
 
