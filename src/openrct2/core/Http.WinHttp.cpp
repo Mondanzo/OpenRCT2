@@ -211,16 +211,17 @@ namespace Http
                 ThrowWin32Exception("WinHttpOpen");
 
             auto wHostName = std::wstring(url.lpszHostName, url.dwHostNameLength);
-            if (req.forceIPv4)
+            auto wAddress = wHostName;
+            if (forceIPv4)
             {
                 auto szIpAddress = ResolveAddressIPv4(wHostName);
                 if (!szIpAddress.empty())
                 {
-                    wHostName = szIpAddress;
+                    wAddress = szIpAddress;
                 }
             }
 
-            hConnect = WinHttpConnect(hSession, wHostName.c_str(), url.nPort, 0);
+            hConnect = WinHttpConnect(hSession, wAddress.c_str(), url.nPort, 0);
             if (hConnect == nullptr)
                 ThrowWin32Exception("WinHttpConnect");
 
@@ -230,6 +231,13 @@ namespace Http
                 hConnect, wVerb, wQuery.c_str(), NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
             if (hRequest == nullptr)
                 ThrowWin32Exception("WinHttpOpenRequest");
+
+            if (forceIPv4)
+            {
+                auto hostOverride = std::wstring(L"Host: servers.openrct2.io");
+                if (!WinHttpAddRequestHeaders(hRequest, hostOverride.c_str(), (ULONG)-1L, WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE))
+                    ThrowWin32Exception("WinHttpAddRequestHeaders");
+            }
 
             for (auto header : req.header)
             {
